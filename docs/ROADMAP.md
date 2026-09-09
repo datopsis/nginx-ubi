@@ -102,9 +102,6 @@ or module set.
   ownership for every runtime component.
 - [ ] Define lock refresh, key rotation, artifact mirroring, rollback, and
   disconnected artifact-transfer procedures.
-- [ ] Add negative tests for invalid configuration and unavailable writable
-  runtime paths with actionable failure diagnostics.
-- [ ] Add graceful reload and shutdown assertions to the runtime suite.
 
 **Fast-release checkpoint:** after Package 2, a development image is usable for
 local evaluation but is not yet a supported release.
