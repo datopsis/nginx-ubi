@@ -83,7 +83,10 @@ The stable protected check names are `lint`, `configuration security`, and
 The implemented image pipeline performs:
 
 1. Trivy build-configuration scanning.
-2. Native architecture builds and restricted-runtime smoke tests.
+2. Native architecture builds and restricted-runtime scenario tests covering
+   the declared and arbitrary runtime identities, process privileges, a
+   read-only root, hardened temporary storage, static content, health behavior,
+   log streams, reload and shutdown, and actionable startup failures.
 3. Trivy image vulnerability scanning.
 4. SPDX inventory generation with Syft.
 5. Independent fixed High/Critical vulnerability gating with Grype and a

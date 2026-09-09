@@ -51,3 +51,7 @@ but container releases use the upstream-derived format documented in
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies
   locked artifacts outside a network-disabled container build.
+- Expanded native and local runtime tests to prove non-root processes, zero
+  effective capabilities, `no-new-privileges`, arbitrary-UID operation,
+  read-only-root behavior, hardened temporary storage, log routing, graceful
+  reload and shutdown, and actionable negative startup cases.
