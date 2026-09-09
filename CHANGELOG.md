@@ -36,3 +36,9 @@ but container releases use the upstream-derived format documented in
 - Extended CI with native AMD64 and ARM64 builds, restricted-runtime tests,
   Trivy image scanning, Syft SPDX inventories, blocking Grype analysis, full
   finding retention, and an aggregate image result.
+- Added an initial use-case catalog covering static serving, reverse proxying,
+  load balancing, TLS, WebSockets, ClickHouse, health endpoints, and limiting.
+- Added a logging guide for container streams, use-case fields, sensitive-data
+  rules, and controlled-network responsibilities.
+- Documented the exact Red Hat UBI AppStream source and build path for the
+  NGINX RPMs, including trust checks and reproducibility limits.

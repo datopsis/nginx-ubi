@@ -85,6 +85,12 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   conventions.
 - [Continuous integration](docs/CI.md) documents current automation, local
   pre-commit checks, and the planned image assurance pipeline.
+- [Use cases](docs/USE-CASES.md) defines the deployment profiles being designed
+  and the security boundary of each one.
+- [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
+  sensitive-data rules, and controlled-network responsibilities.
+- [NGINX RPM provenance](docs/RPM-PROVENANCE.md) records the exact Red Hat UBI
+  package source, build path, trust checks, and local verification commands.
 
 Operational, TLS, configuration, architecture, threat-model, control-matrix,
 SCAP, vulnerability-management, support, and disconnected-network guides will
