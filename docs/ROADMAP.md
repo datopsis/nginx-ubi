@@ -65,18 +65,9 @@ are separately approved. They must not delay the core first release.
   pin every base image and downloaded artifact by digest or checksum.
 - [ ] Record source, redistribution, licensing, support lifecycle, and update
   ownership for every runtime component.
-- [ ] Build a package-manager-free UBI 9 Micro final stage.
-- [ ] Run NGINX directly as a fixed non-root identity compatible with an
-  arbitrary UID in group `0`; do not include a root entrypoint phase.
-- [ ] Listen on `8080` and `8443`; make PID, cache, temporary, and state paths
-  explicit and compatible with a read-only root filesystem.
-- [ ] Send access and error logs to stdout/stderr without symlink mutation at
-  startup.
-- [ ] Add a health check that does not require a shell when practical.
-- [ ] Add smoke tests for image identity, process identity, static serving,
-  reverse proxying, graceful shutdown, read-only root, dropped capabilities,
-  `no-new-privileges`, arbitrary UID, writable-path failures, and absence of a
-  package manager.
+- [ ] Add negative tests for invalid configuration and unavailable writable
+  runtime paths with actionable failure diagnostics.
+- [ ] Add graceful reload and shutdown assertions to the runtime suite.
 
 **Fast-release checkpoint:** after Package 2, a development image is usable for
 local evaluation but is not yet a supported release.
@@ -99,14 +90,6 @@ local evaluation but is not yet a supported release.
 
 ## Package 4: CI and supply-chain controls
 
-- [ ] Build and smoke-test on native AMD64 and ARM64 GitHub-hosted runners.
-- [ ] Run Trivy configuration and image scanning with fixed High/Critical
-  findings blocking.
-- [ ] Generate architecture-specific SPDX SBOMs with Syft and scan them with
-  Grype as an independent fixed High/Critical gate; retain the complete
-  non-blocking finding inventory for review.
-- [ ] Retain evidence even when a blocking scan fails, without leaking secrets
-  into artifacts.
 - [ ] After the native image jobs exist on `main`, require the stable `lint` and
   aggregate `image` checks in the default-branch ruleset.
 
