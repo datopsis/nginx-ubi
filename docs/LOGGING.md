@@ -21,11 +21,57 @@ The current access record contains:
 - referrer and user-agent headers; and
 - the client-supplied `X-Forwarded-For` header.
 
-The complete request line includes the query string. The forwarded-for value
-is untrusted client input unless a deployment establishes and enforces a
-trusted proxy chain. These fields must not be used as authenticated identity,
-and this development format is not the future ClickHouse or sensitive-URL
-profile.
+### What `$request` means
+
+The variable is singular: `$request`, not `$requests`. NGINX defines it as the
+full original HTTP request line. Given this request:
+
+```http
+GET /?query=SELECT%20name%20FROM%20system.tables&password=secret HTTP/1.1
+Host: clickhouse.example
+Authorization: Basic example
+```
+
+`$request` produces:
+
+```text
+GET /?query=SELECT%20name%20FROM%20system.tables&password=secret HTTP/1.1
+```
+
+It includes the method, the original path and query string, and the HTTP
+protocol. It does not include request headers or the request body. In this
+example, the `Authorization` header is not captured by `$request`, but the SQL
+and password in the URL are captured.
+
+The current format surrounds `$request` with quotes, so a complete development
+access event would resemble:
+
+```text
+10.0.0.8 - - [08/Sep/2026:20:15:31 +0000] "GET /?query=SELECT%20name%20FROM%20system.tables&password=secret HTTP/1.1" 200 87 "-" "curl/8.0" "-"
+```
+
+The safer structured profile will assemble reviewed fields instead of logging
+the complete request line:
+
+| Variable | Meaning | Query-string behavior |
+| --- | --- | --- |
+| `$request_method` | Request method such as `GET` or `POST`. | Does not contain it. |
+| `$uri` | Current normalized path, which can change during internal processing. | Does not contain it. |
+| `$server_protocol` | Protocol such as `HTTP/1.1` or `HTTP/2.0`. | Does not contain it. |
+| `$request_uri` | Full original URI. | Contains it; unsafe for sensitive URLs. |
+| `$args` or `$query_string` | URL arguments only. | Is the query string; unsafe by default. |
+| `$request_id` | NGINX-generated random request identifier. | Does not contain it. |
+
+Using `$uri` instead of `$request_uri` prevents query arguments from entering
+the access event, but its normalization and internal-redirect behavior must be
+tested for each configuration. The production format will use JSON escaping
+and separate fields such as method, normalized path, protocol, status,
+duration, bytes, and a correlation identifier.
+
+The forwarded-for value is also untrusted client input unless a deployment
+establishes and enforces a trusted proxy chain. These fields must not be used
+as authenticated identity, and the current development format is not the
+future ClickHouse or sensitive-URL profile.
 
 The `/healthz` location disables access logging. NGINX's error stream still
 captures startup, configuration, operational, and shutdown events. Setting
@@ -148,4 +194,5 @@ logs alone do not provide tamper-proof or non-repudiation guarantees.
 - [Core error logging](https://nginx.org/en/docs/ngx_core_module.html#error_log)
 - [HTTP upstream variables](https://nginx.org/en/docs/http/ngx_http_upstream_module.html#variables)
 - [HTTP TLS variables](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#variables)
+- [HTTP core variables including `$request` and `$uri`](https://nginx.org/en/docs/http/ngx_http_core_module.html#variables)
 - [NGINX syslog output](https://nginx.org/en/docs/syslog.html)

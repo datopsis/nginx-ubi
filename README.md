@@ -91,6 +91,12 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   sensitive-data rules, and controlled-network responsibilities.
 - [NGINX RPM provenance](docs/RPM-PROVENANCE.md) records the exact Red Hat UBI
   package source, build path, trust checks, and local verification commands.
+- [NGINX package-source decision](docs/PACKAGE-SOURCE.md) compares the current
+  Red Hat RPM with the proposed official NGINX stable RPM and defines migration
+  acceptance criteria.
+- [External artifact acquisition](docs/ARTIFACT-ACQUISITION.md) defines the
+  Nexus-capable, pre-build download and verification process and hermetic image
+  assembly contract.
 
 Operational, TLS, configuration, architecture, threat-model, control-matrix,
 SCAP, vulnerability-management, support, and disconnected-network guides will

@@ -47,26 +47,61 @@ third-party NGINX modules, mail proxying, and broad TCP/UDP stream proxying are
 deferred until their dependencies, threat boundaries, and maintenance costs
 are separately approved. They must not delay the core first release.
 
+## Immediate first-release sequence
+
+Work proceeds in this dependency order:
+
+1. Approve the official NGINX stable channel and the first-release versioning
+   contract before selecting a release tag.
+2. Implement architecture-specific artifact locks, public acquisition, and a
+   generic Nexus adapter driven by protected configuration.
+3. Migrate the image to the exact official NGINX RPM and require
+   network-disabled, no-pull assembly from a verified local bundle.
+4. Close rootless failure diagnostics, graceful lifecycle tests, and
+   package/module inventory checks.
+5. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
+   profiles needed for the first supported image; keep additional profiles
+   explicitly preview until their tests close.
+6. Complete the repository policy files, support boundary, threat model,
+   control ownership, vulnerability policy, and tailored SCAP evidence needed
+   for cyber review.
+7. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+   verification workflow from an untagged release candidate.
+8. Freeze inputs, regenerate release-candidate evidence, approve findings,
+   create the immutable tag, publish by digest, and verify the release.
+
+Steps 1 through 4 are the immediate engineering critical path. Steps 5 and 6
+can proceed in parallel only where they do not assume an unfrozen NGINX package
+or module set.
+
 ## Package 1: project contract and minimal skeleton
 
-- [ ] Add `README.md`, `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, notices, editor settings, and ignore rules.
+- [ ] Add `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, notices, editor settings,
+  and ignore rules.
 - [ ] Define supported, compatible, preview/unqualified, and unsupported.
 - [ ] Publish the initial support matrix and explicit control ownership split.
-- [ ] Add Code Owners, pull-request and issue templates, and dependency update
-  configuration.
+- [ ] Add Code Owners and pull-request and issue templates.
 - [ ] Document required GitHub rulesets, least-privilege Actions defaults,
   secret scanning, push protection, private vulnerability reporting, and tag
   protection.
 
 ## Package 2: rootless minimal image
 
-- [ ] Select supported NGINX and UBI 9 inputs from authoritative sources and
-  pin every base image and downloaded artifact by digest or checksum.
+- [ ] Approve official NGINX stable as the package channel and select an exact
+  first-release candidate from authoritative sources.
+- [ ] Add reviewed AMD64 and ARM64 artifact locks containing the complete RPM
+  closure, checksums, sizes, signatures, source RPMs, and base-image digests.
+- [ ] Add public and generic Nexus acquisition adapters; keep
+  organization-specific endpoints, repository identifiers, credentials, and
+  private CA material outside this public repository and image build.
+- [ ] Make ordinary CI and local builds consume verified local bundles with
+  build networking and image pulling disabled.
+- [ ] Add negative tests for tampered, unsigned, wrong-version,
+  wrong-architecture, missing, and unexpected bundle contents.
 - [ ] Record source, redistribution, licensing, support lifecycle, and update
   ownership for every runtime component.
-- [ ] Define an immutable RPM repository snapshot or approved internal mirror
-  policy for reproducible and disconnected release-candidate builds.
+- [ ] Define lock refresh, key rotation, Nexus mirroring, rollback, and
+  disconnected artifact-transfer procedures.
 - [ ] Add negative tests for invalid configuration and unavailable writable
   runtime paths with actionable failure diagnostics.
 - [ ] Add graceful reload and shutdown assertions to the runtime suite.
@@ -97,8 +132,13 @@ local evaluation but is not yet a supported release.
 
 ## Package 4: CI and supply-chain controls
 
-- [ ] After the native image jobs exist on `main`, require the stable `lint` and
-  aggregate `image` checks in the default-branch ruleset.
+- [ ] Add a least-privilege release workflow with strict tag validation,
+  native multi-architecture publishing, SBOM and provenance attestations,
+  digest-bound signing, and retained verification evidence.
+- [ ] Add monitored update proposals for NGINX packages and signing keys, UBI
+  image digests, locked RPM dependencies, and assurance tools.
+- [ ] Prove that release assembly cannot pull images, reach package networks,
+  recalculate dependencies, or expose acquisition credentials.
 
 ## Package 5: SCAP and cyber-review package
 

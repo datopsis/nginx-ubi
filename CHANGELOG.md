@@ -42,3 +42,9 @@ but container releases use the upstream-derived format documented in
   rules, and controlled-network responsibilities.
 - Documented the exact Red Hat UBI AppStream source and build path for the
   NGINX RPMs, including trust checks and reproducibility limits.
+- Evaluated official NGINX stable RPMs as the proposed first-release package
+  source and defined migration and acceptance requirements.
+- Expanded logging guidance with a field-by-field explanation of `$request`,
+  a sensitive ClickHouse example, and safer variable choices.
+- Defined a Nexus-capable pipeline contract that downloads and verifies locked
+  artifacts outside a network-disabled container build.
