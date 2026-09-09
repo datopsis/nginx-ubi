@@ -65,6 +65,8 @@ are separately approved. They must not delay the core first release.
   pin every base image and downloaded artifact by digest or checksum.
 - [ ] Record source, redistribution, licensing, support lifecycle, and update
   ownership for every runtime component.
+- [ ] Define an immutable RPM repository snapshot or approved internal mirror
+  policy for reproducible and disconnected release-candidate builds.
 - [ ] Add negative tests for invalid configuration and unavailable writable
   runtime paths with actionable failure diagnostics.
 - [ ] Add graceful reload and shutdown assertions to the runtime suite.
@@ -82,6 +84,11 @@ local evaluation but is not yet a supported release.
   behavior without silently breaking general-purpose use.
 - [ ] Document configuration mounting, validation, reload, rollback, logging,
   troubleshooting, and secret redaction.
+- [ ] Implement and test structured logging profiles for static content,
+  reverse proxying, load balancing, TLS and mTLS, WebSockets, ClickHouse,
+  health endpoints, and request and connection limiting.
+- [ ] Qualify log escaping, correlation IDs, query-string exclusion, runtime
+  collection, rotation ownership, pipeline failure, and retention evidence.
 - [ ] Provide TLS 1.2/1.3 examples for ingress termination, upstream TLS with
   hostname and chain verification, client-certificate authentication, trust
   rotation, certificate renewal, revocation limitations, and negative cases.
