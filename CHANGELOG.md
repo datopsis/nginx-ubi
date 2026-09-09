@@ -17,3 +17,11 @@ but container releases use the upstream-derived format documented in
   revisions.
 - Added the project overview, intended use cases, security design, rootless
   runtime model, and release status.
+- Added pinned local pre-commit checks for repository hygiene, shell code,
+  container build files, GitHub Actions, private keys, and attribution trailers.
+- Added least-privilege CI, CodeQL Actions, Trivy configuration, Zizmor, and
+  OpenSSF Scorecard workflows with immutable third-party Action references.
+- Added grouped Dependabot updates for Actions, pre-commit hooks, and the
+  hash-locked CI Python environment.
+- Documented local checks, GitHub automation, planned image assurance, and the
+  evidence boundary of Podman Desktop or a remote Podman machine.
