@@ -99,20 +99,16 @@ local evaluation but is not yet a supported release.
 
 ## Package 4: CI and supply-chain controls
 
-- [ ] Add pre-commit checks, ShellCheck, Hadolint, Actionlint, Zizmor, YAML and
-  JSON validation, private-key detection, unsafe-symlink detection, and release
-  tag tests.
 - [ ] Build and smoke-test on native AMD64 and ARM64 GitHub-hosted runners.
 - [ ] Run Trivy configuration and image scanning with fixed High/Critical
   findings blocking.
 - [ ] Generate architecture-specific SPDX SBOMs with Syft and scan them with
   Grype as an independent fixed High/Critical gate; retain the complete
   non-blocking finding inventory for review.
-- [ ] Run CodeQL for GitHub Actions and OpenSSF Scorecard with SARIF published
-  under minimum required permissions.
-- [ ] Pin GitHub Actions to full commit SHAs and automate reviewable updates.
 - [ ] Retain evidence even when a blocking scan fails, without leaking secrets
   into artifacts.
+- [ ] After the native image jobs exist on `main`, require the stable `lint` and
+  aggregate `image` checks in the default-branch ruleset.
 
 ## Package 5: SCAP and cyber-review package
 
@@ -141,6 +137,10 @@ local evaluation but is not yet a supported release.
 
 ## Package 6: signed first release
 
+- [ ] Review and approve the release version contract before selecting or
+  creating the first release tag. Decide the exact NGINX and named UBI version
+  fields, packaging revision, mutable convenience-tag policy, support lifetime,
+  and handling of rebuilds and repository-only changes.
 - [ ] Freeze the final upstream versions and digests only after image-affecting
   work is complete.
 - [ ] Review all fixed and unfixed scanner findings against authoritative

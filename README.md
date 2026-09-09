@@ -83,6 +83,8 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
 - [Changelog](CHANGELOG.md) records notable completed changes.
 - [Agent guidance](CLAUDE.md) defines repository implementation and security
   conventions.
+- [Continuous integration](docs/CI.md) documents current automation, local
+  pre-commit checks, and the planned image assurance pipeline.
 
 Operational, TLS, configuration, architecture, threat-model, control-matrix,
 SCAP, vulnerability-management, support, and disconnected-network guides will
@@ -110,9 +112,19 @@ tags.
 ## Development status
 
 The current work is governed by the dependency-ordered roadmap. Build and test
-commands will be added here only when they exist and have been exercised. Until
-the first signed release is published, this repository should be treated as
-development material rather than a supported production image.
+commands will be added here only when they exist and have been exercised.
+Repository checks can be run now with:
+
+```console
+python -m pip install --require-hashes --only-binary=:all: \
+  --requirement .github/requirements/pre-commit.txt
+pre-commit run --all-files --show-diff-on-failure
+```
+
+See the [continuous integration guide](docs/CI.md) for hook installation and
+Podman evidence boundaries. Until the first signed release is published, this
+repository should be treated as development material rather than a supported
+production image.
 
 Security concerns should not be disclosed in a public issue. A private
 reporting process and supported-version policy will be published in
