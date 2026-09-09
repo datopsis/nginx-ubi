@@ -57,6 +57,25 @@ PowerShell suite is suitable for Podman Desktop on Windows; the Bash suite is
 used on Linux CI. Native AMD64 and ARM64 CI remains required before an image
 receives supported multi-architecture status.
 
+## Planned external acquisition
+
+The current development build resolves RPMs from inside the builder stage. It
+does not yet meet the first-release artifact-acquisition contract.
+
+The replacement pipeline will separate a reviewed lock update from ordinary
+CI. Normal jobs will download only the exact architecture-specific files in
+the merged lock, verify their checksums, RPM signatures, signing fingerprints,
+NEVRA, architecture, and bundle completeness, and preload digest-verified base
+images. The image will then assemble from that local bundle with networking and
+pulling disabled.
+
+This public repository will provide official-source and generic Nexus
+acquisition adapters. Nexus endpoints, repository identifiers, credentials,
+and private CA configuration belong in protected work-network CI settings, not
+in this repository or the container build. Verification remains identical
+after either adapter downloads the artifacts. See
+[External artifact acquisition](ARTIFACT-ACQUISITION.md).
+
 ## Image assurance
 
 The stable protected check names are `lint`, `configuration security`, and

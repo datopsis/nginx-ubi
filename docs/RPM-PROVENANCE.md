@@ -95,3 +95,11 @@ the installed RPM database or replace the SBOM.
 The release-candidate review will record source availability, redistribution
 terms, support boundaries, update ownership, and the exact inputs used for each
 published image digest.
+
+The proposed move to official NGINX stable RPMs is evaluated in
+[NGINX package-source decision](PACKAGE-SOURCE.md). This file continues to
+describe the image as it exists until that migration is implemented and
+verified.
+
+The current builder downloads RPMs and therefore does not yet satisfy the
+planned [external artifact-acquisition contract](ARTIFACT-ACQUISITION.md).
