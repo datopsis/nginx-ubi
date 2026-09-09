@@ -9,10 +9,14 @@ arbitrary="${prefix}-arbitrary"
 missing_tmp="${prefix}-missing-tmp"
 invalid_config="${prefix}-invalid-config"
 missing_tmp_runtime_args=()
+no_new_privileges="no-new-privileges:true"
 
 if "${runtime}" --version 2>&1 | grep -qi podman; then
     # Podman otherwise creates writable tmpfs mounts for read-only containers.
     missing_tmp_runtime_args+=(--read-only-tmpfs=false)
+    # Older supported-for-development Podman releases reject Docker's :true
+    # spelling but enforce the same security option with the bare name.
+    no_new_privileges="no-new-privileges"
 fi
 
 cleanup() {
@@ -29,7 +33,7 @@ run_restricted() {
         --read-only \
         --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777 \
         --cap-drop ALL \
-        --security-opt no-new-privileges:true \
+        --security-opt "${no_new_privileges}" \
         "$@" \
         "${image}" >/dev/null
 }
@@ -115,6 +119,23 @@ wait_for_exit() {
     return 1
 }
 
+wait_for_log() {
+    local name="$1"
+    local expected="$2"
+    local logs
+    local _
+    for _ in {1..15}; do
+        logs="$("${runtime}" logs "${name}" 2>&1)"
+        if grep -Fq "${expected}" <<< "${logs}"; then
+            return
+        fi
+        sleep 1
+    done
+    "${runtime}" logs "${name}" >&2
+    echo "Timed out waiting for ${name} to log: ${expected}" >&2
+    return 1
+}
+
 wait_for_nginx() {
     local name="$1"
     local _
@@ -163,7 +184,7 @@ fi
 
 "${runtime}" exec "${primary}" nginx -s reload
 test "$(curl --fail --silent --show-error "http://127.0.0.1:${host_port}/healthz")" = "ok"
-"${runtime}" logs "${primary}" 2>&1 | grep -Fq 'reconfiguring'
+wait_for_log "${primary}" 'reconfiguring'
 
 run_restricted "${arbitrary}" --user 10001:0
 wait_for_nginx "${arbitrary}"
@@ -177,7 +198,7 @@ assert_tmpfs_security "${arbitrary}"
     --read-only \
     "${missing_tmp_runtime_args[@]}" \
     --cap-drop ALL \
-    --security-opt no-new-privileges:true \
+    --security-opt "${no_new_privileges}" \
     "${image}" >/dev/null
 wait_for_exit "${missing_tmp}"
 "${runtime}" logs "${missing_tmp}" 2>&1 | grep -Eiq \
@@ -187,7 +208,7 @@ wait_for_exit "${missing_tmp}"
     --read-only \
     --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777 \
     --cap-drop ALL \
-    --security-opt no-new-privileges:true \
+    --security-opt "${no_new_privileges}" \
     --entrypoint sh \
     "${image}" -eu -c \
     'printf "invalid_directive;\n" > /tmp/invalid.conf; exec nginx -t -c /tmp/invalid.conf' \

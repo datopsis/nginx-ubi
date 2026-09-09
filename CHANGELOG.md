@@ -36,6 +36,23 @@ but container releases use the upstream-derived format documented in
 - Added a restricted-runtime smoke suite, static landing page, and hardened
   Compose development service.
 - Added native PowerShell smoke testing for Podman Desktop development.
+- Standardized local runtime testing on the canonical Bash suite with rootless
+  Podman under native Linux or WSL2, removing the duplicated PowerShell suite.
+- Preserved the complete restricted-runtime test matrix while allowing the
+  Shell harness to enforce `no-new-privileges` using the syntax accepted by
+  older rootless Podman development engines.
+- Added a preview standalone Linux deployment runbook and rootless Podman
+  Quadlet covering systemd lifecycle, journald logging, updates, rollback, and
+  exact-host qualification.
+- Added a component threat model, security-control ownership model, requirement
+  analysis method, and cybersecurity evidence checklist.
+- Expanded the first-release roadmap with deployment qualification, systemd and
+  logging tests, OSCAL/control engineering, requirement-source review, FIPS
+  boundary analysis, go-live evidence, and an assurance-completeness gate.
+- Made upgrading the existing Ubuntu WSL2 Podman environment and rerunning the
+  complete Shell/Quadlet qualification the next roadmap action.
+- Added GitHub topics for NGINX, containers, Podman, OpenShift, UBI 9, and
+  supply-chain security.
 - Extended CI with native AMD64 and ARM64 builds, restricted-runtime tests,
   Trivy image scanning, Syft SPDX inventories, blocking Grype analysis, full
   finding retention, and an aggregate image result.

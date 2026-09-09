@@ -39,8 +39,8 @@ retroactively validate a local commit message that was never pushed.
 
 ## Local Podman development
 
-Podman is the primary local container workflow. Before relying on a result,
-record both client and engine details:
+Rootless Podman under native Linux or WSL2 is the primary local container
+workflow. Before relying on a result, record both client and engine details:
 
 ```console
 podman version
@@ -52,10 +52,16 @@ non-root UID while its Linux VM engine itself operates rootfully. That proves
 the image's non-root process behavior but does not qualify rootless-host user
 namespace behavior. Release evidence will distinguish these cases.
 
-The README contains the exercised Podman build and smoke commands. The local
-PowerShell suite is suitable for Podman Desktop on Windows; the Bash suite is
-used on Linux CI. Native AMD64 and ARM64 CI remains required before an image
-receives supported multi-architecture status.
+Use Podman inside WSL2 or on native Linux for local rootless-host evidence.
+The Bash harness retains compatibility with older development engines where
+safe, but compatibility does not make an engine part of the production support
+boundary. Quadlet deployment requires Podman 4.6 or newer, and first-release
+qualification will record a newer exact vendor-supported baseline.
+
+The README contains the exercised Podman build and smoke commands. Bash is the
+single canonical smoke implementation for local Podman and Linux CI, avoiding
+behavioral drift between platform-specific suites. Native AMD64 and ARM64 CI
+remains required before an image receives supported multi-architecture status.
 
 ## Planned external acquisition
 
