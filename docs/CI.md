@@ -1,15 +1,14 @@
 # Continuous integration
 
-The initial automation protects repository and workflow development before the
-container implementation lands. Image build, runtime, SBOM, vulnerability, and
-SCAP jobs will be added with the corresponding implementations so a green job
-never represents a test that could not actually run.
+The automation protects repository, workflow, and container development. A
+green job represents only checks that have an implemented target and an
+inspectable result; planned controls are not represented as passing jobs.
 
 ## Current workflows
 
 | Workflow | Triggers | Current purpose |
 | --- | --- | --- |
-| `CI` | Pull requests, `main`, weekly, manual | Run pinned pre-commit checks, audit Actions with Zizmor, and scan repository configuration with Trivy. |
+| `CI` | Pull requests, `main`, weekly, manual | Run pinned repository checks, audit Actions, scan configuration, and build, test, inventory, and scan native AMD64 and ARM64 images. |
 | `CodeQL` | Workflow changes, `main`, weekly, manual | Analyze GitHub Actions with the security-extended query suite. |
 | `OpenSSF Scorecard` | `main`, branch-protection changes, weekly, manual | Publish repository supply-chain findings and SARIF. |
 
@@ -53,26 +52,27 @@ non-root UID while its Linux VM engine itself operates rootfully. That proves
 the image's non-root process behavior but does not qualify rootless-host user
 namespace behavior. Release evidence will distinguish these cases.
 
-After the `Containerfile` and smoke suite are implemented, the README will
-publish their exercised Podman commands. Native AMD64 and ARM64 CI remains
-required before an image receives supported multi-architecture status.
+The README contains the exercised Podman build and smoke commands. The local
+PowerShell suite is suitable for Podman Desktop on Windows; the Bash suite is
+used on Linux CI. Native AMD64 and ARM64 CI remains required before an image
+receives supported multi-architecture status.
 
-## Planned image assurance
+## Image assurance
 
-The stable protected check names will be `lint` and `image`. The aggregate
-`image` check will require both native architecture jobs after they exist. The
-image pipeline will add, in dependency order:
+The stable protected check names are `lint`, `configuration security`, and
+`image`. The aggregate `image` check requires both native architecture jobs.
+The implemented image pipeline performs:
 
 1. Trivy build-configuration scanning.
 2. Native architecture builds and restricted-runtime smoke tests.
-3. Tailored OpenSCAP evaluation against an ownership-preserving filesystem
-   export.
-4. Trivy image vulnerability scanning.
-5. SPDX inventory generation with Syft.
-6. Independent fixed High/Critical vulnerability gating with Grype and a
+3. Trivy image vulnerability scanning.
+4. SPDX inventory generation with Syft.
+5. Independent fixed High/Critical vulnerability gating with Grype and a
    retained full finding inventory.
-7. Architecture-specific artifacts and non-pull-request SARIF publication.
+6. Architecture-specific artifacts and non-pull-request SARIF publication.
 
-Branch protection must not require `image` until that aggregate check exists
-on the default branch. Once present and proven, both `lint` and `image` become
-strict, required, up-to-date checks.
+Tailored OpenSCAP evaluation against an ownership-preserving filesystem export
+will be inserted after the runtime tests when its profile and result semantics
+are reviewed. Branch protection must not require `image` until its aggregate
+check exists on the default branch. Once present and proven, `image` becomes a
+strict, required, up-to-date check alongside the current repository checks.

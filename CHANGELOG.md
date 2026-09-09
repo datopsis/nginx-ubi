@@ -25,3 +25,14 @@ but container releases use the upstream-derived format documented in
   hash-locked CI Python environment.
 - Documented local checks, GitHub automation, planned image assurance, and the
   evidence boundary of Podman Desktop or a remote Podman machine.
+- Added an initial package-manager-free UBI 9 Micro development image using an
+  exact Red Hat NGINX RPM build.
+- Added rootless NGINX defaults for unprivileged HTTP, read-only-root operation,
+  container log streams, `/tmp` runtime state, health checking, and graceful
+  shutdown.
+- Added a restricted-runtime smoke suite, static landing page, and hardened
+  Compose development service.
+- Added native PowerShell smoke testing for Podman Desktop development.
+- Extended CI with native AMD64 and ARM64 builds, restricted-runtime tests,
+  Trivy image scanning, Syft SPDX inventories, blocking Grype analysis, full
+  finding retention, and an aggregate image result.

@@ -121,6 +121,34 @@ python -m pip install --require-hashes --only-binary=:all: \
 pre-commit run --all-files --show-diff-on-failure
 ```
 
+Build and exercise the current AMD64 development image with Podman on Linux,
+WSL, or Git Bash:
+
+```console
+podman build --format docker --file Containerfile \
+  --tag localhost/nginx-ubi9:development .
+CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
+  bash tests/smoke.sh
+```
+
+From PowerShell with Podman Desktop:
+
+```powershell
+podman build --format docker --file Containerfile `
+  --tag localhost/nginx-ubi9:development .
+.\tests\smoke.ps1
+```
+
+Or start the hardened default service with Compose:
+
+```console
+podman compose up --build
+curl --fail http://127.0.0.1:8080/healthz
+```
+
+CI supplies the canonical Linux shell execution and native architecture
+evidence.
+
 See the [continuous integration guide](docs/CI.md) for hook installation and
 Podman evidence boundaries. Until the first signed release is published, this
 repository should be treated as development material rather than a supported
