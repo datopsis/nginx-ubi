@@ -77,10 +77,8 @@ podman run --rm --entrypoint dnf \
   localhost/nginx-ubi9-builder:development repoinfo ubi-9-appstream-rpms
 ```
 
-On PowerShell, place each command on one line or replace each `\` continuation
-with a backtick. CI generates a Syft SPDX inventory for each native
-architecture and scans that inventory with Grype in addition to Trivy's image
-scan.
+CI generates a Syft SPDX inventory for each native architecture and scans that
+inventory with Grype in addition to Trivy's image scan.
 
 The runtime image deliberately has no `rpm`, `dnf`, `microdnf`, or `yum`
 command. Absence of those commands reduces runtime tooling but does not erase

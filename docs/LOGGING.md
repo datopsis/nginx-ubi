@@ -102,6 +102,24 @@ paths, so record `podman info` with qualification evidence. Use `podman logs`
 or the host journal instead of attempting to tail the stream symlinks inside
 the container.
 
+On a standalone Linux host, the preview deployment profile explicitly selects
+Podman's `journald` log driver. The rootless Quadlet is managed by the service
+account's user systemd instance:
+
+```console
+journalctl --user -u nginx-ubi9.service --since today
+journalctl --user -u nginx-ubi9.service --follow
+podman logs --since 10m nginx-ubi9
+```
+
+The journal contains NGINX stdout/stderr plus Podman and systemd lifecycle
+context. Persistence, size limits, free-space reserve, rate limiting, retention,
+reader access, forwarding, integrity protection, and alerting remain host-owned.
+Do not infer durable collection from a successful `journalctl` query; validate
+boot persistence, restart correlation, collector interruption, rate-limit loss,
+and disk-pressure behavior on the exact host. See [Deployment](DEPLOYMENT.md)
+for the Quadlet and qualification procedure.
+
 Docker uses the same stream contract:
 
 ```console

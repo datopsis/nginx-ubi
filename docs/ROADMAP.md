@@ -9,6 +9,37 @@ release asset, or qualification record. Automated success is not sufficient
 where an item requires human analysis, an external environment, or a support
 decision.
 
+## Next action: upgrade the existing WSL2 Podman environment
+
+This is the first work item for the next development session. Keep the current
+Ubuntu WSL2 distribution; do not replace it solely to obtain Podman.
+
+- [ ] Export or otherwise back up the WSL2 development distribution and record
+  its current Ubuntu, kernel, systemd, Podman, OCI runtime, cgroup, storage, and
+  rootless configuration.
+- [ ] Select a maintained, trustworthy upgrade path for a current Podman and
+  its compatible Buildah, conmon, crun, networking, and containers-common
+  dependencies. Do not use an unreviewed or bleeding-edge package source.
+- [ ] Fully update the existing Ubuntu installation from its maintained
+  repositories, review the release-upgrade plan and available disk space, and
+  preserve the WSL export before package removal or distribution changes.
+- [ ] Remove the currently observed Ubuntu 22.04.5 `podman 3.4.4` package
+  before installing the newer Podman package. Preserve or deliberately retire
+  rootless container storage; do not use package removal as an implicit data-
+  deletion operation.
+- [ ] Complete the approved Ubuntu maintenance/release upgrade, fully update
+  the resulting system, and install the selected newer Podman plus its matched
+  dependencies from the maintained source.
+- [ ] Verify rootless operation, cgroup v2 delegation, systemd user services,
+  subordinate IDs, networking, SELinux/AppArmor status, and the Quadlet
+  generator. Quadlet requires Podman 4.6 or newer, but the selected version
+  must also meet the project's complete runtime and support criteria.
+- [ ] Load or build the development image and rerun the complete Bash smoke
+  suite without skipped assertions; retain the engine and result evidence.
+- [ ] Dry-run and exercise the preview Quadlet, including health, reload,
+  journald, restart, stop, boot/login behavior, update, and rollback. WSL2
+  remains development evidence and does not replace target RHEL qualification.
+
 ## Evidence lifecycle
 
 Evidence has three levels:
@@ -63,11 +94,14 @@ Work proceeds in this dependency order:
    profiles needed for the first supported image; keep additional profiles
    explicitly preview until their tests close.
 6. Complete the repository policy files, support boundary, threat model,
-   control ownership, vulnerability policy, and tailored SCAP evidence needed
-   for cyber review.
-7. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+   requirement analysis, control ownership, vulnerability policy, tailored
+   SCAP evidence, and deployment cyber package needed for review.
+7. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
+   journald collection, controlled-network operation, and rollback on an exact
+   supported Linux host.
+8. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
    verification workflow from an untagged release candidate.
-8. Freeze inputs, regenerate release-candidate evidence, approve findings,
+9. Freeze inputs, regenerate release-candidate evidence, approve findings,
    create the immutable tag, publish by digest, and verify the release.
 
 Steps 1 through 4 are the immediate engineering critical path. Steps 5 and 6
@@ -137,7 +171,21 @@ local evaluation but is not yet a supported release.
 - [ ] Prove that release assembly cannot pull images, reach package networks,
   recalculate dependencies, or expose acquisition credentials.
 
-## Package 5: SCAP and cyber-review package
+## Package 5: security engineering and cyber-review package
+
+- [ ] Establish the authoritative requirement-source register with publisher,
+  title, release, date, retrieval date, URL, SHA-256, status, and license.
+- [ ] Compare applicable NIST SP 800-53/53A, DISA Container Platform and
+  web/application-server guidance, RHEL 9 STIG content, and product behavior;
+  require independent review of applicability and mappings.
+- [ ] Classify each requirement as image-owned, deployment-supported,
+  inherited, not applicable, unsupported, or research required, with rationale
+  and residual risk.
+- [ ] Publish a schema-validated NIST OSCAL Component Definition and generate
+  deterministic CSV and human-readable control views from the same source.
+- [ ] Give every supported control an examine/test/interview assessment method,
+  owner, defaults, configuration and restart behavior, dependencies, impact,
+  loss-of-function statement, limitations, and evidence pointer.
 
 - [ ] Perform discovery with pinned OpenSCAP and ComplianceAsCode content
   against a root-owner-preserving export of each architecture image.
@@ -153,16 +201,42 @@ local evaluation but is not yet a supported release.
   trust, logs, denial of service, upstreams, DNS, writable storage, evidence
   integrity, and updates.
 - [ ] Publish a control matrix mapping requirements, implementation,
-  configuration, validation, evidence, owner, limitations, and residual risk.
+   configuration, validation, evidence, owner, limitations, and residual risk.
+- [ ] Define the cryptographic boundary and document why TLS configuration and
+  a UBI base do not independently establish FIPS validation.
 - [ ] Document vulnerability triage, patch SLAs, exceptions with expiry,
   incident response, backup/restore responsibilities, logging integration,
   monitoring, resource limits, network policy, disconnected deployment, and
   decommissioning.
 - [ ] Maintain a qualification ledger keyed by commit, image digest,
   architecture, inputs, runtime/platform versions, configuration, scanner
-  versions/databases, result, limitations, evidence level, and artifact.
+   versions/databases, result, limitations, evidence level, and artifact.
 
-## Package 6: signed first release
+## Package 6: deployment and platform qualification
+
+- [ ] Publish supported, compatible, preview/unqualified, and unsupported
+  definitions plus an exact matrix for architecture, host, Podman/OCI runtime,
+  Docker compatibility, OpenShift, configuration profiles, TLS modes,
+  controlled-network operation, SCAP, and FIPS claims.
+- [ ] Qualify the rootless standalone-host Quadlet on an exact supported RHEL 9
+  baseline, including cgroup v2, SELinux enforcing, subordinate IDs, lingering,
+  boot, logout, restart throttling, health, reload, graceful stop, update, and
+  rollback.
+- [ ] Qualify journald persistence, rate and capacity limits, access control,
+  restart correlation, authenticated forwarding, forwarding interruption,
+  storage pressure, retention, and disposal without sensitive-data leakage.
+- [ ] Publish deployment guidance for identity, configuration/content/secrets,
+  TLS, ingress/egress/DNS, resource limits, probes, monitoring, incident
+  response, update, rollback, controlled transfer, and decommissioning.
+- [ ] Test every supported configuration with positive, negative, restricted-
+  runtime, load/failure, and logging cases on each claimed platform.
+- [ ] Define go-live evidence for the exact image/configuration digest,
+  platform, controls, capacity, alerting, contacts, exceptions, and procedures.
+- [ ] Decide the OpenShift first-release support boundary from exact restricted-
+  SCC qualification; retain preview status if the required cluster evidence is
+  unavailable.
+
+## Package 7: signed first release
 
 - [ ] Implement and test the approved
   `v<nginx-version>-r<YYYYMMDD>.<daily-sequence>` tag contract, UTC date and
@@ -174,7 +248,8 @@ local evaluation but is not yet a supported release.
   vendor advisories; document every time-bounded acceptance.
 - [ ] Complete license and third-party notice review.
 - [ ] Regenerate native architecture, rootless Podman, TLS, controlled-network,
-  and tailored SCAP release-candidate evidence from the exact candidate.
+  standalone Quadlet/systemd/journald, and tailored SCAP release-candidate
+  evidence from the exact candidate.
 - [ ] Rehearse tag validation and the entire release workflow without granting
   broader permissions than production needs.
 - [ ] Publish an AMD64/ARM64 manifest to GHCR with BuildKit provenance and
@@ -182,6 +257,21 @@ local evaluation but is not yet a supported release.
   and attestation, and a GitHub Release.
 - [ ] Verify published digests, platforms, labels, signatures, attestations,
   SBOMs, scan artifacts, documentation links, and rollback instructions.
+
+## Assurance completeness gate
+
+Before release, review this repository against the complete assurance model
+below and record any intentionally omitted item with an NGINX-specific
+rationale. The review must cover evidence lifecycle,
+support semantics, qualification ledger, architecture and trust-boundary
+diagrams, rootless runtime and platform qualification, use-case profiles,
+TLS and FIPS boundaries, authoritative requirement analysis, control ownership
+and OSCAL export, tailored SCAP, vulnerability and exception management,
+licensing and notices, supply-chain evidence, controlled-network procedures,
+production go-live evidence, release rehearsal, failed-candidate handling,
+rollback, incident response, and evidence retention. Database storage,
+replication, and backup requirements are included only when an NGINX profile
+introduces equivalent durable state.
 
 ## After the first release
 

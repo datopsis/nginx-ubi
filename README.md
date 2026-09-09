@@ -89,6 +89,12 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   and the security boundary of each one.
 - [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
   sensitive-data rules, and controlled-network responsibilities.
+- [Deployment](docs/DEPLOYMENT.md) describes standalone rootless Podman with a
+  user systemd Quadlet, host logging, lifecycle operations, and qualification.
+- [Threat model](docs/THREAT-MODEL.md) identifies assets, trust boundaries,
+  abuse cases, treatments, owners, and residual risks.
+- [Security controls](docs/SECURITY-CONTROLS.md) defines shared control
+  ownership and the component evidence supplied for cybersecurity review.
 - [NGINX RPM provenance](docs/RPM-PROVENANCE.md) records the exact Red Hat UBI
   package source, build path, trust checks, and local verification commands.
 - [NGINX package-source decision](docs/PACKAGE-SOURCE.md) compares the current
@@ -98,9 +104,9 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   pre-build download and verification process and hermetic image assembly
   contract.
 
-Operational, TLS, configuration, architecture, threat-model, control-matrix,
-SCAP, vulnerability-management, support, and disconnected-network guides will
-be added as their associated implementations and evidence are developed.
+TLS, configuration, architecture, control-matrix/OSCAL, SCAP,
+vulnerability-management, support, and disconnected-network guides will be
+added as their associated implementations and evidence are developed.
 
 ## Images and releases
 
@@ -134,22 +140,14 @@ python -m pip install --require-hashes --only-binary=:all: \
 pre-commit run --all-files --show-diff-on-failure
 ```
 
-Build and exercise the current AMD64 development image with Podman on Linux,
-WSL, or Git Bash:
+Build and exercise the current AMD64 development image with rootless Podman on
+native Linux or WSL2:
 
 ```console
 podman build --format docker --file Containerfile \
   --tag localhost/nginx-ubi9:development .
 CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/smoke.sh
-```
-
-From PowerShell with Podman Desktop:
-
-```powershell
-podman build --format docker --file Containerfile `
-  --tag localhost/nginx-ubi9:development .
-.\tests\smoke.ps1
 ```
 
 Or start the hardened default service with Compose:
