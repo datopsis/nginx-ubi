@@ -95,8 +95,8 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   Red Hat RPM with the proposed official NGINX stable RPM and defines migration
   acceptance criteria.
 - [External artifact acquisition](docs/ARTIFACT-ACQUISITION.md) defines the
-  Nexus-capable, pre-build download and verification process and hermetic image
-  assembly contract.
+  pre-build download and verification process and hermetic image assembly
+  contract.
 
 Operational, TLS, configuration, architecture, threat-model, control-matrix,
 SCAP, vulnerability-management, support, and disconnected-network guides will

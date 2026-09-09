@@ -46,5 +46,5 @@ but container releases use the upstream-derived format documented in
   source and defined migration and acceptance requirements.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
-- Defined a Nexus-capable pipeline contract that downloads and verifies locked
-  artifacts outside a network-disabled container build.
+- Defined a source-independent pipeline contract that downloads and verifies
+  locked artifacts outside a network-disabled container build.

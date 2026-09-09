@@ -19,46 +19,27 @@ This separates three concerns:
 3. **Assembly** creates the image without network access, repository
    credentials, or mutable dependency resolution.
 
-The same assembly process should accept a bundle prepared from the public
-official source during open development or from an approved Nexus repository
-inside a controlled work network. Changing the transfer location must not
-silently change the selected artifacts.
+The assembly process accepts only a bundle that conforms to the repository's
+lock and verification contract. Changing a download location must not silently
+change selected artifacts or weaken publisher verification.
 
-## Repository process versus work-network process
+## Artifact-source interface
 
-This public repository defines provider-independent lock, acquisition,
-verification, and assembly interfaces. Its default public adapter obtains
-locked artifacts from the official NGINX and Red Hat UBI sources. It does not
-contain an organization's Nexus address, repository name, credential, or
-private CA.
+This repository defines source-independent lock, acquisition, verification,
+and assembly interfaces. The default source obtains locked artifacts from the
+official NGINX and Red Hat UBI endpoints. An alternate approved source can be
+selected through protected CI configuration without changing the artifact
+identity, lock, or verification requirements.
 
-This repository will contain a generic Nexus adapter with no configured
-endpoint. The work-network adaptation supplies its protected CI configuration.
-The adapter maps each locked publisher artifact to the approved Nexus location
-but does not change the artifact identity or relax verification. A controlled
-overlay or fork may hold additional policy when even repository names are
-sensitive.
+The repository must not contain private endpoints, repository identifiers,
+credentials, tokens, or private CA material. Environment-specific configuration
+belongs in protected variables, secrets, or runner trust.
 
-| Concern | Public repository | Work-network adaptation |
-| --- | --- | --- |
-| Artifact selection | Reviewed architecture-specific lock manifest. | The same reviewed lock manifest or an internally reviewed derivative. |
-| Download endpoint | Official NGINX and Red Hat endpoints. | Approved Nexus repositories. |
-| Authentication | None for public artifacts. | Read-only CI secret and internal CA trust. |
-| Publisher verification | NGINX or Red Hat RPM signature plus locked checksum. | Preserve and verify the same publisher signature and checksum unless an approved internal re-signing policy replaces it. |
-| Container assembly | Local bundle, no network, no pulling. | Identical. |
-| Internal information | None. | Kept in protected variables, secrets, runner trust, or a controlled overlay. |
-
-## Publisher versus transfer location
-
-For the proposed package change, NGINX is the RPM publisher and signing
-authority. Nexus is the controlled storage and transfer point. The work-network
-pipeline should preserve the original RPM bytes and NGINX signature so CI can
-verify publisher authenticity after download.
-
-If organizational policy requires Nexus or an internal authority to re-sign
-packages, that becomes a different trust model. The internal signing key,
-approval process, traceability to the original NGINX artifact, and key rotation
-must then be documented and verified separately.
+NGINX and Red Hat remain the RPM publishers and signing authorities even when
+an intermediary transfers the files. The acquisition process must preserve the
+original RPM bytes and signature so CI can verify publisher authenticity after
+download. A process that modifies or re-signs packages is a different trust
+model and requires its own documented approval and traceability controls.
 
 ## Pipeline phases
 
@@ -81,7 +62,7 @@ An architecture-specific lock manifest will identify:
 - expected byte size and SHA-256 digest for every downloaded file;
 - expected RPM signing identity and full key fingerprint;
 - source RPM location and digest;
-- approved Nexus repository identifier or public acquisition adapter; and
+- approved artifact-source identifier; and
 - lock schema and artifact-bundle version.
 
 The lock manifest is reviewable repository content. Credentials, tokens,
@@ -89,10 +70,10 @@ private CA keys, and internal secrets are not.
 
 ### 2. Acquire locked files outside the build
 
-The CI runner downloads artifacts into an ephemeral staging directory. In the
-work network, this phase connects to Nexus using a least-privilege read-only
-identity and the organization's approved CA trust. Authentication must use the
-CI secret store and must not be passed as a container build argument.
+The CI runner downloads artifacts into an ephemeral staging directory. When a
+source requires authentication, this phase uses a least-privilege read-only
+identity and approved CA trust. Authentication must use the CI secret store and
+must not be passed as a container build argument.
 
 Native AMD64 and ARM64 jobs acquire only their matching RPM set. Repository
 resolution does not occur here or in `RUN` instructions; it occurred in the
@@ -114,11 +95,11 @@ Before the artifact bundle is exposed to the build:
   additional RPMs;
 - confirm the base-image manifest digest and platform;
 - retain sanitized acquisition and verification results; and
-- ensure logs do not contain Nexus credentials or sensitive internal URLs.
+- ensure logs do not contain acquisition credentials or sensitive source URLs.
 
 Checksum verification proves exact bytes; RPM signature verification proves
-publisher authorization under the accepted key. Both are required. TLS to
-Nexus protects transport but does not replace either check.
+publisher authorization under the accepted key. Both are required. TLS to the
+artifact source protects transport but does not replace either check.
 
 ### 4. Assemble without network access
 
@@ -132,7 +113,7 @@ Assembly must enforce:
 - no network access;
 - no image pulling;
 - no repository configuration or dependency resolution;
-- no Nexus address, credential, token, or private CA material in context,
+- no artifact-source address, credential, token, or private CA material in context,
   layers, labels, history, SBOM, or provenance; and
 - failure when the complete verified bundle is not present.
 
@@ -150,24 +131,16 @@ The acquisition result, lock manifest digest, base-image digest, image digest,
 SBOM, scanner inputs, and workflow revision form one evidence chain. A change
 to any locked artifact invalidates prior release-candidate evidence.
 
-## Nexus integration contract
+## Alternate-source configuration
 
-The public repository must not embed organization-specific Nexus endpoints or
-credentials. The work-network configuration will supply, through protected CI
-configuration:
+An alternate source is supplied through protected CI configuration. Its
+security boundary includes authentication secret references, approved CA
+trust, permitted redirects and egress, timeout and retry policy, audit-event
+retention, availability ownership, runner trust, and workspace cleanup.
 
-- Nexus base URL and repository identifier;
-- authentication secret references;
-- approved CA certificate location or runner trust configuration;
-- permitted redirect and egress policy;
-- timeout and retry policy;
-- audit-event and retention requirements; and
-- availability and break-glass ownership.
-
-A GitHub-hosted runner can use private Nexus only when an approved network path
-exists. Otherwise the controlled workflow needs a hardened self-hosted runner
-or a separately approved artifact-transfer stage. Runner trust and cleanup are
-part of the assessed boundary.
+A runner can reach a private source only when an approved network path exists.
+Otherwise the controlled workflow needs a hardened runner within that boundary
+or a separately approved artifact-transfer stage.
 
 ## Local development
 
@@ -176,10 +149,10 @@ first prepares or receives a verified artifact bundle, then builds without
 network access. A cached but unverified file is not accepted merely because it
 is local.
 
-The preparation tooling will provide actionable messages for a missing Nexus
-configuration and will support a deliberately selected public-source adapter
-for this open repository. The artifact lock, verification semantics, and
-network-disabled assembly remain identical between adapters.
+The preparation tooling will provide actionable messages for missing source
+configuration and will use the official public source by default. The artifact
+lock, verification semantics, and network-disabled assembly remain identical
+when an alternate source is deliberately selected.
 
 Local preparation consumes an existing lock by default. Refreshing a lock is a
 separate explicit command so an ordinary local build cannot silently upgrade a
