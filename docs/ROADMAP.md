@@ -51,8 +51,8 @@ are separately approved. They must not delay the core first release.
 
 Work proceeds in this dependency order:
 
-1. Approve the official NGINX stable channel and the first-release versioning
-   contract before selecting a release tag.
+1. Approve the official NGINX stable channel and select the exact NGINX
+   first-release candidate.
 2. Implement architecture-specific artifact locks and source-independent
    acquisition driven by protected configuration.
 3. Migrate the image to the exact official NGINX RPM and require
@@ -167,10 +167,10 @@ local evaluation but is not yet a supported release.
 
 ## Package 6: signed first release
 
-- [ ] Review and approve the release version contract before selecting or
-  creating the first release tag. Decide the exact NGINX and named UBI version
-  fields, packaging revision, mutable convenience-tag policy, support lifetime,
-  and handling of rebuilds and repository-only changes.
+- [ ] Implement and test the approved
+  `v<nginx-version>-r<YYYYMMDD>.<daily-sequence>` tag contract, UTC date and
+  sequence validation, immutable release and commit tags, and OCI metadata.
+- [ ] Define the first-release support lifetime and superseded-release policy.
 - [ ] Freeze the final upstream versions and digests only after image-affecting
   work is complete.
 - [ ] Review all fixed and unfixed scanner findings against authoritative
