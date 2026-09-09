@@ -113,13 +113,14 @@ ghcr.io/datopsis/nginx-ubi9
 Container releases will use annotated tags in this form:
 
 ```text
-v<nginx-version>-ubi<ubi-version>-<packaging-revision>
+v<nginx-version>-r<YYYYMMDD>.<daily-sequence>
 ```
 
 Image releases and repository revisions are deliberately separate. Production
 deployments should pin an immutable OCI digest. Repository-only changes are
 identified by their full Git commit SHA and do not receive source-only release
-tags.
+tags. The UBI minor version is recorded in digest-bound release evidence rather
+than the tag because it does not uniquely identify the final filesystem.
 
 ## Development status
 

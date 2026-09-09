@@ -95,10 +95,10 @@ license records show that doing so is safe.
 ## Versioning impact
 
 Changing package suppliers changes image contents and release evidence. Because
-no image release exists yet, the first accepted direct-NGINX build can start at
-packaging revision `1`. A supplier or channel change after release increments
-the packaging revision even when the displayed NGINX and UBI versions remain
-the same.
+no image release exists yet, the first accepted direct-NGINX build uses the
+approved date-based release identifier. A supplier or channel change after
+release requires a new immutable release date and daily sequence even when the
+displayed NGINX version remains the same.
 
 The package supplier and exact RPM EVR belong in OCI labels, the SBOM,
 provenance, and the release evidence. They do not need another field in the

@@ -15,6 +15,9 @@ but container releases use the upstream-derived format documented in
 - Defined the forward-looking first-release roadmap and evidence lifecycle.
 - Defined independent versioning for container releases and repository-only
   revisions.
+- Adopted NGINX-version plus UTC release-date versioning, removed the UBI minor
+  version from release tags, and prohibited mutable convenience tags for the
+  first release.
 - Added the project overview, intended use cases, security design, rootless
   runtime model, and release status.
 - Added pinned local pre-commit checks for repository hygiene, shell code,
