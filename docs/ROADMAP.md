@@ -53,8 +53,8 @@ Work proceeds in this dependency order:
 
 1. Approve the official NGINX stable channel and the first-release versioning
    contract before selecting a release tag.
-2. Implement architecture-specific artifact locks, public acquisition, and a
-   generic Nexus adapter driven by protected configuration.
+2. Implement architecture-specific artifact locks and source-independent
+   acquisition driven by protected configuration.
 3. Migrate the image to the exact official NGINX RPM and require
    network-disabled, no-pull assembly from a verified local bundle.
 4. Close rootless failure diagnostics, graceful lifecycle tests, and
@@ -91,16 +91,16 @@ or module set.
   first-release candidate from authoritative sources.
 - [ ] Add reviewed AMD64 and ARM64 artifact locks containing the complete RPM
   closure, checksums, sizes, signatures, source RPMs, and base-image digests.
-- [ ] Add public and generic Nexus acquisition adapters; keep
-  organization-specific endpoints, repository identifiers, credentials, and
-  private CA material outside this public repository and image build.
+- [ ] Add official and alternate-source acquisition paths; keep private
+  endpoints, repository identifiers, credentials, and private CA material
+  outside this public repository and image build.
 - [ ] Make ordinary CI and local builds consume verified local bundles with
   build networking and image pulling disabled.
 - [ ] Add negative tests for tampered, unsigned, wrong-version,
   wrong-architecture, missing, and unexpected bundle contents.
 - [ ] Record source, redistribution, licensing, support lifecycle, and update
   ownership for every runtime component.
-- [ ] Define lock refresh, key rotation, Nexus mirroring, rollback, and
+- [ ] Define lock refresh, key rotation, artifact mirroring, rollback, and
   disconnected artifact-transfer procedures.
 - [ ] Add negative tests for invalid configuration and unavailable writable
   runtime paths with actionable failure diagnostics.

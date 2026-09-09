@@ -69,11 +69,11 @@ NEVRA, architecture, and bundle completeness, and preload digest-verified base
 images. The image will then assemble from that local bundle with networking and
 pulling disabled.
 
-This public repository will provide official-source and generic Nexus
-acquisition adapters. Nexus endpoints, repository identifiers, credentials,
-and private CA configuration belong in protected work-network CI settings, not
-in this repository or the container build. Verification remains identical
-after either adapter downloads the artifacts. See
+The official public source is the default. An alternate approved source can be
+selected through protected CI configuration, but private endpoints,
+credentials, and private CA configuration must not enter this repository or
+the container build. Verification remains identical after either source
+downloads the artifacts. See
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
 ## Image assurance

@@ -10,10 +10,10 @@ retaining digest-pinned Red Hat UBI 9 Minimal and Micro base images. Pin one
 exact NGINX RPM epoch, version, and release for each architecture. Do not track
 the newest package implicitly during a release build.
 
-Package publication and package acquisition are separate decisions. NGINX can
-remain the publisher while a work-network pipeline downloads the unchanged,
-signed RPM from a local Nexus server. All downloading and verification will
-occur before the container build as defined in
+Package publication and package acquisition are separate decisions. NGINX
+remains the publisher even when an approved intermediary transfers the
+unchanged, signed RPM. All downloading and verification will occur before the
+container build as defined in
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
 As observed on 2026-09-08, the stable repository offers
@@ -69,8 +69,7 @@ Implementation requires:
    `573B FD6B 3D8F BC64 1079 A6AB ABF5 BD82 7BD9 BF62` and advise independent
    authenticity verification.
 3. Resolve and download the exact NGINX RPM and dependency closure outside the
-   build. The work-network adapter downloads from Nexus; public development can
-   use an explicitly selected official-source adapter.
+   build through the configured approved artifact source.
 4. Verify RPM signatures, fingerprints, checksums, NEVRA, architecture, and
    bundle completeness before starting the build.
 5. Install the verified local bundle into `/runtime` with build networking and
@@ -113,8 +112,8 @@ Approve the direct RPM only when:
 - signing-key authenticity and package signature verification are automated;
 - all direct downloads and base images are immutably selected;
 - CI downloads and verifies all artifacts before a network-disabled build;
-- the Nexus adapter introduces no credentials or internal trust material into
-  the build context or image;
+- the acquisition process introduces no credentials or private trust material
+  into the build context or image;
 - required NGINX modules and configuration behavior match the supported uses;
 - rootless and restricted-runtime tests pass on both architectures;
 - Trivy and Grype findings receive vendor-advisory review;
