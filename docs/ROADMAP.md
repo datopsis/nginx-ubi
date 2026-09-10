@@ -9,37 +9,6 @@ release asset, or qualification record. Automated success is not sufficient
 where an item requires human analysis, an external environment, or a support
 decision.
 
-## Next action: upgrade the existing WSL2 Podman environment
-
-This is the first work item for the next development session. Keep the current
-Ubuntu WSL2 distribution; do not replace it solely to obtain Podman.
-
-- [ ] Export or otherwise back up the WSL2 development distribution and record
-  its current Ubuntu, kernel, systemd, Podman, OCI runtime, cgroup, storage, and
-  rootless configuration.
-- [ ] Select a maintained, trustworthy upgrade path for a current Podman and
-  its compatible Buildah, conmon, crun, networking, and containers-common
-  dependencies. Do not use an unreviewed or bleeding-edge package source.
-- [ ] Fully update the existing Ubuntu installation from its maintained
-  repositories, review the release-upgrade plan and available disk space, and
-  preserve the WSL export before package removal or distribution changes.
-- [ ] Remove the currently observed Ubuntu 22.04.5 `podman 3.4.4` package
-  before installing the newer Podman package. Preserve or deliberately retire
-  rootless container storage; do not use package removal as an implicit data-
-  deletion operation.
-- [ ] Complete the approved Ubuntu maintenance/release upgrade, fully update
-  the resulting system, and install the selected newer Podman plus its matched
-  dependencies from the maintained source.
-- [ ] Verify rootless operation, cgroup v2 delegation, systemd user services,
-  subordinate IDs, networking, SELinux/AppArmor status, and the Quadlet
-  generator. Quadlet requires Podman 4.6 or newer, but the selected version
-  must also meet the project's complete runtime and support criteria.
-- [ ] Load or build the development image and rerun the complete Bash smoke
-  suite without skipped assertions; retain the engine and result evidence.
-- [ ] Dry-run and exercise the preview Quadlet, including health, reload,
-  journald, restart, stop, boot/login behavior, update, and rollback. WSL2
-  remains development evidence and does not replace target RHEL qualification.
-
 ## Evidence lifecycle
 
 Evidence has three levels:
@@ -107,17 +76,6 @@ Work proceeds in this dependency order:
 Steps 1 through 4 are the immediate engineering critical path. Steps 5 and 6
 can proceed in parallel only where they do not assume an unfrozen NGINX package
 or module set.
-
-## Package 1: project contract and minimal skeleton
-
-- [ ] Add `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, notices, editor settings,
-  and ignore rules.
-- [ ] Define supported, compatible, preview/unqualified, and unsupported.
-- [ ] Publish the initial support matrix and explicit control ownership split.
-- [ ] Add Code Owners and pull-request and issue templates.
-- [ ] Document required GitHub rulesets, least-privilege Actions defaults,
-  secret scanning, push protection, private vulnerability reporting, and tag
-  protection.
 
 ## Package 2: rootless minimal image
 

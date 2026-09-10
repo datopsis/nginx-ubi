@@ -11,7 +11,7 @@ invalid_config="${prefix}-invalid-config"
 missing_tmp_runtime_args=()
 no_new_privileges="no-new-privileges:true"
 
-if "${runtime}" --version 2>&1 | grep -qi podman; then
+if grep -qi podman <<< "$("${runtime}" --version 2>&1)"; then
     # Podman otherwise creates writable tmpfs mounts for read-only containers.
     missing_tmp_runtime_args+=(--read-only-tmpfs=false)
     # Older supported-for-development Podman releases reject Docker's :true
@@ -170,14 +170,16 @@ assert_tmpfs_security "${primary}"
 binding="$("${runtime}" port "${primary}" 8080/tcp)"
 host_port="${binding##*:}"
 test "$(curl --fail --silent --show-error "http://127.0.0.1:${host_port}/healthz")" = "ok"
-curl --fail --silent --show-error "http://127.0.0.1:${host_port}/" | grep -Fq 'NGINX on UBI 9'
+grep -Fq 'NGINX on UBI 9' <<< \
+    "$(curl --fail --silent --show-error "http://127.0.0.1:${host_port}/")"
 test "$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
     "http://127.0.0.1:${host_port}/missing?smoke-probe=value")" = "404"
-curl --fail --silent --show-error --dump-header - --output /dev/null \
-    "http://127.0.0.1:${host_port}/healthz" | \
-    grep -Eiq '^server: nginx[[:space:]]*$'
-"${runtime}" logs "${primary}" 2>&1 | grep -Fq '/missing?smoke-probe=value'
-if "${runtime}" logs "${primary}" 2>&1 | grep -Fq 'GET /healthz'; then
+grep -Eiq '^server: nginx[[:space:]]*$' <<< \
+    "$(curl --fail --silent --show-error --dump-header - --output /dev/null \
+        "http://127.0.0.1:${host_port}/healthz")"
+primary_logs="$("${runtime}" logs "${primary}" 2>&1)"
+grep -Fq '/missing?smoke-probe=value' <<< "${primary_logs}"
+if grep -Fq 'GET /healthz' <<< "${primary_logs}"; then
     echo "The health endpoint unexpectedly wrote an access event" >&2
     exit 1
 fi
@@ -201,8 +203,8 @@ assert_tmpfs_security "${arbitrary}"
     --security-opt "${no_new_privileges}" \
     "${image}" >/dev/null
 wait_for_exit "${missing_tmp}"
-"${runtime}" logs "${missing_tmp}" 2>&1 | grep -Eiq \
-    'read-only file system|/tmp/nginx.pid'
+grep -Eiq 'read-only file system|/tmp/nginx.pid' <<< \
+    "$("${runtime}" logs "${missing_tmp}" 2>&1)"
 
 "${runtime}" run --detach --name "${invalid_config}" \
     --read-only \
@@ -214,8 +216,8 @@ wait_for_exit "${missing_tmp}"
     'printf "invalid_directive;\n" > /tmp/invalid.conf; exec nginx -t -c /tmp/invalid.conf' \
     >/dev/null
 wait_for_exit "${invalid_config}"
-"${runtime}" logs "${invalid_config}" 2>&1 | grep -Eiq \
-    'unknown directive.*invalid_directive|emerg'
+grep -Eiq 'unknown directive.*invalid_directive|emerg' <<< \
+    "$("${runtime}" logs "${invalid_config}" 2>&1)"
 
 assert_clean_exit "${arbitrary}"
 assert_clean_exit "${primary}"

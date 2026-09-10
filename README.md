@@ -81,6 +81,16 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
 - [Versioning and releases](docs/VERSION.md) separates container artifact
   versions from repository-only revisions.
 - [Changelog](CHANGELOG.md) records notable completed changes.
+- [Contributing](CONTRIBUTING.md) defines change, validation, pull-request, and
+  commit expectations.
+- [Security policy](SECURITY.md) provides private vulnerability reporting and
+  states the current absence of a supported release.
+- [Support definitions](docs/SUPPORT.md) defines supported, compatible,
+  preview/unqualified, and unsupported and publishes the current matrix.
+- [Repository governance](docs/REPOSITORY-GOVERNANCE.md) records branch,
+  review, automation, security-setting, and future tag-protection requirements.
+- [Third-party notices](THIRD_PARTY_NOTICES.md) separates this project's
+  license from NGINX, UBI, and component terms.
 - [Agent guidance](CLAUDE.md) defines repository implementation and security
   conventions.
 - [Continuous integration](docs/CI.md) documents current automation, local
@@ -105,8 +115,8 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   contract.
 
 TLS, configuration, architecture, control-matrix/OSCAL, SCAP,
-vulnerability-management, support, and disconnected-network guides will be
-added as their associated implementations and evidence are developed.
+vulnerability-management, and disconnected-network guides will be added as
+their associated implementations and evidence are developed.
 
 ## Images and releases
 
@@ -161,10 +171,18 @@ CI supplies the canonical Linux shell execution and native architecture
 evidence.
 
 See the [continuous integration guide](docs/CI.md) for hook installation and
-Podman evidence boundaries. Until the first signed release is published, this
-repository should be treated as development material rather than a supported
-production image.
+Podman evidence boundaries. The
+[contributor environment record](docs/CONTRIBUTOR-ENVIRONMENT.md) documents the
+currently exercised Ubuntu WSL2 setup and its limitations. Until the first
+signed release is published, this repository should be treated as development
+material rather than a supported production image.
 
-Security concerns should not be disclosed in a public issue. A private
-reporting process and supported-version policy will be published in
-`SECURITY.md` during the project-contract work package.
+Security concerns must not be disclosed in a public issue. Follow the private
+process in [SECURITY.md](SECURITY.md).
+
+## License
+
+Datopsis-authored packaging code and documentation are licensed under the
+[Apache License 2.0](LICENSE). NGINX, Red Hat UBI, and installed components
+retain their respective licenses and terms; see
+[third-party software and terms](THIRD_PARTY_NOTICES.md).
