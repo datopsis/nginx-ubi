@@ -95,3 +95,8 @@ but container releases use the upstream-derived format documented in
 
 - Enabled GitHub vulnerability alerts, Dependabot security updates, secret
   scanning with push protection, and private vulnerability reporting.
+
+### Fixed
+
+- Prevented the Docker smoke suite from failing with SIGPIPE when short-circuit
+  log and response assertions run under `pipefail`.
