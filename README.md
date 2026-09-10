@@ -123,20 +123,22 @@ their associated implementations and evidence are developed.
 The planned image location is:
 
 ```text
-ghcr.io/datopsis/nginx-ubi9
+ghcr.io/datopsis/nginx-ubi
 ```
 
 Container releases will use annotated tags in this form:
 
 ```text
-v<nginx-version>-r<YYYYMMDD>.<daily-sequence>
+v<nginx-version>-ubi<ubi-major>-r<YYYYMMDD>.<daily-sequence>
 ```
 
 Image releases and repository revisions are deliberately separate. Production
 deployments should pin an immutable OCI digest. Repository-only changes are
 identified by their full Git commit SHA and do not receive source-only release
-tags. The UBI minor version is recorded in digest-bound release evidence rather
-than the tag because it does not uniquely identify the final filesystem.
+tags. The UBI major version is part of the tag because it identifies the
+runtime product line. The UBI minor version is recorded in digest-bound release
+evidence rather than the tag because it does not uniquely identify the final
+filesystem.
 
 ## Development status
 

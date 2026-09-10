@@ -197,8 +197,9 @@ local evaluation but is not yet a supported release.
 ## Package 7: signed first release
 
 - [ ] Implement and test the approved
-  `v<nginx-version>-r<YYYYMMDD>.<daily-sequence>` tag contract, UTC date and
-  sequence validation, immutable release and commit tags, and OCI metadata.
+  `v<nginx-version>-ubi<ubi-major>-r<YYYYMMDD>.<daily-sequence>` tag contract,
+  NGINX and UBI version matching, UTC date and sequence validation, immutable
+  release and commit tags, and OCI metadata.
 - [ ] Define the first-release support lifetime and superseded-release policy.
 - [ ] Freeze the final upstream versions and digests only after image-affecting
   work is complete.
