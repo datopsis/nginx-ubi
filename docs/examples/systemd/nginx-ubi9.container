@@ -6,7 +6,7 @@ Description=Datopsis rootless NGINX container
 Documentation=https://github.com/datopsis/nginx-ubi9
 
 [Container]
-Image=ghcr.io/datopsis/nginx-ubi9@sha256:<approved-digest>
+Image=ghcr.io/datopsis/nginx-ubi@sha256:<approved-digest>
 Pull=never
 ContainerName=nginx-ubi9
 User=999:0

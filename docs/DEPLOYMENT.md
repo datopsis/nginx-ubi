@@ -84,7 +84,7 @@ or pull the exact digest. The service definition deliberately uses `Pull=never`
 so startup cannot silently replace the approved artifact.
 
 ```console
-IMAGE='ghcr.io/datopsis/nginx-ubi9@sha256:<approved-digest>'
+IMAGE='ghcr.io/datopsis/nginx-ubi@sha256:<approved-digest>'
 podman pull "$IMAGE"
 podman image inspect "$IMAGE"
 ```

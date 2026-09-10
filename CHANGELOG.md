@@ -21,9 +21,9 @@ but container releases use the upstream-derived format documented in
 - Defined the forward-looking first-release roadmap and evidence lifecycle.
 - Defined independent versioning for container releases and repository-only
   revisions.
-- Adopted NGINX-version plus UTC release-date versioning, removed the UBI minor
-  version from release tags, and prohibited mutable convenience tags for the
-  first release.
+- Adopted NGINX-version, UBI-major, and UTC release-date versioning; omitted
+  the UBI minor version from release tags; and prohibited mutable convenience
+  tags for the first release.
 - Added the project overview, intended use cases, security design, rootless
   runtime model, and release status.
 - Added pinned local pre-commit checks for repository hygiene, shell code,
@@ -81,9 +81,10 @@ but container releases use the upstream-derived format documented in
 
 ### Changed
 
-- Renamed the source repository from `nginx-ubi9` to `nginx-ubi` so repository
-  identity does not prevent future work on other UBI major versions; existing
-  image, service, and UBI 9 identifiers remain unchanged.
+- Renamed the source repository and planned GHCR image from `nginx-ubi9` to
+  `nginx-ubi` so their identities do not prevent future work on other UBI major
+  versions; UBI 9-specific service and development identifiers remain
+  unchanged.
 - Upgraded the reference contributor environment from Ubuntu 22.04.5 and
   Podman 3.4.4 to Ubuntu 24.04.5 and Podman 5.8.2, verified the restricted
   runtime and Quadlet lifecycle after a cold WSL restart, and retired the

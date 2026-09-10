@@ -10,12 +10,13 @@ supports.
 Annotated release tags use:
 
 ```text
-v<nginx-version>-r<YYYYMMDD>.<daily-sequence>
+v<nginx-version>-ubi<ubi-major>-r<YYYYMMDD>.<daily-sequence>
 ```
 
-For example, `v1.30.4-r20260908.1` would identify:
+For example, `v1.30.4-ubi9-r20260908.1` would identify:
 
 - NGINX `1.30.4`;
+- the UBI 9 runtime product line;
 - a Datopsis container release created on 2026-09-08 UTC; and
 - the first container release created on that UTC date.
 
@@ -23,17 +24,19 @@ The `r` distinguishes this project's container release from an upstream NGINX
 source or package version. The eight-digit date is the UTC date on which the
 immutable release tag is created. The sequence is a positive integer beginning
 at `1` and increments for every additional container release created on the
-same UTC date, regardless of NGINX version. Dates must not be backdated.
+same UTC date, regardless of NGINX or UBI major version. Dates must not be
+backdated.
 
 This upstream-derived format is not Semantic Versioning. The downstream
 release suffix communicates release chronology; it does not claim
 API-compatibility semantics for NGINX configuration.
 
-The tag deliberately omits the UBI minor version. Package updates can make the
-runtime filesystem newer than the original base-image snapshot, and a named
-minor version does not identify exact bytes. The repository name establishes
-the UBI 9 product line. The exact UBI reference and digest remain required in
-OCI metadata, the SBOM, provenance, and release evidence.
+The tag includes the UBI major version because changing that version changes
+the runtime product line and its compatibility and support boundary. It
+deliberately omits the UBI minor version: package updates can make the runtime
+filesystem newer than the original base-image snapshot, and a named minor
+version does not identify exact bytes. The exact UBI reference and digest
+remain required in OCI metadata, the SBOM, provenance, and release evidence.
 
 Release tags are immutable. Never move or reuse a release tag. Production
 deployments should pin the OCI digest; a human-readable tag describes a
@@ -42,13 +45,13 @@ release, while its digest identifies exact image content.
 The release workflow must accept only tags matching:
 
 ```regex
-^v[0-9]+\.[0-9]+\.[0-9]+-r[0-9]{8}\.[1-9][0-9]*$
+^v[0-9]+\.[0-9]+\.[0-9]+-ubi[1-9][0-9]*-r[0-9]{8}\.[1-9][0-9]*$
 ```
 
 Pattern matching is only the first check. The workflow must also validate a
-real UTC calendar date, the selected NGINX version, the daily sequence against
-existing immutable tags, and that the tagged commit is the protected `main`
-release commit.
+real UTC calendar date, the selected NGINX version, the selected UBI major
+version, the daily sequence against existing immutable tags, and that the
+tagged commit is the protected `main` release commit.
 
 ## Artifact identity
 
@@ -70,7 +73,8 @@ The image digest, not any label or tag, is the definitive artifact identity.
 | Change | Version action |
 | --- | --- |
 | Change the NGINX version | Use the new NGINX version with the release date and next sequence for that UTC date. |
-| Change the UBI reference or digest | Keep the NGINX field and create a release using the current UTC date and next daily sequence. |
+| Change the UBI major version | Use the new UBI major field with the NGINX version, current UTC date, and next daily sequence. |
+| Change only the UBI minor reference or digest | Keep the NGINX and UBI major fields and create a release using the current UTC date and next daily sequence. |
 | Change an RPM, dependency lock, runtime behavior, default configuration, entrypoint, build input, or release metadata | Create a release using the current UTC date and next daily sequence. |
 | Deliberately rebuild otherwise unchanged inputs | Create a release using the current UTC date and next daily sequence. |
 | Change only documentation, tests, development tooling, policies, examples not copied into the image, issue templates, or analysis workflows | Do not create or change a container release version unless an image is deliberately republished. |
@@ -83,7 +87,7 @@ daily sequence; never fill an older gap or reuse a failed or withdrawn tag.
 
 The first release publishes only:
 
-- the immutable release tag, such as `v1.30.4-r20260908.1`; and
+- the immutable release tag, such as `v1.30.4-ubi9-r20260908.1`; and
 - an immutable `sha-<short-commit>` traceability tag.
 
 Mutable tags such as `latest`, `stable`, `1`, or `1.30` are not published.
@@ -114,8 +118,9 @@ previous release without claiming every entry changed the image filesystem.
 
 Before an annotated release tag is pushed:
 
-1. Verify that the tag's NGINX version matches the locked RPM and that release
-   metadata records the exact UBI reference and digest.
+1. Verify that the tag's NGINX version matches the locked RPM, that its UBI
+   major version matches the locked base images, and that release metadata
+   records the exact UBI reference and digest.
 2. Convert `Unreleased` changelog entries into a dated section for the tag and
    create a new empty `Unreleased` section.
 3. Complete the applicable release gates in `docs/ROADMAP.md`.
