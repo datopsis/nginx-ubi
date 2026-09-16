@@ -81,6 +81,24 @@ but the planned structured format will prefer `$time_iso8601`.
 The relevant source files are [`container/nginx.conf`](../container/nginx.conf)
 and [`container/conf.d/default.conf`](../container/conf.d/default.conf).
 
+## Qualified preview HTTP and TLS formats
+
+The static, HTTP reverse-proxy, TLS termination, mutual-TLS, and verified-
+upstream examples implement the safer structured contract described above.
+They use JSON escaping, validate a bounded
+`X-Request-ID` or generate `$request_id`, and log `$uri` rather than the query-
+bearing request target. Tests parse every emitted access event, exercise JSON
+escaping, reject leaked query markers, and verify correlation-ID forwarding.
+The reverse-proxy test also proves that a client-supplied forwarding chain is
+overwritten and that upstream failure is represented in the structured event.
+
+TLS ingress events additionally record protocol, cipher, requested server name,
+session reuse, and the client-certificate verification result. They omit client
+certificate identity and content. The exact field schemas and operational
+boundary are documented in [Qualified HTTP and TLS configuration profiles](CONFIGURATION-PROFILES.md).
+These examples do not change the generic development default described above
+and do not qualify a runtime collector or its retention controls.
+
 ## Collection by runtime
 
 The runtime captures stdout and stderr. NGINX log rotation is therefore not a
@@ -146,11 +164,10 @@ node, container, image digest, and restart identity.
 | Health/readiness | Suppress routine access events or use a dedicated minimal stream. | High-volume probe noise and backend detail. |
 | Rate/connection limits | Policy name, trusted limit key or pseudonym, outcome, status. | Raw identifiers when aggregation is enough; repetitive error-log alerts. |
 
-NGINX provides upstream timing variables and TLS variables for these profiles,
-but a variable's availability will be verified against the exact Red Hat RPM
-build before its configuration is supported. Initial profile examples will use
-JSON escaping and stable field names so collectors do not need to parse the
-human-oriented development format.
+NGINX provides upstream timing variables and TLS variables for these profiles.
+The static and reverse-proxy variables are verified against the selected
+official NGINX RPM build and use stable JSON field names. Variables needed by
+the remaining profiles will be verified before those configurations qualify.
 
 ## Sensitive-data rules
 
