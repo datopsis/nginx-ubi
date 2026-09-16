@@ -32,6 +32,9 @@ pre-commit run --all-files --show-diff-on-failure
 The configured hooks check text normalization, YAML and JSON syntax, merge
 markers, unsafe or broken symlinks, oversized files, private keys, shell code,
 container build files, GitHub Actions, and prohibited co-author trailers.
+The lint job also runs `python -m unittest tests.test_artifacts -v` to validate
+the reviewed lock inputs, both architecture locks, and fail-closed negative
+cases without downloading artifacts.
 
 The `commit-msg` hook applies only after `pre-commit install` installs the
 configured hook types. CI separately evaluates repository files but cannot
@@ -63,17 +66,19 @@ single canonical smoke implementation for local Podman and Linux CI, avoiding
 behavioral drift between platform-specific suites. Native AMD64 and ARM64 CI
 remains required before an image receives supported multi-architecture status.
 
-## Planned external acquisition
+## External acquisition
 
-The current development build resolves RPMs from inside the builder stage. It
-does not yet meet the first-release artifact-acquisition contract.
+Reviewed AMD64 and ARM64 locks, explicit update tooling, and official and
+alternate-source acquisition paths are in the repository. The acquisition and
+verification tools check exact inventory, size, SHA-256, lock identity, RPM
+signatures, approved signing fingerprints, NEVRA, architecture, and source-RPM
+identity before a bundle is exposed to assembly. Unit tests cover atomic
+publication and fail-closed inventory and source-map behavior without
+downloading artifacts.
 
-The replacement pipeline will separate a reviewed lock update from ordinary
-CI. Normal jobs will download only the exact architecture-specific files in
-the merged lock, verify their checksums, RPM signatures, signing fingerprints,
-NEVRA, architecture, and bundle completeness, and preload digest-verified base
-images. The image will then assemble from that local bundle with networking and
-pulling disabled.
+The current development build still resolves RPMs from inside the builder
+stage. Migrating it to consume the verified bundle with networking and pulling
+disabled remains the next step in the acquisition contract.
 
 The official public source is the default. An alternate approved source can be
 selected through protected CI configuration, but private endpoints,

@@ -1,26 +1,37 @@
 # NGINX package-source decision
 
-Status: proposed for the first release; the current image still uses the Red
-Hat UBI AppStream RPM documented in [RPM provenance](RPM-PROVENANCE.md).
+Status: official NGINX stable implemented for first-release qualification;
+`nginx-2:1.30.4-1.el9.ngx` is the current qualification candidate. The
+superseded Red Hat UBI AppStream development input remains documented in
+[RPM provenance](RPM-PROVENANCE.md).
 
 ## Recommendation
 
 Use the official NGINX stable RPM repository for the first release while
-retaining digest-pinned Red Hat UBI 9 Minimal and Micro base images. Pin one
-exact NGINX RPM epoch, version, and release for each architecture. Do not track
-the newest package implicitly during a release build.
+retaining digest-pinned Red Hat UBI 9 Minimal and Micro base images. The
+selected implementation candidate is `nginx-2:1.30.4-1.el9.ngx`. Pin this
+exact epoch, version, and release independently for each architecture. Do not
+track the newest package implicitly during an ordinary or release build.
 
 Package publication and package acquisition are separate decisions. NGINX
 remains the publisher even when an approved intermediary transfers the
-unchanged, signed RPM. All downloading and verification will occur before the
+unchanged, signed RPM. All downloading and verification occurs before the
 container build as defined in
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
-As observed on 2026-09-08, the stable repository offers
-`nginx-2:1.30.4-1.el9.ngx` for RHEL 9 on both `x86_64` and `aarch64`. This is an
-observed development candidate, not yet the selected first-release version.
-The exact candidate must be frozen only after its tests and vulnerability
-review pass.
+The selection was reviewed against authoritative NGINX sources on 2026-09-12.
+The stable repositories publish `nginx-1.30.4-1.el9.ngx` for both `x86_64`
+and `aarch64`, and publish the matching
+`nginx-1.30.4-1.el9.ngx.src.rpm`. The official security-advisory index lists
+1.30.4 as not vulnerable to its current 1.30-series advisories. This source
+review selects the package for implementation and qualification; it does not
+substitute for RPM signature verification, dependency locking, native runtime
+tests, SBOM and scanner review, or final release-candidate evidence.
+
+The release workflow must recheck the advisory index and repository state
+before freezing final inputs. A superseding stable package or new advisory
+requires a reviewed lock update or an explicit, time-bounded acceptance; an
+ordinary build must never follow that change automatically.
 
 Prefer stable over mainline for the initial release. Mainline provides features
 sooner but creates a faster qualification and update cadence. A mainline-only
@@ -44,7 +55,7 @@ management.
 | Area | Red Hat UBI AppStream RPM | Official NGINX RPM |
 | --- | --- | --- |
 | Release cadence | RHEL module-stream lifecycle with Red Hat backports. | NGINX stable or mainline release cadence. |
-| Current observed package | `nginx-core-2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3` | Stable candidate `nginx-2:1.30.4-1.el9.ngx`. |
+| Package position | Current image: `nginx-core-2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3`. | Selected candidate: `nginx-2:1.30.4-1.el9.ngx`. |
 | Package trust | Red Hat repository metadata and release key. | NGINX repository and NGINX signing key. |
 | Platform statement | Packaged as part of UBI/RHEL content. | NGINX documents RHEL 9 packages for x86_64 and aarch64; this project must qualify them on UBI 9. |
 | Security maintenance | Red Hat errata and backported fixes. | New upstream NGINX package releases. |
@@ -64,10 +75,17 @@ Implementation requires:
 1. Choose official stable or mainline; stable is recommended.
 2. Acquire the NGINX signing key outside the container build through a reviewed
    process, verify its full fingerprint, pin its checksum, and define
-   key-expiration and rotation handling. The official instructions currently
-   identify fingerprint
-   `573B FD6B 3D8F BC64 1079 A6AB ABF5 BD82 7BD9 BF62` and advise independent
-   authenticity verification.
+   key-expiration and rotation handling. The official key bundle observed on
+   2026-09-12 has SHA-256
+   `55385da31d198fa6a5012d40ae98ecb272a6c4e8fffffba94719ffd3e87de37a`
+   and contains three primary keys. The selected 1.30.4 RPMs are signed by
+   fingerprint `8540 A6F1 8833 A80E 9C16 53A4 2FD2 1310 B49F 6B46`; the
+   artifact locks accept that signer specifically. Do not infer approval of
+   every certificate in the downloaded bundle. The official installation
+   instructions also identify the older
+   `573B FD6B 3D8F BC64 1079 A6AB ABF5 BD82 7BD9 BF62` fingerprint, so key
+   rotation must compare the actual package signer with independently reviewed
+   NGINX key information.
 3. Resolve and download the exact NGINX RPM and dependency closure outside the
    build through the configured approved artifact source.
 4. Verify RPM signatures, fingerprints, checksums, NEVRA, architecture, and

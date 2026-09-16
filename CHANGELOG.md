@@ -70,6 +70,16 @@ but container releases use the upstream-derived format documented in
   NGINX RPMs, including trust checks and reproducibility limits.
 - Evaluated official NGINX stable RPMs as the proposed first-release package
   source and defined migration and acceptance requirements.
+- Approved the official NGINX stable channel, selected
+  `nginx-2:1.30.4-1.el9.ngx` for first-release implementation qualification,
+  and retired the completed source-selection item from the forward roadmap.
+- Added reviewed AMD64 and ARM64 artifact locks for the selected NGINX RPM,
+  its complete UBI dependency closure, source RPMs, signing identities, and
+  base-image digests, with fail-closed validation and lock-update tooling.
+- Added atomic official and protected alternate-source acquisition for locked
+  artifact bundles, including exact inventory, digest, RPM signature, signer,
+  NEVRA, architecture, and lock-manifest verification without storing source
+  credentials or private trust material in the repository or image build.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies

@@ -51,41 +51,30 @@ are separately approved. They must not delay the core first release.
 
 Work proceeds in this dependency order:
 
-1. Approve the official NGINX stable channel and select the exact NGINX
-   first-release candidate.
-2. Implement architecture-specific artifact locks and source-independent
-   acquisition driven by protected configuration.
-3. Migrate the image to the exact official NGINX RPM and require
+1. Migrate the image to the exact official NGINX RPM and require
    network-disabled, no-pull assembly from a verified local bundle.
-4. Close rootless failure diagnostics, graceful lifecycle tests, and
+2. Close rootless failure diagnostics, graceful lifecycle tests, and
    package/module inventory checks.
-5. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
+3. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
    profiles needed for the first supported image; keep additional profiles
    explicitly preview until their tests close.
-6. Complete the repository policy files, support boundary, threat model,
+4. Complete the repository policy files, support boundary, threat model,
    requirement analysis, control ownership, vulnerability policy, tailored
    SCAP evidence, and deployment cyber package needed for review.
-7. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
+5. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
    journald collection, controlled-network operation, and rollback on an exact
    supported Linux host.
-8. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+6. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
    verification workflow from an untagged release candidate.
-9. Freeze inputs, regenerate release-candidate evidence, approve findings,
+7. Freeze inputs, regenerate release-candidate evidence, approve findings,
    create the immutable tag, publish by digest, and verify the release.
 
-Steps 1 through 4 are the immediate engineering critical path. Steps 5 and 6
-can proceed in parallel only where they do not assume an unfrozen NGINX package
-or module set.
+Steps 1 and 2 are the immediate engineering critical path. Steps 3 and 4 can
+proceed in parallel only where they do not assume an unfrozen NGINX package or
+module set.
 
 ## Package 2: rootless minimal image
 
-- [ ] Approve official NGINX stable as the package channel and select an exact
-  first-release candidate from authoritative sources.
-- [ ] Add reviewed AMD64 and ARM64 artifact locks containing the complete RPM
-  closure, checksums, sizes, signatures, source RPMs, and base-image digests.
-- [ ] Add official and alternate-source acquisition paths; keep private
-  endpoints, repository identifiers, credentials, and private CA material
-  outside this public repository and image build.
 - [ ] Make ordinary CI and local builds consume verified local bundles with
   build networking and image pulling disabled.
 - [ ] Add negative tests for tampered, unsigned, wrong-version,

@@ -108,7 +108,7 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
 - [NGINX RPM provenance](docs/RPM-PROVENANCE.md) records the exact Red Hat UBI
   package source, build path, trust checks, and local verification commands.
 - [NGINX package-source decision](docs/PACKAGE-SOURCE.md) compares the current
-  Red Hat RPM with the proposed official NGINX stable RPM and defines migration
+  Red Hat RPM with the selected official NGINX stable RPM and defines migration
   acceptance criteria.
 - [External artifact acquisition](docs/ARTIFACT-ACQUISITION.md) defines the
   pre-build download and verification process and hermetic image assembly
@@ -151,6 +151,26 @@ python -m pip install --require-hashes --only-binary=:all: \
   --requirement .github/requirements/pre-commit.txt
 pre-commit run --all-files --show-diff-on-failure
 ```
+
+Validate the reviewed artifact locks and their negative cases with:
+
+```console
+python -m unittest tests.test_artifacts -v
+```
+
+Acquire and verify the exact AMD64 RPM bundle from the official sources:
+
+```console
+python scripts/artifacts.py acquire \
+  --lock artifacts/locks/amd64.json \
+  --output .artifact-bundle/amd64
+bash scripts/verify-rpm-bundle.sh \
+  artifacts/locks/amd64.json .artifact-bundle/amd64
+```
+
+The acquisition guide documents ARM64, optional source RPMs, and protected
+alternate-source configuration. Python 3, RPM, and GnuPG are required for
+preparation.
 
 Build and exercise the current AMD64 development image with rootless Podman on
 native Linux or WSL2:
