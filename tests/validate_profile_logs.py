@@ -54,6 +54,7 @@ PROFILES = {
     "load-balancer",
     "websocket",
     "rate-limited",
+    "health",
     "tls-termination",
     "mutual-tls",
     "tls-upstream",
@@ -117,6 +118,7 @@ def parse_events(
         "reverse-proxy",
         "load-balancer",
         "websocket",
+        "health",
         "tls-upstream",
     }
     websocket = profile == "websocket"

@@ -5,6 +5,21 @@ Status: official NGINX stable implemented for first-release qualification;
 superseded Red Hat UBI AppStream development input remains documented in
 [RPM provenance](RPM-PROVENANCE.md).
 
+## Open source only
+
+This project packages open source NGINX. No NGINX Plus capability is used,
+documented, or assumed anywhere in the image, the examples, or the tests, and
+none may be introduced without a separate licensing and support decision.
+
+This is a design constraint rather than a preference, and it shapes several
+profiles. Active upstream health checks (`health_check`), session persistence
+(`sticky`), the `/api` and extended `status` surfaces, `keyval`, and
+`zone_sync` are commercial features. Where a profile needs the behaviour they
+provide, it solves the problem with open source directives and states the
+resulting limitation instead of implying the capability exists: load balancing
+uses passive `max_fails` and `fail_timeout`, readiness proxies to an upstream's
+own health endpoint, and the operator status surface uses `stub_status`.
+
 ## Recommendation
 
 Use the official NGINX stable RPM repository for the first release while

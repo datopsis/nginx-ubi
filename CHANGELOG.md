@@ -140,6 +140,16 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a qualified preview health-endpoint profile separating
+  upstream-independent liveness from upstream-reflecting readiness, logging
+  only failing probes, and exposing `stub_status` on a separate listener that
+  denies every source by default; tests prove liveness keeps answering while
+  the upstream is stopped, that readiness then reports `503`, and that
+  publishing the status port does not make it readable.
+- Recorded that this project packages open source NGINX only, that no NGINX
+  Plus capability is used or assumed, and that profiles needing behaviour those
+  features provide solve it with open source directives and state the
+  limitation instead.
 - Added a qualified preview request-limiting profile applying independent
   request-rate, concurrent-connection, and per-connection bandwidth budgets,
   answering `429` rather than the default `503`, keeping the health endpoint

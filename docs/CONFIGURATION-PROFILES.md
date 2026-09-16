@@ -1,9 +1,10 @@
 # Qualified HTTP and TLS configuration profiles
 
 The repository provides minimal static-serving, HTTP reverse-proxy, HTTP
-load-balancing, WebSocket-proxying, and request-limiting configurations under
-`examples/profiles`. Static serving, HTTP reverse proxy, HTTP load balancing,
-WebSocket proxying, request and connection limiting,
+load-balancing, WebSocket-proxying, request-limiting, and health-endpoint
+configurations under `examples/profiles`. Static serving, HTTP reverse proxy,
+HTTP load balancing, WebSocket proxying, request and connection limiting,
+health and readiness endpoints,
 TLS termination, mutual TLS, and verified HTTPS upstream profiles are exercised
 on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
@@ -60,6 +61,67 @@ Its access-event schema is:
 | `status` | integer | Final client-facing response status. |
 | `body_bytes_sent` | integer | Response-body bytes sent. |
 | `request_time` | number | Total request duration in seconds. |
+
+## Extended health and readiness endpoints
+
+[`examples/profiles/health/nginx.conf`](../examples/profiles/health/nginx.conf)
+separates three surfaces that are often collapsed into one: liveness,
+readiness, and an operator status endpoint.
+
+### Liveness must not depend on an upstream
+
+`/healthz` answers for this process alone and never consults the backend.
+
+This is the most consequential decision in the profile. A liveness probe that
+fails because a dependency is down makes the orchestrator kill and restart
+healthy proxies, converting a backend outage into a restart storm that removes
+the capacity needed to recover. The tests assert that `/healthz` still answers
+`200` while the upstream is stopped.
+
+### Readiness must depend on it
+
+`/readyz` proxies to the upstream's own health endpoint and reports `503` when
+that fails. A failing readiness probe removes the instance from rotation
+without restarting it, which is the correct response to a dependency being
+unavailable.
+
+Its timeouts are deliberately shorter than a typical probe interval. A
+readiness check that outlives its own probe period stacks concurrent probes
+against an already struggling upstream.
+
+Open source NGINX has no active upstream health checking, so readiness is
+expressed as a real request to the upstream rather than as a background probe.
+That is a deliberate consequence of the open source constraint described in
+[the package-source decision](PACKAGE-SOURCE.md), not an oversight.
+
+### Probe logging
+
+Liveness is never logged. Readiness is logged only when it fails. Probes run
+continuously, so a successful check is not an event worth recording, while a
+failing one is exactly what an operator needs to see. This keeps probe traffic
+from burying real requests in the access stream.
+
+### The status surface serves nobody by default
+
+`stub_status` is exposed on a second listener, port `8081`, and denies every
+source out of the box. The counters are not secrets, but they describe load and
+capacity, so a deployment that scrapes them must make a reviewed change naming
+the collector's source range and must keep the port off any public ingress.
+
+Binding it to a separate port rather than a path under the application server
+is what allows network policy to separate the two. The tests assert that
+publishing the port is not by itself enough to read it.
+
+### Qualified behaviour
+
+The tests prove that readiness succeeds while the upstream is reachable, that
+liveness keeps answering when it is not, that readiness then reports `503` and
+records a structured event, that a successful probe writes no event, and that
+the status surface refuses an unlisted source.
+
+They do **not** qualify probe interval and threshold tuning for any
+orchestrator, startup-probe behaviour, or the status surface under an approved
+allow-list.
 
 ## Request-rate and connection limiting
 
