@@ -16,11 +16,18 @@ proxy="${prefix}-proxy"
 pool_a="${prefix}-pool-a"
 pool_b="${prefix}-pool-b"
 balancer="${prefix}-balancer"
+# The WebSocket fixture answers to the same generic `backend` service name the
+# reverse-proxy example uses, so it gets its own network rather than competing
+# for that alias.
+ws_network="${prefix}-ws-network"
+ws_backend="${prefix}-ws-backend"
+ws_proxy="${prefix}-ws-proxy"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
 proxy_body=$(mktemp "${tmp_root}/nginx-proxy-body.XXXXXX")
 balancer_body=$(mktemp "${tmp_root}/nginx-balancer-body.XXXXXX")
+ws_body=$(mktemp "${tmp_root}/nginx-ws-body.XXXXXX")
 no_new_privileges="no-new-privileges:true"
 
 if grep -qi podman <<< "$("${runtime}" --version 2>&1)"; then
@@ -30,10 +37,12 @@ fi
 cleanup() {
     "${runtime}" rm --force "${static}" "${proxy}" "${backend}" \
         "${pool_a}" "${pool_b}" "${balancer}" \
+        "${ws_backend}" "${ws_proxy}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
+    "${runtime}" network rm "${ws_network}" >/dev/null 2>&1 || true
     rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
-        "${balancer_body}"
+        "${balancer_body}" "${ws_body}"
 }
 trap cleanup EXIT
 
@@ -90,6 +99,28 @@ header_value() {
     sed -n "s/^${header}:[[:space:]]*//Ip" "${file}" | tr -d '\r' | head -n 1
 }
 
+validate_event() {
+    local name="$1"
+    shift
+    local output=""
+    local attempt
+    # An access event is written when the request completes, and the runtime
+    # surfaces it through `logs` a moment later. Reading the log once turns
+    # that delay into an intermittent "found 0 matching events", so wait for
+    # the event to appear instead of assuming it already has.
+    for attempt in $(seq 1 15); do
+        if output=$("${runtime}" logs "${name}" 2>&1 | "${python}" \
+            "${script_dir}/validate_profile_logs.py" "$@" 2>&1); then
+            printf '%s\n' "${output}"
+            return 0
+        fi
+        sleep 1
+    done
+    printf '%s\n' "${output}" >&2
+    "${runtime}" logs "${name}" >&2
+    return 1
+}
+
 "${runtime}" image inspect "${image}" >/dev/null
 "${runtime}" network create "${network}" >/dev/null
 
@@ -130,8 +161,7 @@ if grep -Fq '/healthz' <<< "${static_logs}"; then
     echo "The static health endpoint unexpectedly wrote an access event" >&2
     exit 1
 fi
-printf '%s\n' "${static_logs}" | "${python}" \
-    "${script_dir}/validate_profile_logs.py" \
+validate_event "${static}" \
     --profile static \
     --uri /missing \
     --request-id static.valid-1 \
@@ -182,16 +212,14 @@ if grep -Fq '/healthz' <<< "${proxy_logs}"; then
     echo "The reverse-proxy health endpoint unexpectedly wrote an access event" >&2
     exit 1
 fi
-printf '%s\n' "${proxy_logs}" | "${python}" \
-    "${script_dir}/validate_profile_logs.py" \
+validate_event "${proxy}" \
     --profile reverse-proxy \
     --uri /application \
     --request-id proxy.valid-1 \
     --status 200 \
     --forbidden reverse-secret \
     --forbidden do-not-log
-printf '%s\n' "${proxy_logs}" | "${python}" \
-    "${script_dir}/validate_profile_logs.py" \
+validate_event "${proxy}" \
     --profile reverse-proxy \
     --uri /unavailable \
     --request-id proxy.failure-1 \
@@ -292,8 +320,7 @@ if grep -Fq '/healthz' <<< "${balancer_logs}"; then
     echo "The load-balancer health endpoint unexpectedly wrote an access event" >&2
     exit 1
 fi
-printf '%s\n' "${balancer_logs}" | "${python}" \
-    "${script_dir}/validate_profile_logs.py" \
+validate_event "${balancer}" \
     --profile load-balancer \
     --uri /application \
     --request-id balancer.valid-1 \
@@ -302,9 +329,21 @@ printf '%s\n' "${balancer_logs}" | "${python}" \
     --forbidden balancer-secret \
     --forbidden do-not-log
 
+# Each failover request must be a well-formed event under the profile
+# contract, whether or not it was the one that retried. Waiting for all three
+# here also guarantees they are present before retries are counted below.
+for attempt in 1 2 3; do
+    validate_event "${balancer}" \
+        --profile load-balancer \
+        --uri /application \
+        --request-id "balancer.failover-${attempt}" \
+        --status 200 >"${null_device}"
+done
+
 # At least one failover request must record two upstream attempts. That is
 # what distinguishes a real retry from a request that happened to be routed to
 # the surviving member, and it proves the dead member was actually tried.
+balancer_logs=$("${runtime}" logs "${balancer}" 2>&1)
 failover_retries=0
 for attempt in 1 2 3; do
     if printf '%s\n' "${balancer_logs}" | "${python}" \
@@ -323,20 +362,103 @@ if test "${failover_retries}" -lt 1; then
     exit 1
 fi
 
-# Each failover request must still be a well-formed event under the profile
-# contract, whether or not it was the one that retried.
-for attempt in 1 2 3; do
-    printf '%s\n' "${balancer_logs}" | "${python}" \
-        "${script_dir}/validate_profile_logs.py" \
-        --profile load-balancer \
-        --uri /application \
-        --request-id "balancer.failover-${attempt}" \
-        --status 200 >"${null_device}"
-done
+# ---------------------------------------------------------------------------
+# WebSocket proxying
+#
+# The fixture reports what the proxy forwarded rather than implementing the
+# WebSocket protocol. That covers the part this profile owns: deriving the
+# connection disposition, forwarding the upgrade token, and leaving the plain
+# HTTP location unaffected. Frame exchange over an established session is not
+# qualified here.
+# ---------------------------------------------------------------------------
 
-"${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" >/dev/null
+"${runtime}" network create "${ws_network}" >/dev/null
+
+run_restricted "${ws_backend}" 10007 \
+    --network "${ws_network}" \
+    --network-alias backend \
+    --volume "${script_dir}/fixtures/profile-ws/nginx.conf:/etc/nginx/nginx.conf:ro"
+"${runtime}" exec "${ws_backend}" nginx -t -q -c /etc/nginx/nginx.conf
+assert_process_security "${ws_backend}"
+
+run_restricted "${ws_proxy}" 10008 \
+    --network "${ws_network}" \
+    --publish 127.0.0.1::8080 \
+    --volume "${examples_dir}/websocket/nginx.conf:/etc/nginx/nginx.conf:ro"
+ws_binding=$("${runtime}" port "${ws_proxy}" 8080/tcp)
+ws_port=${ws_binding##*:}
+ws_url="http://127.0.0.1:${ws_port}"
+wait_for_http "${ws_url}/healthz" "${ws_proxy}"
+assert_process_security "${ws_proxy}"
+"${runtime}" exec "${ws_proxy}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# A request without the upgrade token must reach the application with the
+# derived `Connection: close`, never a client-chosen disposition. The client
+# deliberately offers a conflicting `Connection` header to prove it is not
+# copied through.
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: websocket.plain-1' \
+    --header 'Connection: keep-alive' \
+    --output "${ws_body}" \
+    "${ws_url}/ws"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["upgrade"] == "", payload
+assert payload["connection"] == "close", payload
+assert payload["request_id"] == "websocket.plain-1", payload' \
+    "${ws_body}"
+
+# With the upgrade token the application must see the handshake, which it
+# answers with 101. Receiving 101 rather than the fixture JSON is what proves
+# the Upgrade header survived the proxy.
+#
+# The proxy tunnels after 101 and neither side sends anything further, so the
+# client bounds its own wait. curl reports the status it already received.
+upgrade_status=$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --max-time 5 \
+    --header 'X-Request-ID: websocket.upgrade-1' \
+    --header 'Connection: Upgrade' \
+    --header 'Upgrade: websocket' \
+    --header 'Sec-WebSocket-Version: 13' \
+    --header 'Sec-WebSocket-Key: ZGF0b3BzaXMtdGVzdC1rZXk=' \
+    "${ws_url}/ws" || true)
+test "${upgrade_status}" = 101
+
+# The plain HTTP location must keep ordinary proxy behaviour.
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: websocket.http-1' \
+    --output "${ws_body}" \
+    "${ws_url}/application"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["request_id"] == "websocket.http-1", payload' \
+    "${ws_body}"
+
+ws_logs=$("${runtime}" logs "${ws_proxy}" 2>&1)
+if grep -Fq '/healthz' <<< "${ws_logs}"; then
+    echo "The websocket health endpoint unexpectedly wrote an access event" >&2
+    exit 1
+fi
+validate_event "${ws_proxy}" \
+    --profile websocket \
+    --uri /ws \
+    --request-id websocket.plain-1 \
+    --status 200 \
+    --connection-upgrade close
+validate_event "${ws_proxy}" \
+    --profile websocket \
+    --uri /ws \
+    --request-id websocket.upgrade-1 \
+    --status 101 \
+    --connection-upgrade upgrade
+
+"${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" "${ws_proxy}" \
+    >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${ws_proxy}")" = 0
 
-echo "Static, reverse-proxy, and load-balancer profile qualification passed for ${image}"
+echo "Static, reverse-proxy, load-balancer, and websocket profile qualification passed for ${image}"

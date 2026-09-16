@@ -83,9 +83,9 @@ and [`container/conf.d/default.conf`](../container/conf.d/default.conf).
 
 ## Qualified preview HTTP and TLS formats
 
-The static, HTTP reverse-proxy, HTTP load-balancing, TLS termination,
-mutual-TLS, and verified-upstream examples implement the safer structured
-contract described above.
+The static, HTTP reverse-proxy, HTTP load-balancing, WebSocket-proxying, TLS
+termination, mutual-TLS, and verified-upstream examples implement the safer
+structured contract described above.
 They use JSON escaping, validate a bounded
 `X-Request-ID` or generate `$request_id`, and log `$uri` rather than the query-
 bearing request target. Tests parse every emitted access event, exercise JSON

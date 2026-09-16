@@ -1,8 +1,9 @@
 # Qualified HTTP and TLS configuration profiles
 
-The repository provides minimal static-serving, HTTP reverse-proxy, and HTTP
-load-balancing configurations under `examples/profiles`. Static serving, HTTP
-reverse proxy, HTTP load balancing,
+The repository provides minimal static-serving, HTTP reverse-proxy, HTTP
+load-balancing, and WebSocket-proxying configurations under
+`examples/profiles`. Static serving, HTTP reverse proxy, HTTP load balancing,
+WebSocket proxying,
 TLS termination, mutual TLS, and verified HTTPS upstream profiles are exercised
 on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
@@ -59,6 +60,68 @@ Its access-event schema is:
 | `status` | integer | Final client-facing response status. |
 | `body_bytes_sent` | integer | Response-body bytes sent. |
 | `request_time` | number | Total request duration in seconds. |
+
+## WebSocket proxying
+
+[`examples/profiles/websocket/nginx.conf`](../examples/profiles/websocket/nginx.conf)
+proxies upgrade-capable traffic under `/ws` and ordinary HTTP everywhere else,
+to the same application.
+
+The connection disposition sent upstream is derived from a map rather than
+copied from the client: a request carrying an upgrade token is forwarded with
+`Connection: upgrade`, and every other request with `Connection: close`. A
+client therefore cannot choose how the proxied connection is framed.
+
+### Timeouts and capacity
+
+An idle WebSocket sends nothing for long periods, so `proxy_read_timeout` must
+exceed the application's own idle or ping interval or NGINX closes healthy
+sessions. That long timeout is scoped to the upgrade location: the plain HTTP
+location keeps the short timeout, so a stuck HTTP upstream cannot hold a worker
+connection for an hour.
+
+Every idle session still occupies a worker connection on both sides. Size
+`worker_connections` and any per-client connection limit for the expected
+concurrent *session* count rather than for request rate. This is the main
+capacity difference between this profile and the plain proxy, and it is not
+qualified by the tests.
+
+Upgrades are never retried against another member. The handshake is not
+idempotent, and once the client has begun speaking the upgraded protocol there
+is nothing to replay.
+
+### Origin validation is not performed
+
+NGINX does not validate `Origin`, and this profile does not add that check.
+Browsers do not apply the same-origin policy to WebSocket handshakes, so an
+application that authenticates with cookies alone is exposed to cross-site
+WebSocket hijacking. Origin or token validation belongs to the application or
+an authenticating layer. This is a deployment responsibility, and mounting this
+profile does not discharge it.
+
+### Access-event schema
+
+The profile emits the common fields, the upstream fields, and:
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `connection_upgrade` | string | Derived disposition, `upgrade` or `close`. |
+
+The value is derived, never client-supplied, so the tests reject any event
+carrying another token.
+
+### Qualified behaviour
+
+The tests prove that a request without the upgrade token reaches the
+application with the derived `close` disposition even when the client offers a
+conflicting `Connection` header, that a request carrying the token reaches the
+application as a handshake and its `101` response is relayed, that the plain
+HTTP location is unaffected, and that both events match the schema.
+
+They do **not** qualify frame exchange over an established session, session
+duration, idle-timeout behaviour under real traffic, or concurrent session
+capacity. The fixture reports what the proxy forwarded; it does not implement
+the WebSocket protocol.
 
 ## HTTP load balancing
 
