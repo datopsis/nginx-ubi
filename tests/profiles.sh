@@ -22,12 +22,14 @@ balancer="${prefix}-balancer"
 ws_network="${prefix}-ws-network"
 ws_backend="${prefix}-ws-backend"
 ws_proxy="${prefix}-ws-proxy"
+limited="${prefix}-limited"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
 proxy_body=$(mktemp "${tmp_root}/nginx-proxy-body.XXXXXX")
 balancer_body=$(mktemp "${tmp_root}/nginx-balancer-body.XXXXXX")
 ws_body=$(mktemp "${tmp_root}/nginx-ws-body.XXXXXX")
+limited_root=$(mktemp -d "${tmp_root}/nginx-limited-root.XXXXXX")
 no_new_privileges="no-new-privileges:true"
 
 if grep -qi podman <<< "$("${runtime}" --version 2>&1)"; then
@@ -37,12 +39,13 @@ fi
 cleanup() {
     "${runtime}" rm --force "${static}" "${proxy}" "${backend}" \
         "${pool_a}" "${pool_b}" "${balancer}" \
-        "${ws_backend}" "${ws_proxy}" \
+        "${ws_backend}" "${ws_proxy}" "${limited}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${ws_network}" >/dev/null 2>&1 || true
     rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
         "${balancer_body}" "${ws_body}"
+    rm -rf -- "${limited_root}"
 }
 trap cleanup EXIT
 
@@ -454,11 +457,120 @@ validate_event "${ws_proxy}" \
     --status 101 \
     --connection-upgrade upgrade
 
+# ---------------------------------------------------------------------------
+# Request-rate and connection limiting
+# ---------------------------------------------------------------------------
+
+printf 'limited-profile-ok\n' > "${limited_root}/index.html"
+# The payload has to exceed `limit_rate_after` so the profile's own bandwidth
+# limit paces it. A response that fits in the socket buffer is handed to the
+# kernel immediately and the connection is never actually held, so no
+# concurrency can build up no matter how slowly the client reads.
+head -c 4194304 /dev/zero | tr '\0' 'x' > "${limited_root}/payload.bin"
+# mktemp -d creates the directory 0700, which the container identity cannot
+# traverse, so the served tree needs an explicit mode rather than the default.
+chmod 0755 "${limited_root}"
+chmod 0644 "${limited_root}"/*
+
+run_restricted "${limited}" 10009 \
+    --publish 127.0.0.1::8080 \
+    --volume "${examples_dir}/rate-limited/nginx.conf:/etc/nginx/nginx.conf:ro" \
+    --volume "${limited_root}:/srv/www:ro"
+limited_binding=$("${runtime}" port "${limited}" 8080/tcp)
+limited_port=${limited_binding##*:}
+limited_url="http://127.0.0.1:${limited_port}"
+wait_for_http "${limited_url}/healthz" "${limited}"
+assert_process_security "${limited}"
+"${runtime}" exec "${limited}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# A single request well inside the budget must pass both limits.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --header 'X-Request-ID: limits.pass-1' \
+    "${limited_url}/index.html")" = 200
+validate_event "${limited}" \
+    --profile rate-limited \
+    --uri /index.html \
+    --request-id limits.pass-1 \
+    --status 200 \
+    --require-field limit_req_result=PASSED \
+    --require-field limit_conn_result=PASSED
+
+# Concurrency is a separate budget, and it is measured before the rate budget
+# is spent. `limit_req` runs first, so once the rate limit is rejecting, the
+# connection limit is never evaluated and records NOT_EVALUATED.
+#
+# The requests arrive together: the rate burst admits 20 of them, and the
+# connection limit then rejects everything past its own maximum. Several
+# events therefore share this correlation ID with different outcomes, and the
+# assertion requires that at least one of them was rejected by the connection
+# limit specifically.
+conn_urls=()
+for _ in $(seq 1 24); do
+    conn_urls+=("${limited_url}/payload.bin")
+done
+conn_codes=$(curl --silent --output "${null_device}" \
+    --write-out '%{http_code}\n' \
+    --parallel --parallel-immediate --parallel-max 24 \
+    --limit-rate 4k --max-time 20 \
+    --header 'X-Request-ID: limits.conn-1' \
+    "${conn_urls[@]}" || true)
+if test "$(grep -c '^429$' <<< "${conn_codes}")" -lt 1; then
+    printf '%s\n' "${conn_codes}" >&2
+    echo "The connection limit did not reject any concurrent request" >&2
+    exit 1
+fi
+validate_event "${limited}" \
+    --profile rate-limited \
+    --uri /payload.bin \
+    --request-id limits.conn-1 \
+    --status 429 \
+    --allow-repeated \
+    --require-field limit_conn_result=REJECTED
+
+# Exhaust the request-rate budget. One curl invocation reuses the connection,
+# so the requests arrive far faster than the configured rate; the burst is
+# large enough that a slow runner still exceeds it.
+burst_urls=()
+for _ in $(seq 1 200); do
+    burst_urls+=("${limited_url}/index.html")
+done
+burst_codes=$(curl --silent --output "${null_device}" \
+    --write-out '%{http_code}\n' \
+    --header 'X-Request-ID: limits.burst-1' \
+    "${burst_urls[@]}")
+test "$(grep -c '^200$' <<< "${burst_codes}")" -ge 1
+if test "$(grep -c '^429$' <<< "${burst_codes}")" -lt 1; then
+    echo "The request-rate limit did not reject any request in the burst" >&2
+    exit 1
+fi
+
+# The health endpoint stays outside the limit, so it must still answer while
+# the client's request budget is exhausted.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    "${limited_url}/healthz")" = 200
+
+# The burst shares one correlation ID on purpose: a rejected request must be
+# recorded as rejected rather than silently dropped.
+validate_event "${limited}" \
+    --profile rate-limited \
+    --uri /index.html \
+    --request-id limits.burst-1 \
+    --status 429 \
+    --allow-repeated \
+    --require-field limit_req_result=REJECTED
+
+limited_logs=$("${runtime}" logs "${limited}" 2>&1)
+if grep -Fq '/healthz' <<< "${limited_logs}"; then
+    echo "The rate-limited health endpoint unexpectedly wrote an access event" >&2
+    exit 1
+fi
+
 "${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" "${ws_proxy}" \
-    >/dev/null
+    "${limited}" >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${ws_proxy}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${limited}")" = 0
 
-echo "Static, reverse-proxy, load-balancer, and websocket profile qualification passed for ${image}"
+echo "Static, reverse-proxy, load-balancer, websocket, and rate-limited profile qualification passed for ${image}"
