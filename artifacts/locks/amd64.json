@@ -3,18 +3,18 @@
   "bundle_version": 1,
   "architecture": "amd64",
   "rpm_architecture": "x86_64",
-  "generated_at": "2026-09-12T15:53:02Z",
+  "generated_at": "2026-09-16T02:54:20Z",
   "nginx_version": "1.30.4",
   "nginx_rpm_version": "1.30.4-1.el9.ngx",
   "base_images": {
     "builder": {
-      "reference": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7fbeae18dc9476399f565e68255f602a3374ea8614ba3d14843565131a13ff93",
-      "digest": "sha256:7fbeae18dc9476399f565e68255f602a3374ea8614ba3d14843565131a13ff93",
+      "reference": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041",
+      "digest": "sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041",
       "platform": "linux/amd64"
     },
     "runtime": {
-      "reference": "registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6",
-      "digest": "sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6",
+      "reference": "registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650",
+      "digest": "sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650",
       "platform": "linux/amd64"
     }
   },
@@ -855,17 +855,17 @@
     {
       "name": "openssl",
       "epoch": 1,
-      "version": "3.5.5",
-      "release": "6.el9_8",
+      "version": "3.5.8",
+      "release": "1.el9_8",
       "architecture": "x86_64",
-      "nevra": "openssl-1:3.5.5-6.el9_8.x86_64",
-      "filename": "openssl-3.5.5-6.el9_8.x86_64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.5-6.el9_8.x86_64.rpm",
+      "nevra": "openssl-1:3.5.8-1.el9_8.x86_64",
+      "filename": "openssl-3.5.8-1.el9_8.x86_64.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-3.5.8-1.el9_8.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 1564334,
-      "sha256": "1c502507f42674119318b66b111448f618efe2767a55edde5fadddcecb47ac64",
+      "size": 1569041,
+      "sha256": "2e0d5017032a48c23d4efa43afbe98d45179365eaec16f38e93c271b7728a67a",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "openssl-3.5.5-6.el9_8.src.rpm"
+      "source_rpm": "openssl-3.5.8-1.el9_8.src.rpm"
     },
     {
       "name": "openssl-fips-provider",
@@ -900,17 +900,17 @@
     {
       "name": "openssl-libs",
       "epoch": 1,
-      "version": "3.5.5",
-      "release": "6.el9_8",
+      "version": "3.5.8",
+      "release": "1.el9_8",
       "architecture": "x86_64",
-      "nevra": "openssl-libs-1:3.5.5-6.el9_8.x86_64",
-      "filename": "openssl-libs-3.5.5-6.el9_8.x86_64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.5-6.el9_8.x86_64.rpm",
+      "nevra": "openssl-libs-1:3.5.8-1.el9_8.x86_64",
+      "filename": "openssl-libs-3.5.8-1.el9_8.x86_64.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/o/openssl-libs-3.5.8-1.el9_8.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 2427181,
-      "sha256": "a289cdf4da547031cd39a4f31decd0bb22649bbcb5fe4f88b939d341a83708be",
+      "size": 2430624,
+      "sha256": "3abe1f190415d91d4dc51db74cf2ad7e06b1e5ca5f63dac978fe58d8fd14e493",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "openssl-3.5.5-6.el9_8.src.rpm"
+      "source_rpm": "openssl-3.5.8-1.el9_8.src.rpm"
     },
     {
       "name": "p11-kit",
@@ -1096,61 +1096,61 @@
       "name": "systemd",
       "epoch": 0,
       "version": "252",
-      "release": "67.el9_8.4",
+      "release": "67.el9_8.6",
       "architecture": "x86_64",
-      "nevra": "systemd-0:252-67.el9_8.4.x86_64",
-      "filename": "systemd-252-67.el9_8.4.x86_64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-67.el9_8.4.x86_64.rpm",
+      "nevra": "systemd-0:252-67.el9_8.6.x86_64",
+      "filename": "systemd-252-67.el9_8.6.x86_64.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-252-67.el9_8.6.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 4401138,
-      "sha256": "e3cbe70aaa847f1b02bd4ea9470625434c26b25368cbfcb0e9a18de99e3bc1c7",
+      "size": 4383786,
+      "sha256": "025ffe42235a9d4d40138bab7511995392d2a50ba6912be97b47e634b15823b8",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "systemd-252-67.el9_8.4.src.rpm"
+      "source_rpm": "systemd-252-67.el9_8.6.src.rpm"
     },
     {
       "name": "systemd-libs",
       "epoch": 0,
       "version": "252",
-      "release": "67.el9_8.4",
+      "release": "67.el9_8.6",
       "architecture": "x86_64",
-      "nevra": "systemd-libs-0:252-67.el9_8.4.x86_64",
-      "filename": "systemd-libs-252-67.el9_8.4.x86_64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.4.x86_64.rpm",
+      "nevra": "systemd-libs-0:252-67.el9_8.6.x86_64",
+      "filename": "systemd-libs-252-67.el9_8.6.x86_64.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-libs-252-67.el9_8.6.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 681056,
-      "sha256": "ca5a11f102b0e3a32fdddf017a4509984db83290d7364c9566d037d0ef7f1e66",
+      "size": 662007,
+      "sha256": "d491d7375ed820bf4fa0d5f6d80a6f1a72cfa6ff31e79dabf9288246061cf88e",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "systemd-252-67.el9_8.4.src.rpm"
+      "source_rpm": "systemd-252-67.el9_8.6.src.rpm"
     },
     {
       "name": "systemd-pam",
       "epoch": 0,
       "version": "252",
-      "release": "67.el9_8.4",
+      "release": "67.el9_8.6",
       "architecture": "x86_64",
-      "nevra": "systemd-pam-0:252-67.el9_8.4.x86_64",
-      "filename": "systemd-pam-252-67.el9_8.4.x86_64.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.4.x86_64.rpm",
+      "nevra": "systemd-pam-0:252-67.el9_8.6.x86_64",
+      "filename": "systemd-pam-252-67.el9_8.6.x86_64.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-pam-252-67.el9_8.6.x86_64.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 276960,
-      "sha256": "de8408dbe8ee06afa99fbb914377384774e27b9b337cb3b491a37f84ccca7e9b",
+      "size": 258340,
+      "sha256": "eb780b309cd671d4b3bec7d3b31bf148179e527d7222663544470310f4cb43ee",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "systemd-252-67.el9_8.4.src.rpm"
+      "source_rpm": "systemd-252-67.el9_8.6.src.rpm"
     },
     {
       "name": "systemd-rpm-macros",
       "epoch": 0,
       "version": "252",
-      "release": "67.el9_8.4",
+      "release": "67.el9_8.6",
       "architecture": "noarch",
-      "nevra": "systemd-rpm-macros-0:252-67.el9_8.4.noarch",
-      "filename": "systemd-rpm-macros-252-67.el9_8.4.noarch.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.4.noarch.rpm",
+      "nevra": "systemd-rpm-macros-0:252-67.el9_8.6.noarch",
+      "filename": "systemd-rpm-macros-252-67.el9_8.6.noarch.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/s/systemd-rpm-macros-252-67.el9_8.6.noarch.rpm",
       "repository": "ubi-9-baseos-rpms",
-      "size": 59475,
-      "sha256": "7d671ec39a7caeb7346be6d5fcb44212545844ced6f4974c4b409fef6a12a891",
+      "size": 40844,
+      "sha256": "974a0352427799559a3e90dcdb38200d767631452cca7717c5b0fbe7760df313",
       "signing_key_fingerprint": "567E347AD0044ADE55BA8A5F199E2F91FD431D51",
-      "source_rpm": "systemd-252-67.el9_8.4.src.rpm"
+      "source_rpm": "systemd-252-67.el9_8.6.src.rpm"
     },
     {
       "name": "tzdata",
@@ -1517,11 +1517,11 @@
       "sha256": "c04bda3049ba9f850a61a64fa311990e58fcc76fd8df9e25bce15b6b4a645dc8"
     },
     {
-      "filename": "openssl-3.5.5-6.el9_8.src.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.5-6.el9_8.src.rpm",
+      "filename": "openssl-3.5.8-1.el9_8.src.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/o/openssl-3.5.8-1.el9_8.src.rpm",
       "repository": "ubi-9-baseos-source-rpms",
-      "size": 53369050,
-      "sha256": "b79f08d2d04536fdb6801b6ba7da7174942d174dd2b7969316402c737689d735"
+      "size": 53429735,
+      "sha256": "393e8694b8161826f67f149cd7dde6b63da96f02efc050fda651d265907f2c20"
     },
     {
       "filename": "openssl-fips-provider-3.0.7-11.el9_8.src.rpm",
@@ -1601,11 +1601,11 @@
       "sha256": "771a5ed07cdb690c75cd428a8113e2ee471270044e6cb8025d92c54e32c180ff"
     },
     {
-      "filename": "systemd-252-67.el9_8.4.src.rpm",
-      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-67.el9_8.4.src.rpm",
+      "filename": "systemd-252-67.el9_8.6.src.rpm",
+      "url": "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/s/systemd-252-67.el9_8.6.src.rpm",
       "repository": "ubi-9-baseos-source-rpms",
-      "size": 45009674,
-      "sha256": "e44181d1de2a135a5507b956d18a9eb11951a35aaa9c15dbc0f144ed8313f732"
+      "size": 45003976,
+      "sha256": "f535f4c20ed82f56cc7f4c86202e3cd582815f702bb0c24005a07a496ec94c97"
     },
     {
       "filename": "tzdata-2026c-1.el9_8.src.rpm",

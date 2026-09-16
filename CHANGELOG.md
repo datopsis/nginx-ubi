@@ -82,6 +82,9 @@ but container releases use the upstream-derived format documented in
 - Added reviewed AMD64 and ARM64 artifact locks for the selected NGINX RPM,
   its complete UBI dependency closure, source RPMs, signing identities, and
   base-image digests, with fail-closed validation and lock-update tooling.
+  The locks record the refreshed UBI 9.8 bases and therefore
+  `openssl-1:3.5.8-1.el9_8` from RHSA-2026:67165 and the
+  `systemd-0:252-67.el9_8.6` rebuild.
 - Added atomic official and protected alternate-source acquisition for locked
   artifact bundles, including exact inventory, digest, RPM signature, signer,
   NEVRA, architecture, and lock-manifest verification without storing source
