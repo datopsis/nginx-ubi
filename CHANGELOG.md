@@ -137,6 +137,9 @@ but container releases use the upstream-derived format documented in
   failover events; native Podman and Docker compatibility tests require that
   every healthy member receives traffic, that a stopped member causes no
   client-visible failure, and that a retry is actually recorded.
+- Fixed a race in the reload test that read `/proc/PID/status` for a worker
+  that had already exited, which aborted the listing instead of skipping the
+  vanished process.
 - Suppressed structured access events for connections that never produce a
   request, such as a rejected TLS handshake or a malformed request line, so the
   access schema no longer has to tolerate empty required fields.
