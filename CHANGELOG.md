@@ -140,6 +140,18 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a qualified preview WebSocket-proxying profile that derives the
+  upstream connection disposition from a map rather than copying it from the
+  client, scopes the long idle timeout to the upgrade location, and never
+  retries an upgrade; tests prove upgrade forwarding, `101` relay, the derived
+  `close` disposition under a conflicting client header, and unaffected plain
+  HTTP traffic.
+- Documented that the WebSocket profile performs no `Origin` validation and
+  that cross-site WebSocket hijacking remains an application or
+  authenticating-layer responsibility.
+- Made profile log assertions wait for the access event instead of reading the
+  container log once, which removes an intermittent "found 0 matching events"
+  failure.
 - Suppressed structured access events for connections that never produce a
   request, such as a rejected TLS handshake or a malformed request line, so the
   access schema no longer has to tolerate empty required fields.

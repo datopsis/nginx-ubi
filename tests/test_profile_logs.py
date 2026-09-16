@@ -187,6 +187,41 @@ class ProfileLogTests(unittest.TestCase):
             3,
         )
 
+    def test_websocket_requires_a_derived_connection_disposition(self) -> None:
+        upstream = {
+            "upstream_addr": "10.0.0.1:8080",
+            "upstream_status": "101",
+            "upstream_connect_time": "0.001",
+            "upstream_header_time": "0.002",
+            "upstream_response_time": "0.003",
+        }
+        expected = event(status=101, connection_upgrade="upgrade", **upstream)
+        self.assertEqual(
+            logs.parse_events(encoded(expected), "websocket"), [expected]
+        )
+        self.assertEqual(
+            logs.parse_events(
+                encoded(event(connection_upgrade="close", **upstream)), "websocket"
+            ),
+            [event(connection_upgrade="close", **upstream)],
+        )
+
+    def test_websocket_rejects_a_client_supplied_disposition(self) -> None:
+        # The profile derives this value from a map, so anything other than the
+        # two derived tokens means a client-controlled value reached the log.
+        upstream = {
+            "upstream_addr": "10.0.0.1:8080",
+            "upstream_status": "200",
+            "upstream_connect_time": "0.001",
+            "upstream_header_time": "0.002",
+            "upstream_response_time": "0.003",
+        }
+        for disposition in ("keep-alive", "Upgrade, close", "", "UPGRADE"):
+            with self.subTest(disposition=disposition):
+                invalid = event(connection_upgrade=disposition, **upstream)
+                with self.assertRaises(logs.ProfileLogError):
+                    logs.parse_events(encoded(invalid), "websocket")
+
     def test_exactly_one_scenario_event_is_required(self) -> None:
         observed = [event(), event(request_id="other")]
         self.assertEqual(

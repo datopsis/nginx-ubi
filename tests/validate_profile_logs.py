@@ -28,6 +28,7 @@ UPSTREAM_FIELDS = {
     "upstream_header_time",
     "upstream_response_time",
 }
+WEBSOCKET_FIELDS = {"connection_upgrade"}
 TLS_FIELDS = {
     "tls_protocol",
     "tls_cipher",
@@ -39,6 +40,7 @@ PROFILES = {
     "static",
     "reverse-proxy",
     "load-balancer",
+    "websocket",
     "tls-termination",
     "mutual-tls",
     "tls-upstream",
@@ -98,11 +100,18 @@ def parse_events(
     for value in forbidden:
         if value and value in raw:
             fail(f"forbidden value occurred in logs: {value}")
-    upstream = profile in {"reverse-proxy", "load-balancer", "tls-upstream"}
+    upstream = profile in {
+        "reverse-proxy",
+        "load-balancer",
+        "websocket",
+        "tls-upstream",
+    }
+    websocket = profile == "websocket"
     tls = profile in {"tls-termination", "mutual-tls"}
     fields = (
         COMMON_FIELDS
         | (UPSTREAM_FIELDS if upstream else set())
+        | (WEBSOCKET_FIELDS if websocket else set())
         | (TLS_FIELDS if tls else set())
     )
     events = []
@@ -122,6 +131,12 @@ def parse_events(
             for field in UPSTREAM_FIELDS:
                 if not isinstance(event[field], str) or not event[field]:
                     fail(f"{field} must be a non-empty JSON string")
+        if websocket:
+            # The value is derived by the profile from a map, so anything
+            # outside these two tokens means a client-supplied value reached
+            # the log or the map was changed without updating this contract.
+            if event["connection_upgrade"] not in {"upgrade", "close"}:
+                fail("connection_upgrade must be 'upgrade' or 'close'")
         if tls:
             for field in TLS_FIELDS:
                 if not isinstance(event[field], str):
@@ -176,6 +191,11 @@ def main() -> int:
     parser.add_argument("--status", required=True, type=int)
     parser.add_argument("--forbidden", action="append", default=[])
     parser.add_argument(
+        "--connection-upgrade",
+        choices=("upgrade", "close"),
+        help="require this derived connection disposition on the matching event",
+    )
+    parser.add_argument(
         "--upstream-attempts",
         type=int,
         help=(
@@ -192,6 +212,14 @@ def main() -> int:
         parser.error(str(exc))
     if event["method"] != "GET":
         parser.error("matching event has an unexpected request method")
+    if args.connection_upgrade is not None:
+        if "connection_upgrade" not in event:
+            parser.error("profile does not record a connection disposition")
+        if event["connection_upgrade"] != args.connection_upgrade:
+            parser.error(
+                f"expected connection_upgrade {args.connection_upgrade}; "
+                f"observed {event['connection_upgrade']}"
+            )
     if args.upstream_attempts is not None:
         if "upstream_addr" not in event:
             parser.error("profile does not record upstream attempts")

@@ -7,9 +7,9 @@ negative cases, runtime restrictions, and operational guidance are tested
 against the released image.
 
 The development image has tested preview profiles for static content, HTTP and
-verified-HTTPS upstream proxying, HTTP load balancing, TLS termination, and
-mutual TLS, including health endpoints and structured logging on unprivileged
-ports. The other
+verified-HTTPS upstream proxying, HTTP load balancing, WebSocket proxying, TLS
+termination, and mutual TLS, including health endpoints and structured logging
+on unprivileged ports. The other
 profiles below are design targets for the first release unless stated
 otherwise. See [Qualified HTTP and TLS configuration profiles](CONFIGURATION-PROFILES.md)
 for the exact implemented boundary.
