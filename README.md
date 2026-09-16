@@ -99,6 +99,13 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   and the security boundary of each one.
 - [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
   sensitive-data rules, and controlled-network responsibilities.
+- [Qualified HTTP and TLS profiles](docs/CONFIGURATION-PROFILES.md) provides
+  tested static-serving, reverse-proxy, TLS termination, mutual-TLS, and
+  verified-upstream configurations, structured log schemas, and operational
+  boundaries.
+- [TLS lifecycle](docs/TLS-LIFECYCLE.md) defines certificate and CRL
+  monitoring, renewal, overlapping-CA rotation, revocation response, rollback,
+  and the remaining platform cryptographic-policy boundary.
 - [Deployment](docs/DEPLOYMENT.md) describes standalone rootless Podman with a
   user systemd Quadlet, host logging, lifecycle operations, and qualification.
 - [Threat model](docs/THREAT-MODEL.md) identifies assets, trust boundaries,
@@ -167,18 +174,8 @@ cases with:
 ```console
 python -m unittest \
   tests.test_artifacts tests.test_components tests.test_nginx_features \
-  tests.test_transfer -v
+  tests.test_profile_logs tests.test_tls_material tests.test_transfer -v
 python scripts/components.py
-```
-
-Acquire and verify the exact AMD64 RPM bundle from the official sources:
-
-```console
-python scripts/artifacts.py acquire \
-  --lock artifacts/locks/amd64.json \
-  --output .artifact-bundle/amd64
-bash scripts/verify-rpm-bundle.sh \
-  artifacts/locks/amd64.json .artifact-bundle/amd64
 ```
 
 Native CI additionally mutates isolated copies of each acquired real-RPM
@@ -186,10 +183,16 @@ bundle to prove rejection of invalid signatures, signer mismatches, metadata,
 architecture, and inventory. Those tests require `rpmsign` and are not part of
 the download-free unit suite.
 
-Preload the locked bases and perform a network-disabled build with pulling
+Acquire and verify the exact AMD64 RPM bundle from the official sources, then
+preload the locked bases and perform a network-disabled build with pulling
 forbidden:
 
 ```console
+python scripts/artifacts.py acquire \
+  --lock artifacts/locks/amd64.json \
+  --output .artifact-bundle/amd64
+bash scripts/verify-rpm-bundle.sh \
+  artifacts/locks/amd64.json .artifact-bundle/amd64
 bash scripts/build-image.sh \
   amd64 localhost/nginx-ubi9:development
 ```
@@ -206,6 +209,10 @@ native Linux or WSL2:
 ```console
 CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/smoke.sh
+CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
+  bash tests/profiles.sh
+CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
+  bash tests/tls.sh
 ```
 
 Or start the hardened default service with Compose:

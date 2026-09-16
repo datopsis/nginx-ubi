@@ -88,9 +88,9 @@ real bundle prove rejection of tampering, signature removal, signer mismatch,
 wrong version, wrong architecture, missing RPMs, and additional RPMs. The
 jobs also compare every RPM's publisher-supplied license tag, source RPM, and
 vendor header with `artifacts/components.json`. The completed image is
-transferred by local archive into Docker solely for the existing compatibility
-smoke and scanner steps; that transfer performs no image build or registry
-pull.
+transferred by local archive into Docker solely for the
+existing compatibility smoke, HTTP and TLS profile qualification, and scanner
+steps; that transfer performs no image build or registry pull.
 
 The official public source is the default. An alternate approved source can be
 selected through protected CI configuration, but private endpoints,
@@ -107,12 +107,21 @@ The implemented image pipeline performs:
 
 1. Trivy build-configuration scanning.
 2. Verified, network-disabled, no-pull native architecture builds followed by
-   native Podman and Docker-compatibility restricted-runtime tests. They cover
+   native Podman and Docker-compatibility restricted-runtime, HTTP, and TLS
+   profile
+   tests. They cover
    the exact 79-RPM manifest, NGINX compile-feature and empty dynamic-module
    inventories, declared and arbitrary runtime identities, process privileges,
    a read-only root, hardened temporary storage, static content, health and log
    behavior, worker-replacing reload, active-request graceful shutdown, and
-   actionable startup failures.
+   actionable startup failures. The profile suite additionally qualifies
+   static-serving and reverse-proxy defaults, structured JSON events,
+   correlation IDs, query exclusion, forwarded headers, method and path denial,
+   and upstream failure. The TLS suite generates ephemeral CAs and leaf
+   certificates to test TLS 1.2/1.3, mTLS, leaf renewal, hostname and chain
+   verification, client and upstream CRL enforcement, overlapping-CA trust
+   rotation, lifecycle deadline monitoring, negative trust cases, and secret-
+   safe diagnostics.
 3. Trivy image vulnerability scanning.
 4. SPDX inventory generation with Syft.
 5. Independent fixed High/Critical vulnerability gating with Grype and a

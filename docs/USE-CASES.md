@@ -6,9 +6,12 @@ not yet a support matrix. A use case becomes supported only after its example,
 negative cases, runtime restrictions, and operational guidance are tested
 against the released image.
 
-The current development baseline serves static content and exposes a health
-endpoint on unprivileged port `8080`. The other profiles below are design
-targets for the first release unless stated otherwise.
+The development image has tested preview profiles for static content, HTTP and
+verified-HTTPS upstream proxying, TLS termination, and mutual TLS, including
+health endpoints and structured logging on unprivileged ports. The other
+profiles below are design targets for the first release unless stated
+otherwise. See [Qualified HTTP and TLS configuration profiles](CONFIGURATION-PROFILES.md)
+for the exact implemented boundary.
 
 ## Profile summary
 
@@ -25,10 +28,12 @@ targets for the first release unless stated otherwise.
 
 ## Static web server
 
-Mount site content read-only beneath `/usr/share/nginx/html`, or build a
-derived image when immutable application content must travel with the image.
-The default configuration serves this directory and returns `404` when a path
-does not exist.
+The qualified preview example mounts site content read-only beneath `/srv/www`.
+The image's generic development default continues to serve
+`/usr/share/nginx/html`. Build a derived image when immutable application
+content must travel with the image. The profile returns `404` when a path does
+not exist, denies dot-prefixed paths, disables indexes, and rejects methods
+other than `GET` and implicit `HEAD`.
 
 Access logs help identify missing assets, large responses, abusive clients,
 and unexpected methods. Query strings may contain signed-link credentials or
@@ -38,16 +43,17 @@ Do not enable directory indexes by default.
 
 ## Reverse proxy
 
-A reverse-proxy profile will define an explicit upstream and forward only the
-headers required by the application. It must distinguish the client-facing
-response from the upstream attempts that produced it. At minimum, logs should
-carry a generated or validated request ID, total request time, upstream
-address, upstream status, connection time, header time, and response time.
+The qualified preview reverse-proxy example defines one explicit HTTP upstream
+and forwards only reviewed headers. It distinguishes the client-facing
+response from the upstream result. Logs carry a generated or validated request
+ID, total request time, upstream address, upstream status, connection time,
+header time, and response time.
 
-Do not trust a client-supplied forwarding chain until a deployment has defined
-its trusted proxy hops. Upstream HTTPS must enable certificate-chain and
-hostname verification; merely using an `https://` upstream is insufficient.
-Network policy should restrict the container to approved upstreams and DNS.
+The example replaces a client-supplied forwarding chain with the direct peer
+address and performs no automatic retry. Upstream HTTPS must enable
+certificate-chain and hostname verification; merely using an `https://`
+upstream is insufficient and is not part of this profile. Network policy
+should restrict the container to approved upstreams and DNS.
 
 ## HTTP load balancer
 
@@ -67,6 +73,15 @@ Certificates, private keys, and trust stores are deployment inputs, not image
 content. Mount them read-only and make them readable by the runtime identity
 without starting the container as root. TLS logging should support protocol,
 cipher, requested server name, session reuse, and verification result.
+
+The qualified preview examples implement TLS 1.2/1.3 ingress termination,
+mandatory client-certificate authentication, and HTTPS upstream hostname and
+chain verification. Their automated rehearsal generates all CA and leaf key
+material outside the repository, rejects legacy protocol and untrusted-chain
+cases, and verifies leaf renewal. CA trust rotation, revocation enforcement,
+and lifecycle monitoring are also exercised with generated material. Production
+PKI operations, alert delivery, and exact-host cryptographic policy still
+require qualification.
 
 Client-certificate subjects, issuers, serial numbers, and fingerprints are
 identifiers. Collect only the field needed to meet an authentication or audit

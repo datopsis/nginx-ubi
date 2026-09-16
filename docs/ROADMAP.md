@@ -51,9 +51,9 @@ are separately approved. They must not delay the core first release.
 
 Work proceeds in this dependency order:
 
-1. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
-   profiles needed for the first supported image; keep additional profiles
-   explicitly preview until their tests close.
+1. Close the remaining operational and platform evidence for the minimum
+   qualified HTTP and TLS profiles; keep additional profiles explicitly
+   preview until their tests close.
 2. Complete the repository policy files, support boundary, threat model,
    requirement analysis, control ownership, vulnerability policy, tailored
    SCAP evidence, and deployment cyber package needed for review.
@@ -70,24 +70,20 @@ parallel only where it does not assume an unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 
-- [ ] Provide tested, minimal examples for static content, reverse proxying,
-  load balancing, WebSocket proxying, health/readiness endpoints, rate limits,
-  connection limits, and ClickHouse HTTP proxying.
-- [ ] Establish safe defaults for request limits, timeouts, headers, server
-  tokens, method handling, DNS resolution, upstream verification, and failure
-  behavior without silently breaking general-purpose use.
+- [ ] Provide tested, minimal examples for load balancing, WebSocket proxying,
+  extended health/readiness endpoints, rate limits, connection limits, and
+  ClickHouse HTTP proxying.
+- [ ] Extend the qualified defaults to DNS resolution, upstream verification,
+  and the remaining profiles without silently breaking general-purpose use.
 - [ ] Document configuration mounting, validation, reload, rollback, logging,
   troubleshooting, and secret redaction.
-- [ ] Implement and test structured logging profiles for static content,
-  reverse proxying, load balancing, TLS and mTLS, WebSockets, ClickHouse,
-  health endpoints, and request and connection limiting.
-- [ ] Qualify log escaping, correlation IDs, query-string exclusion, runtime
-  collection, rotation ownership, pipeline failure, and retention evidence.
-- [ ] Provide TLS 1.2/1.3 examples for ingress termination, upstream TLS with
-  hostname and chain verification, client-certificate authentication, trust
-  rotation, certificate renewal, revocation limitations, and negative cases.
-- [ ] Automate CA-issued TLS rehearsal without committing certificates or
-  private keys.
+- [ ] Implement and test structured logging for load balancing, TLS and mTLS,
+  WebSockets, ClickHouse, extended health endpoints, and request and connection
+  limiting.
+- [ ] Qualify runtime collection, rotation ownership, pipeline failure, and
+  retention evidence for the selected logging platform.
+- [ ] Qualify lifecycle-alert delivery and exact platform cryptographic-policy
+  behavior for the TLS profiles on the selected supported host.
 
 ## Package 4: CI and supply-chain controls
 

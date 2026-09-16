@@ -117,6 +117,28 @@ but container releases use the upstream-derived format documented in
   configuration and unwritable-temporary-path diagnostics, worker-replacing
   reloads with PID 1 retained, and complete active-request draining on
   `SIGQUIT` before a clean exit.
+- Added qualified preview static-serving and HTTP reverse-proxy configurations
+  with bounded request handling, validated correlation IDs, query-free JSON
+  access events, safe forwarding-header behavior, explicit upstream failure,
+  and native Podman plus Docker compatibility tests under restricted runtime
+  controls on AMD64 and ARM64.
+- Added qualified preview TLS 1.2/1.3 termination, mandatory mutual-TLS, and
+  verified HTTPS-upstream profiles with an ephemeral CA-issued rehearsal for
+  protocol bounds, hostname and chain validation, client authentication, leaf
+  renewal, untrusted roots, missing keys, restricted runtime, and secret-safe
+  structured logging on native Podman and Docker compatibility execution.
+- Added 14 focused unit tests for structured profile logs, covering exact
+  schemas, JSON escaping, type confusion, numeric bounds, timestamps,
+  correlation IDs, query exclusion, TLS results, upstream timing fields,
+  secret detection, and unique scenario selection.
+- Enforced mounted CRLs for mutual-TLS clients and HTTPS upstreams; extended the
+  ephemeral PKI rehearsal to reject revoked certificates and to prove old,
+  overlapping, and new-only CA trust states without disabling chain or hostname
+  verification.
+- Added a public-metadata TLS lifecycle checker with stable JSON output and 12
+  boundary-focused unit tests for certificate expiry, CRL freshness, timezone
+  handling, exact alert thresholds, malformed output, and fail-closed OpenSSL
+  inspection errors.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies

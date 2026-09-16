@@ -25,6 +25,10 @@ Absence from a matrix means unqualified, not implicitly compatible.
 | --- | --- | --- |
 | Published images | Unsupported | No release has been published. |
 | Repository development image | Preview/unqualified | Rootless smoke tests exist; release inputs and evidence are not frozen. |
+| Static HTTP profile | Preview/unqualified | Native AMD64/ARM64 Podman and Docker compatibility tests exist; exact host and release evidence remain incomplete. |
+| HTTP reverse-proxy profile | Preview/unqualified | Restricted-runtime, safe-header, logging, and upstream-failure tests exist; HTTPS upstreams and platform controls are outside this profile. |
+| TLS termination and mTLS profiles | Preview/unqualified | TLS 1.2/1.3, client authentication, leaf renewal, CRL enforcement, and negative cases are tested; production PKI operations and exact-host cryptographic policy remain unqualified. |
+| Verified HTTPS upstream profile | Preview/unqualified | Chain, hostname, SNI, revocation, overlapping-CA rotation, and restricted-runtime behavior are tested; deployment DNS, egress, and PKI remain operator-owned. |
 | Linux AMD64 and ARM64 | Preview/unqualified | Native CI exists; release-candidate evidence is not complete. |
 | Ubuntu WSL2 | Compatible for contributor development | The recorded environment passes build, smoke, and Quadlet tests but is not a deployment target. |
 | Standalone RHEL/Podman | Preview/unqualified | Exact SELinux-enforcing host qualification remains future work. |
