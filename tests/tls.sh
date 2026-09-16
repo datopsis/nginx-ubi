@@ -251,6 +251,22 @@ chmod 0644 "${evidence}"/*/*.crt
 chmod 0644 "${evidence}"/*/*.crl
 chmod 0640 "${evidence}"/*/*.key
 
+# Rootless Podman maps the invoking user onto container GID 0, so the runtime
+# identity reads these keys through the group bit while they stay unreadable to
+# other host users. Rootful Docker preserves host ownership instead, and its
+# container GID 0 is host root, so the identical file is unreadable there.
+# Setting group 0 on the host would fix Docker and break rootless Podman, so
+# the compatibility leg widens the mode on this throwaway rehearsal material
+# rather than weakening the primary runtime. These keys are generated per run
+# outside the repository and destroyed with the evidence directory.
+#
+# This is a harness accommodation, not deployment guidance. A deployment makes
+# keys readable by the runtime identity through ownership, as described in
+# docs/TLS-LIFECYCLE.md, and never by making them readable to every user.
+if ! grep -qi podman <<< "$("${runtime}" --version 2>&1)"; then
+    chmod 0644 "${evidence}"/*/*.key
+fi
+
 "${openssl}" verify -CAfile "${evidence}/ingress-ca/ca.crt" \
     -purpose sslserver -verify_hostname localhost \
     "${evidence}/ingress/server.crt" >/dev/null
