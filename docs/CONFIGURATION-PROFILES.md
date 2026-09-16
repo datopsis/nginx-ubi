@@ -1,7 +1,8 @@
 # Qualified HTTP and TLS configuration profiles
 
-The repository provides minimal static-serving and HTTP reverse-proxy
-configurations under `examples/profiles`. Static serving, HTTP reverse proxy,
+The repository provides minimal static-serving, HTTP reverse-proxy, and HTTP
+load-balancing configurations under `examples/profiles`. Static serving, HTTP
+reverse proxy, HTTP load balancing,
 TLS termination, mutual TLS, and verified HTTPS upstream profiles are exercised
 on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
@@ -58,6 +59,65 @@ Its access-event schema is:
 | `status` | integer | Final client-facing response status. |
 | `body_bytes_sent` | integer | Response-body bytes sent. |
 | `request_time` | number | Total request duration in seconds. |
+
+## HTTP load balancing
+
+[`examples/profiles/load-balancer/nginx.conf`](../examples/profiles/load-balancer/nginx.conf)
+distributes requests across a pool of HTTP members. Copy the example and
+replace the member endpoints with the deployment's approved service names.
+
+The pool uses weighted round robin, the NGINX default. It needs no shared state
+between workers and distributes predictably. `least_conn` suits long-lived or
+uneven requests and a hash method suits affinity; change the method only with a
+stated reason, because it changes failure behaviour under load.
+
+Member endpoints are resolved once when the configuration loads. A pool whose
+membership changes at runtime needs a reviewed resolver configuration, which is
+not part of this profile.
+
+### Failure handling
+
+`max_fails` and `fail_timeout` are *passive* checks. NGINX open source performs
+no active upstream probing, so a member is withdrawn only after real requests
+fail, and it is returned to rotation when `fail_timeout` expires rather than
+after any proof that it recovered. Sizing these too aggressively removes
+capacity during a transient blip; too loosely keeps sending traffic to a dead
+member. A deployment that needs health-driven membership owns that outside this
+image.
+
+Retries are restricted to `error` and `timeout`, which are failures that occur
+before the application observed the request. `non_idempotent` is deliberately
+absent: replaying a `POST`, `PATCH`, or `DELETE` that may already have been
+applied is a correctness and duplicate-side-effect risk, not an availability
+improvement. `proxy_next_upstream_tries` and `proxy_next_upstream_timeout` are
+both set so a failing pool cannot multiply one client request into an unbounded
+amount of upstream work.
+
+### Access-event schema
+
+The profile emits the common fields plus the upstream fields shared with the
+reverse proxy:
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `upstream_addr` | string | Member address, one entry per attempt. |
+| `upstream_status` | string | Upstream status, one entry per attempt. |
+| `upstream_connect_time` | string | Connect duration, one entry per attempt. |
+| `upstream_header_time` | string | Header duration, one entry per attempt. |
+| `upstream_response_time` | string | Response duration, one entry per attempt. |
+
+These stay strings rather than numbers because on failover NGINX records one
+entry per attempt. A reader splits on `", "`, and treats `" : "` as an attempt
+boundary within a single upstream group. Counting attempts is how the tests
+distinguish a real retry from a request that was simply routed to a healthy
+member.
+
+### Qualified behaviour
+
+The tests require that every healthy member receives traffic, that stopping a
+member produces no client-visible failure, and that at least one retry is
+recorded in the structured events. They do not qualify capacity, latency under
+load, connection draining during a rolling member restart, or session affinity.
 
 ## HTTP reverse proxy
 

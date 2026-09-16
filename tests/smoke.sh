@@ -111,21 +111,22 @@ assert_clean_exit() {
 worker_pids() {
     local name="$1"
     # NGINX workers are the non-PID-1 nginx processes in this single-service image.
+    #
+    # This function is called while workers are being replaced, so a process
+    # can exit between the glob and the read. Reading /proc/PID/comm through a
+    # command substitution lets a vanished process be skipped; redirecting from
+    # the file instead would abort the whole listing under `sh -e`.
+    #
     # The variables expand in the inner container shell, not this script.
     # shellcheck disable=SC2016
     "${runtime}" exec "${name}" sh -eu -c '
-        for status in /proc/[0-9]*/status; do
-            name=""
-            pid=""
-            while IFS=: read -r key value; do
-                case "${key}" in
-                    Name) set -- ${value}; name="$1" ;;
-                    Pid) set -- ${value}; pid="$1" ;;
-                esac
-            done < "${status}"
-            if test "${name}" = nginx && test "${pid}" != 1; then
-                printf "%s\n" "${pid}"
-            fi
+        for comm in /proc/[0-9]*/comm; do
+            command_name=$(cat "${comm}" 2>/dev/null) || continue
+            test "${command_name}" = nginx || continue
+            pid=${comm#/proc/}
+            pid=${pid%/comm}
+            test "${pid}" != 1 || continue
+            printf "%s\n" "${pid}"
         done
     ' | sort -n
 }

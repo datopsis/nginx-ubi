@@ -13,10 +13,14 @@ network="${prefix}-network"
 static="${prefix}-static"
 backend="${prefix}-backend"
 proxy="${prefix}-proxy"
+pool_a="${prefix}-pool-a"
+pool_b="${prefix}-pool-b"
+balancer="${prefix}-balancer"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
 proxy_body=$(mktemp "${tmp_root}/nginx-proxy-body.XXXXXX")
+balancer_body=$(mktemp "${tmp_root}/nginx-balancer-body.XXXXXX")
 no_new_privileges="no-new-privileges:true"
 
 if grep -qi podman <<< "$("${runtime}" --version 2>&1)"; then
@@ -25,9 +29,11 @@ fi
 
 cleanup() {
     "${runtime}" rm --force "${static}" "${proxy}" "${backend}" \
+        "${pool_a}" "${pool_b}" "${balancer}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
-    rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}"
+    rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
+        "${balancer_body}"
 }
 trap cleanup EXIT
 
@@ -191,8 +197,146 @@ printf '%s\n' "${proxy_logs}" | "${python}" \
     --request-id proxy.failure-1 \
     --status "${failure_status}"
 
-"${runtime}" stop --time 10 "${static}" "${proxy}" >/dev/null
+# ---------------------------------------------------------------------------
+# HTTP load balancing
+# ---------------------------------------------------------------------------
+
+run_restricted "${pool_a}" 10004 \
+    --network "${network}" \
+    --network-alias backend-a \
+    --hostname pool-member-a \
+    --volume "${script_dir}/fixtures/profile-pool/nginx.conf:/etc/nginx/nginx.conf:ro"
+run_restricted "${pool_b}" 10005 \
+    --network "${network}" \
+    --network-alias backend-b \
+    --hostname pool-member-b \
+    --volume "${script_dir}/fixtures/profile-pool/nginx.conf:/etc/nginx/nginx.conf:ro"
+"${runtime}" exec "${pool_a}" nginx -t -q -c /etc/nginx/nginx.conf
+"${runtime}" exec "${pool_b}" nginx -t -q -c /etc/nginx/nginx.conf
+assert_process_security "${pool_a}"
+assert_process_security "${pool_b}"
+
+run_restricted "${balancer}" 10006 \
+    --network "${network}" \
+    --publish 127.0.0.1::8080 \
+    --volume "${examples_dir}/load-balancer/nginx.conf:/etc/nginx/nginx.conf:ro"
+balancer_binding=$("${runtime}" port "${balancer}" 8080/tcp)
+balancer_port=${balancer_binding##*:}
+balancer_url="http://127.0.0.1:${balancer_port}"
+wait_for_http "${balancer_url}/healthz" "${balancer}"
+assert_process_security "${balancer}"
+"${runtime}" exec "${balancer}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# Every healthy member must receive traffic. Round robin alternates per
+# request, so a few requests are enough once the pool has settled.
+#
+# The probe converges instead of sampling once. A member that is still binding
+# its listener when the balancer starts collects passive failures, and after
+# `max_fails` it is withdrawn for `fail_timeout`, so a single early sample can
+# legitimately observe one member. Retrying past `fail_timeout` distinguishes a
+# pool that never balances from one that has not finished starting, without
+# weakening the assertion that both members serve traffic.
+members_seen=""
+for round in $(seq 1 20); do
+    members_seen=$(for attempt in 1 2 3 4; do
+        curl --fail --silent --show-error \
+            --header "X-Request-ID: balancer.spread-${round}-${attempt}" \
+            "${balancer_url}/application" \
+            | "${python}" -c 'import json, sys; print(json.load(sys.stdin)["member"])'
+    done | sort -u | tr '\n' ' ')
+    if test "${members_seen}" = "pool-member-a pool-member-b "; then
+        break
+    fi
+    sleep 1
+done
+if test "${members_seen}" != "pool-member-a pool-member-b "; then
+    "${runtime}" logs "${balancer}" >&2
+    echo "The pool did not distribute across both members: ${members_seen}" >&2
+    exit 1
+fi
+
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: balancer.valid-1' \
+    --header 'X-Forwarded-For: 203.0.113.9' \
+    --output "${balancer_body}" \
+    "${balancer_url}/application?balancer-secret=do-not-log"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["request_id"] == "balancer.valid-1"
+assert payload["xff"] != "203.0.113.9"' \
+    "${balancer_body}"
+
+# With one member stopped, every request must still succeed by failing over to
+# the surviving member.
+#
+# Round robin decides which request lands on the stopped member, and the member
+# is withdrawn from rotation once it reaches `max_fails`, so no individual
+# request is guaranteed to be the one that retries. The contract is therefore
+# stated as: no client-visible failure, every response from the surviving
+# member, and at least one recorded retry.
+"${runtime}" stop --time 10 "${pool_b}" >/dev/null
+for attempt in 1 2 3; do
+    failover_body=$(curl --fail --silent --show-error \
+        --header "X-Request-ID: balancer.failover-${attempt}" \
+        "${balancer_url}/application")
+    "${python}" -c \
+        'import json, sys
+payload = json.loads(sys.argv[1])
+assert payload["member"] == "pool-member-a", payload' \
+        "${failover_body}"
+done
+
+balancer_logs=$("${runtime}" logs "${balancer}" 2>&1)
+if grep -Fq '/healthz' <<< "${balancer_logs}"; then
+    echo "The load-balancer health endpoint unexpectedly wrote an access event" >&2
+    exit 1
+fi
+printf '%s\n' "${balancer_logs}" | "${python}" \
+    "${script_dir}/validate_profile_logs.py" \
+    --profile load-balancer \
+    --uri /application \
+    --request-id balancer.valid-1 \
+    --status 200 \
+    --upstream-attempts 1 \
+    --forbidden balancer-secret \
+    --forbidden do-not-log
+
+# At least one failover request must record two upstream attempts. That is
+# what distinguishes a real retry from a request that happened to be routed to
+# the surviving member, and it proves the dead member was actually tried.
+failover_retries=0
+for attempt in 1 2 3; do
+    if printf '%s\n' "${balancer_logs}" | "${python}" \
+        "${script_dir}/validate_profile_logs.py" \
+        --profile load-balancer \
+        --uri /application \
+        --request-id "balancer.failover-${attempt}" \
+        --status 200 \
+        --upstream-attempts 2 >"${null_device}" 2>&1; then
+        failover_retries=$((failover_retries + 1))
+    fi
+done
+if test "${failover_retries}" -lt 1; then
+    printf '%s\n' "${balancer_logs}" >&2
+    echo "No failover request recorded a retry to the surviving member" >&2
+    exit 1
+fi
+
+# Each failover request must still be a well-formed event under the profile
+# contract, whether or not it was the one that retried.
+for attempt in 1 2 3; do
+    printf '%s\n' "${balancer_logs}" | "${python}" \
+        "${script_dir}/validate_profile_logs.py" \
+        --profile load-balancer \
+        --uri /application \
+        --request-id "balancer.failover-${attempt}" \
+        --status 200 >"${null_device}"
+done
+
+"${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
 
-echo "Static and reverse-proxy profile qualification passed for ${image}"
+echo "Static, reverse-proxy, and load-balancer profile qualification passed for ${image}"

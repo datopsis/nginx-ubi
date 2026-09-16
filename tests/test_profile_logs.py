@@ -142,6 +142,51 @@ class ProfileLogTests(unittest.TestCase):
                 with self.assertRaises(logs.ProfileLogError):
                     logs.parse_events(encoded(invalid), "mutual-tls")
 
+    def test_load_balancer_requires_the_upstream_fields(self) -> None:
+        upstream = {
+            "upstream_addr": "10.0.0.1:8080",
+            "upstream_status": "200",
+            "upstream_connect_time": "0.001",
+            "upstream_header_time": "0.002",
+            "upstream_response_time": "0.003",
+        }
+        expected = event(**upstream)
+        self.assertEqual(
+            logs.parse_events(encoded(expected), "load-balancer"), [expected]
+        )
+        # The same event without upstream fields belongs to a different profile.
+        with self.assertRaises(logs.ProfileLogError):
+            logs.parse_events(encoded(event()), "load-balancer")
+
+    def test_single_upstream_attempt_is_counted(self) -> None:
+        self.assertEqual(
+            logs.upstream_attempts({"upstream_addr": "10.0.0.1:8080"}), 1
+        )
+
+    def test_failover_records_one_attempt_per_peer(self) -> None:
+        self.assertEqual(
+            logs.upstream_attempts(
+                {"upstream_addr": "10.0.0.2:8080, 10.0.0.1:8080"}
+            ),
+            2,
+        )
+
+    def test_attempts_within_one_upstream_group_are_counted(self) -> None:
+        # NGINX separates attempts made after an internal redirect with " : ",
+        # so a reader that only splits on ", " undercounts the retries.
+        self.assertEqual(
+            logs.upstream_attempts(
+                {"upstream_addr": "10.0.0.2:8080 : 10.0.0.1:8080"}
+            ),
+            2,
+        )
+        self.assertEqual(
+            logs.upstream_attempts(
+                {"upstream_addr": "10.0.0.3:8080, 10.0.0.2:8080 : 10.0.0.1:8080"}
+            ),
+            3,
+        )
+
     def test_exactly_one_scenario_event_is_required(self) -> None:
         observed = [event(), event(request_id="other")]
         self.assertEqual(

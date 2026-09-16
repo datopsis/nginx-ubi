@@ -35,7 +35,14 @@ TLS_FIELDS = {
     "tls_session_reused",
     "tls_client_verify",
 }
-PROFILES = {"static", "reverse-proxy", "tls-termination", "mutual-tls", "tls-upstream"}
+PROFILES = {
+    "static",
+    "reverse-proxy",
+    "load-balancer",
+    "tls-termination",
+    "mutual-tls",
+    "tls-upstream",
+}
 REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
 
@@ -91,7 +98,7 @@ def parse_events(
     for value in forbidden:
         if value and value in raw:
             fail(f"forbidden value occurred in logs: {value}")
-    upstream = profile in {"reverse-proxy", "tls-upstream"}
+    upstream = profile in {"reverse-proxy", "load-balancer", "tls-upstream"}
     tls = profile in {"tls-termination", "mutual-tls"}
     fields = (
         COMMON_FIELDS
@@ -132,6 +139,17 @@ def parse_events(
     return events
 
 
+def upstream_attempts(event: dict[str, object]) -> int:
+    """Count upstream attempts recorded for one client request.
+
+    NGINX writes one entry per attempt, separated by ", ". A ":" separates
+    attempts made within a single upstream group after an internal redirect,
+    so both separators count toward the total.
+    """
+    addresses = str(event["upstream_addr"])
+    return sum(len(part.split(" : ")) for part in addresses.split(", "))
+
+
 def select_event(
     events: Iterable[dict[str, object]], uri: str, request_id: str, status: int
 ) -> dict[str, object]:
@@ -157,6 +175,14 @@ def main() -> int:
     parser.add_argument("--request-id", required=True)
     parser.add_argument("--status", required=True, type=int)
     parser.add_argument("--forbidden", action="append", default=[])
+    parser.add_argument(
+        "--upstream-attempts",
+        type=int,
+        help=(
+            "require exactly this many upstream attempts for the matching "
+            "event, proving that failover did or did not occur"
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -166,6 +192,15 @@ def main() -> int:
         parser.error(str(exc))
     if event["method"] != "GET":
         parser.error("matching event has an unexpected request method")
+    if args.upstream_attempts is not None:
+        if "upstream_addr" not in event:
+            parser.error("profile does not record upstream attempts")
+        observed = upstream_attempts(event)
+        if observed != args.upstream_attempts:
+            parser.error(
+                f"expected {args.upstream_attempts} upstream attempts; "
+                f"observed {observed}"
+            )
 
     print(f"validated {args.profile} structured access event")
     return 0
