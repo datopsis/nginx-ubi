@@ -1,9 +1,8 @@
 # External artifact acquisition
 
-Status: reviewed architecture locks, lock-update tooling, and verified
-official and alternate-source acquisition are implemented. The `Containerfile`
-still resolves RPMs during the builder stage and must be migrated to consume
-the verified bundle.
+Status: locked-file acquisition, verification, and network-disabled local
+assembly are implemented. Native CI exercises the same architecture-specific
+path.
 
 ## Build contract
 
@@ -177,6 +176,20 @@ Assembly must enforce:
 The build may validate the shape of its local input for defensive diagnostics,
 but publisher and download verification remain CI preparation responsibilities.
 
+`scripts/build-image.sh` re-verifies the selected bundle, explicitly preloads
+the two digest-pinned UBI bases, confirms they are present, and invokes Podman
+with `--pull=never`, `--network none`, and a named local artifact context. Set
+`PULL_BASES=0` only after transferring both locked bases into the local image
+store. The `Containerfile` installs the complete RPM transaction without DNF,
+repository metadata, or package-network access and compares the installed RPM
+inventory with the lock-derived manifest.
+
+The regular build context excludes all artifact staging directories. Only the
+verified bundle is supplied as the named context, and only its public signing
+keys, RPMs, and generated manifests are visible to the temporary builder. The
+final image receives the installed runtime tree—not the input bundle—and
+removes repository configuration inherited from the base or RPM closure.
+
 ### 5. Prove hermetic behavior
 
 CI will run an assembly with network disabled and inspect image history and
@@ -240,16 +253,23 @@ dependency.
 
 ## Required tests
 
-Unit tests exercise schema, reviewed-input, digest, and inventory rejection
-without downloads.
-
-The implementation is incomplete until automated tests additionally
-demonstrate rejection of:
+The lock and bundle tests demonstrate rejection of:
 
 - a modified RPM;
 - an RPM signed by an unapproved key;
 - the wrong NEVRA or architecture;
 - an extra or missing dependency RPM;
-- a base image with the wrong digest;
+- a base image with the wrong digest.
+
+Unit tests exercise schema, reviewed-input, digest, and inventory rejection
+without downloads. After native acquisition, `tests/rpm-bundle-negative.py`
+creates isolated variants of the real bundle and proves that byte tampering,
+signature removal, signer mismatch, wrong version, wrong architecture, missing
+RPMs, and additional RPMs are rejected. Test-only mutations and stripped RPMs
+remain in temporary directories and are deleted after the run.
+
+The broader hermetic and secret-isolation gate still requires automated
+evidence for:
+
 - any attempted network access during assembly; and
 - repository credentials or trust material found in the image or its history.

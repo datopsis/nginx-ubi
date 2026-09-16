@@ -78,11 +78,9 @@ jobs:
         include:
           - architecture: amd64
             runner: ubuntu-24.04
-            platform: linux/amd64
             machine: x86_64
           - architecture: arm64
             runner: ubuntu-24.04-arm
-            platform: linux/arm64
             machine: aarch64
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
@@ -100,25 +98,58 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-
       - name: Confirm native runner architecture
         env:
           EXPECTED_MACHINE: ${{ matrix.machine }}
         run: test "$(uname -m)" = "${EXPECTED_MACHINE}"
 
-      - name: Build test image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
-        with:
-          context: .
-          file: Containerfile
-          platforms: ${{ matrix.platform }}
-          load: true
-          push: false
-          tags: ${{ env.TEST_IMAGE }}
-          cache-from: type=gha,scope=image-${{ matrix.architecture }}
-          cache-to: type=gha,mode=max,scope=image-${{ matrix.architecture }}
+      - name: Confirm hermetic-build tools
+        run: |
+          podman version
+          rpm --version
+          rpmsign --version
+          gpg --version | head -n 1
+
+      - name: Acquire architecture artifact bundle
+        run: >-
+          python scripts/artifacts.py acquire
+          --lock artifacts/locks/${{ matrix.architecture }}.json
+          --output .artifact-bundle/${{ matrix.architecture }}
+
+      - name: Verify architecture artifact bundle
+        run: >-
+          bash scripts/verify-rpm-bundle.sh
+          artifacts/locks/${{ matrix.architecture }}.json
+          .artifact-bundle/${{ matrix.architecture }}
+
+      - name: Reject invalid RPM bundles
+        run: >-
+          python tests/rpm-bundle-negative.py
+          --lock artifacts/locks/${{ matrix.architecture }}.json
+          --bundle .artifact-bundle/${{ matrix.architecture }}
+
+      - name: Build without network access or image pulling
+        env:
+          PULL_BASES: "1"
+        run: >-
+          bash scripts/build-image.sh
+          ${{ matrix.architecture }}
+          "${TEST_IMAGE}"
+
+      - name: Prove hermetic build boundaries fail closed
+        run: bash tests/hermetic-build-negative.sh ${{ matrix.architecture }}
+
+      - name: Run native Podman restricted-runtime tests
+        env:
+          CONTAINER_RUNTIME: podman
+          IMAGE: ${{ env.TEST_IMAGE }}
+        run: bash tests/smoke.sh
+
+      - name: Transfer image to Docker compatibility environment
+        run: |
+          podman save --format docker-archive --output /tmp/nginx-ubi-image.tar "${TEST_IMAGE}"
+          docker load --input /tmp/nginx-ubi-image.tar
+          rm --force /tmp/nginx-ubi-image.tar
 
       - name: Confirm loaded image architecture
         env:
@@ -127,7 +158,7 @@ jobs:
           test "$(docker image inspect --format '{{.Architecture}}' "${TEST_IMAGE}")"
           = "${EXPECTED_ARCHITECTURE}"
 
-      - name: Run restricted-runtime smoke tests
+      - name: Run Docker compatibility restricted-runtime tests
         env:
           CONTAINER_RUNTIME: docker
           IMAGE: ${{ env.TEST_IMAGE }}

@@ -76,9 +76,15 @@ identity before a bundle is exposed to assembly. Unit tests cover atomic
 publication and fail-closed inventory and source-map behavior without
 downloading artifacts.
 
-The current development build still resolves RPMs from inside the builder
-stage. Migrating it to consume the verified bundle with networking and pulling
-disabled remains the next step in the acquisition contract.
+Native image jobs acquire and verify their matching bundle, preload the exact
+digest-pinned UBI bases, and build with Podman using `--network none` and
+`--pull=never`. They also prove that the build rejects a wrong lock identity
+and cannot fetch an unavailable base. Before assembly, isolated copies of the
+real bundle prove rejection of tampering, signature removal, signer mismatch,
+wrong version, wrong architecture, missing RPMs, and additional RPMs. The
+completed image is transferred by local archive into Docker solely for the
+existing compatibility smoke and scanner steps; that transfer performs no
+image build or registry pull.
 
 The official public source is the default. An alternate approved source can be
 selected through protected CI configuration, but private endpoints,
@@ -94,7 +100,8 @@ The stable protected check names are `lint`, `configuration security`, and
 The implemented image pipeline performs:
 
 1. Trivy build-configuration scanning.
-2. Native architecture builds and restricted-runtime scenario tests covering
+2. Verified, network-disabled, no-pull native architecture builds followed by
+   native Podman and Docker-compatibility restricted-runtime tests covering
    the declared and arbitrary runtime identities, process privileges, a
    read-only root, hardened temporary storage, static content, health behavior,
    log streams, reload and shutdown, and actionable startup failures.

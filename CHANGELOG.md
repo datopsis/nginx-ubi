@@ -89,6 +89,18 @@ but container releases use the upstream-derived format documented in
   artifact bundles, including exact inventory, digest, RPM signature, signer,
   NEVRA, architecture, and lock-manifest verification without storing source
   credentials or private trust material in the repository or image build.
+- Migrated the development image to the selected official NGINX 1.30.4 RPM and
+  its exact architecture lock, with local-only RPM installation, installed
+  inventory comparison, digest-pinned base preloading, network-disabled
+  assembly, and an enforceable no-pull policy in local and native CI builds.
+- Added hermetic-build rejection checks for a wrong lock identity and an
+  unavailable base, and removed repository configuration from the final
+  filesystem.
+- Added native real-RPM negative tests for modified, unsigned, signer-mismatched,
+  wrong-version, wrong-architecture, missing, and unexpected bundle content;
+  bound production lock validation to the reviewed base images, NGINX seed,
+  and signing-key inputs; and required filenames to agree with RPM metadata
+  and official source URLs.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies
