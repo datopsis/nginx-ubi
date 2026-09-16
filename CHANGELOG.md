@@ -70,12 +70,21 @@ but container releases use the upstream-derived format documented in
   NGINX RPMs, including trust checks and reproducibility limits.
 - Evaluated official NGINX stable RPMs as the proposed first-release package
   source and defined migration and acceptance requirements.
+- Refreshed the digest-pinned UBI 9.8 Minimal and Micro base images and the
+  pinned NGINX module build so the development build resolves
+  `openssl-libs-1:3.5.8-1.el9_8` from RHSA-2026:67165 and no longer reuses a
+  cached package layer that predates the errata. The previously pinned
+  `nginx-core` build had been superseded and was no longer resolvable, so the
+  legacy pipeline was succeeding only from that cache.
 - Approved the official NGINX stable channel, selected
   `nginx-2:1.30.4-1.el9.ngx` for first-release implementation qualification,
   and retired the completed source-selection item from the forward roadmap.
 - Added reviewed AMD64 and ARM64 artifact locks for the selected NGINX RPM,
   its complete UBI dependency closure, source RPMs, signing identities, and
   base-image digests, with fail-closed validation and lock-update tooling.
+  The locks record the refreshed UBI 9.8 bases and therefore
+  `openssl-1:3.5.8-1.el9_8` from RHSA-2026:67165 and the
+  `systemd-0:252-67.el9_8.6` rebuild.
 - Added atomic official and protected alternate-source acquisition for locked
   artifact bundles, including exact inventory, digest, RPM signature, signer,
   NEVRA, architecture, and lock-manifest verification without storing source
