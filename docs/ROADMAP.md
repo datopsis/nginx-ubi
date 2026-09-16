@@ -51,34 +51,28 @@ are separately approved. They must not delay the core first release.
 
 Work proceeds in this dependency order:
 
-1. Migrate the image to the exact official NGINX RPM and require
-   network-disabled, no-pull assembly from a verified local bundle.
-2. Close rootless failure diagnostics, graceful lifecycle tests, and
+1. Close rootless failure diagnostics, graceful lifecycle tests, and
    package/module inventory checks.
-3. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
+2. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
    profiles needed for the first supported image; keep additional profiles
    explicitly preview until their tests close.
-4. Complete the repository policy files, support boundary, threat model,
+3. Complete the repository policy files, support boundary, threat model,
    requirement analysis, control ownership, vulnerability policy, tailored
    SCAP evidence, and deployment cyber package needed for review.
-5. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
+4. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
    journald collection, controlled-network operation, and rollback on an exact
    supported Linux host.
-6. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+5. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
    verification workflow from an untagged release candidate.
-7. Freeze inputs, regenerate release-candidate evidence, approve findings,
+6. Freeze inputs, regenerate release-candidate evidence, approve findings,
    create the immutable tag, publish by digest, and verify the release.
 
-Steps 1 and 2 are the immediate engineering critical path. Steps 3 and 4 can
-proceed in parallel only where they do not assume an unfrozen NGINX package or
-module set.
+Step 1 is the immediate engineering critical path. Steps 2 and 3 can proceed
+in parallel only where they do not assume an unfrozen NGINX package or module
+set.
 
 ## Package 2: rootless minimal image
 
-- [ ] Make ordinary CI and local builds consume verified local bundles with
-  build networking and image pulling disabled.
-- [ ] Add negative tests for tampered, unsigned, wrong-version,
-  wrong-architecture, missing, and unexpected bundle contents.
 - [ ] Record source, redistribution, licensing, support lifecycle, and update
   ownership for every runtime component.
 - [ ] Define lock refresh, key rotation, artifact mirroring, rollback, and

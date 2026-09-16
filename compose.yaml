@@ -1,9 +1,6 @@
 services:
   nginx:
     image: localhost/nginx-ubi9:development
-    build:
-      context: .
-      dockerfile: Containerfile
     ports:
       - "127.0.0.1:8080:8080"
     read_only: true

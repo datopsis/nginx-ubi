@@ -3,35 +3,27 @@
 ARG UBI_MINIMAL_IMAGE="registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7fbeae18dc9476399f565e68255f602a3374ea8614ba3d14843565131a13ff93"
 ARG UBI_MICRO_IMAGE="registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6"
 
+# The caller overrides this empty stage with a verified local named context.
+# Keeping the fallback empty makes a missing bundle fail instead of pulling an
+# image that happens to use the context name.
+FROM scratch AS artifact_bundle
+
 FROM ${UBI_MINIMAL_IMAGE} AS builder
 
-ARG NGINX_MODULE_STREAM="1.26"
-ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3"
+ARG ARTIFACT_LOCK_SHA256
 
-# Install the exact Red Hat NGINX build and its runtime dependency closure into
-# a separate root. The UBI Micro final stage receives no package-management
-# commands or builder caches.
-# hadolint ignore=DL3041
-RUN microdnf install -y dnf \
-    && mkdir -p /runtime \
-    && dnf module enable -y \
-        --installroot=/runtime \
-        --releasever=9 \
-        "nginx:${NGINX_MODULE_STREAM}" \
-    && dnf install -y \
-        --installroot=/runtime \
-        --releasever=9 \
-        --setopt=install_weak_deps=0 \
-        --setopt=keepcache=0 \
-        "nginx-core-${NGINX_RPM_VERSION}" \
-        ca-certificates tzdata \
-    && dnf clean all \
-    && microdnf clean all \
+COPY --from=artifact_bundle / /bundle/
+COPY --chmod=0755 scripts/install-rpm-bundle.sh /usr/local/bin/install-rpm-bundle
+
+# Installation consumes only the complete local RPM closure. Network access
+# and base-image pulling are disabled by the invoking build command.
+RUN test -n "${ARTIFACT_LOCK_SHA256}" \
+    && test "$(tr -d '\n' </bundle/LOCK-SHA256)" = "${ARTIFACT_LOCK_SHA256}" \
+    && /usr/local/bin/install-rpm-bundle /bundle /runtime \
     && rm -rf \
         /runtime/run/* \
         /runtime/tmp/* \
-        /runtime/var/cache/dnf \
-        /runtime/var/cache/nginx \
+        /runtime/var/cache/* \
         /runtime/var/log/* \
         /runtime/var/tmp/* \
     && mkdir -p /runtime/var/log/nginx \
@@ -42,19 +34,17 @@ RUN microdnf install -y dnf \
 
 FROM ${UBI_MICRO_IMAGE}
 
-ARG NGINX_VERSION="1.26.3"
-ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3"
-
 LABEL org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
       org.opencontainers.image.description="A security-oriented, rootless NGINX image built on Red Hat UBI 9 Micro" \
-      org.opencontainers.image.source="https://github.com/datopsis/nginx-ubi9" \
-      org.opencontainers.image.documentation="https://github.com/datopsis/nginx-ubi9#readme" \
+      org.opencontainers.image.source="https://github.com/datopsis/nginx-ubi" \
+      org.opencontainers.image.documentation="https://github.com/datopsis/nginx-ubi#readme" \
       org.opencontainers.image.licenses="BSD-2-Clause AND Apache-2.0" \
       org.opencontainers.image.vendor="Datopsis" \
-      org.opencontainers.image.version="${NGINX_VERSION}" \
-      io.datopsis.nginx.rpm-version="${NGINX_RPM_VERSION}"
+      org.opencontainers.image.version="1.30.4" \
+      io.datopsis.nginx.rpm-version="2:1.30.4-1.el9.ngx"
 
 COPY --from=builder /runtime/ /
+RUN rm -rf /etc/yum.repos.d
 COPY --chown=0:0 --chmod=0644 container/nginx.conf /etc/nginx/nginx.conf
 COPY --chown=0:0 --chmod=0644 container/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY --chown=0:0 --chmod=0644 container/html/index.html /usr/share/nginx/html/index.html

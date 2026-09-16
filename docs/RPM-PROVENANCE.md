@@ -1,14 +1,14 @@
 # NGINX RPM provenance
 
-The NGINX binaries in this image come from Red Hat's public UBI 9 AppStream
-RPM repository. They are not downloaded from nginx.org, EPEL, or an
-uncontrolled third-party repository, and this project does not compile NGINX
-from source.
+The initial development image used NGINX binaries from Red Hat's public UBI 9
+AppStream RPM repository. The current image uses the locked official NGINX
+stable package described in [Package-source decision](PACKAGE-SOURCE.md). This
+project does not compile NGINX from source.
 
 ## Exact development input
 
-The current `Containerfile` selects the UBI 9 NGINX `1.26` module stream and
-installs this exact package build:
+Before the official NGINX migration, the `Containerfile` selected the UBI 9
+NGINX `1.26` module stream and installed this exact package build:
 
 ```text
 nginx-core-2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3
@@ -94,10 +94,10 @@ The release-candidate review will record source availability, redistribution
 terms, support boundaries, update ownership, and the exact inputs used for each
 published image digest.
 
-The proposed move to official NGINX stable RPMs is evaluated in
-[NGINX package-source decision](PACKAGE-SOURCE.md). This file continues to
-describe the image as it exists until that migration is implemented and
-verified.
+The implemented move to official NGINX stable RPMs is evaluated in
+[NGINX package-source decision](PACKAGE-SOURCE.md). This file preserves the
+provenance of the superseded development build; the architecture locks and
+artifact-acquisition guide describe the current build inputs and process.
 
-The current builder downloads RPMs and therefore does not yet satisfy the
-planned [external artifact-acquisition contract](ARTIFACT-ACQUISITION.md).
+The current builder consumes only the externally verified bundle described by
+the [artifact-acquisition contract](ARTIFACT-ACQUISITION.md).

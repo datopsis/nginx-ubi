@@ -113,8 +113,10 @@ stat -fc %T /sys/fs/cgroup
 Then use the canonical repository workflow:
 
 ```console
-podman build --format docker --file Containerfile \
-  --tag localhost/nginx-ubi9:development .
+python scripts/artifacts.py acquire \
+  --lock artifacts/locks/amd64.json \
+  --output .artifact-bundle/amd64
+bash scripts/build-image.sh amd64 localhost/nginx-ubi9:development
 CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/smoke.sh
 ```

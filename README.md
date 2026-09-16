@@ -168,16 +168,29 @@ bash scripts/verify-rpm-bundle.sh \
   artifacts/locks/amd64.json .artifact-bundle/amd64
 ```
 
+Native CI additionally mutates isolated copies of each acquired real-RPM
+bundle to prove rejection of invalid signatures, signer mismatches, metadata,
+architecture, and inventory. Those tests require `rpmsign` and are not part of
+the download-free unit suite.
+
+Preload the locked bases and perform a network-disabled build with pulling
+forbidden:
+
+```console
+bash scripts/build-image.sh \
+  amd64 localhost/nginx-ubi9:development
+```
+
 The acquisition guide documents ARM64, optional source RPMs, and protected
-alternate-source configuration. Python 3, RPM, and GnuPG are required for
-preparation.
+alternate-source configuration. Python 3, RPM, GnuPG, Bash, and Podman are
+required for preparation and assembly. Set `PULL_BASES=0` to require already
+present bases for a disconnected build; assembly always uses `--pull=never`
+and `--network none`.
 
 Build and exercise the current AMD64 development image with rootless Podman on
 native Linux or WSL2:
 
 ```console
-podman build --format docker --file Containerfile \
-  --tag localhost/nginx-ubi9:development .
 CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/smoke.sh
 ```
@@ -185,7 +198,7 @@ CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
 Or start the hardened default service with Compose:
 
 ```console
-podman compose up --build
+podman compose up
 curl --fail http://127.0.0.1:8080/healthz
 ```
 
