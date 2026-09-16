@@ -4,6 +4,9 @@
 .venv
 build
 dist
+.artifact-bundle
+.artifact-inputs
+.artifact-resolver
 docs
 security-results
 tests

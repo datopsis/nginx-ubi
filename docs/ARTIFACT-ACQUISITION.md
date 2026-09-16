@@ -1,7 +1,9 @@
 # External artifact acquisition
 
-Status: required design for the first release; the current `Containerfile`
-still resolves RPMs during the builder stage and must be migrated.
+Status: reviewed architecture locks, lock-update tooling, and verified
+official and alternate-source acquisition are implemented. The `Containerfile`
+still resolves RPMs during the builder stage and must be migrated to consume
+the verified bundle.
 
 ## Build contract
 
@@ -54,7 +56,7 @@ An ordinary pull-request, `main`, or release build never selects "latest" and
 never recalculates the dependency closure. It downloads only entries already
 present in the merged lock.
 
-An architecture-specific lock manifest will identify:
+Each architecture-specific lock manifest identifies:
 
 - each base-image registry, repository, tag, and expected manifest digest;
 - NGINX channel, RPM name, epoch, version, release, and architecture;
@@ -67,6 +69,45 @@ An architecture-specific lock manifest will identify:
 
 The lock manifest is reviewable repository content. Credentials, tokens,
 private CA keys, and internal secrets are not.
+
+### Implemented lock set
+
+The reviewed lock inputs are in `artifacts/lock-inputs.json`; the JSON schema
+is `artifacts/artifact-lock.schema.json`; and the rendered locks are
+`artifacts/locks/amd64.json` and `artifacts/locks/arm64.json`. Each lock pins
+the selected NGINX RPM, the complete 79-package installation closure, 59
+corresponding source RPMs, artifact sizes and SHA-256 values, the actual RPM
+signer fingerprint, and the builder and runtime manifest-list digests.
+
+The two architectures have the same package-name and source-package sets.
+Architecture-specific binary hashes and sizes remain separate. Identical
+source RPM content is retained by URL and digest in both locks so either
+architecture record is independently complete.
+
+Validate the reviewed inputs, both locks, and negative validation cases with:
+
+```console
+python scripts/artifacts.py validate-inputs artifacts/lock-inputs.json
+python scripts/artifacts.py validate-lock artifacts/locks/amd64.json \
+  --inputs artifacts/lock-inputs.json
+python scripts/artifacts.py validate-lock artifacts/locks/arm64.json \
+  --inputs artifacts/lock-inputs.json
+python -m unittest tests.test_artifacts -v
+```
+
+`scripts/fetch-lock-inputs.py`, `scripts/resolve-lock.sh`, and
+`scripts/render-lock.py` implement the explicit lock-update path. The fetcher
+admits only HTTPS URLs on approved public hosts and verifies the reviewed
+SHA-256 before exposing an input. The resolver independently checks input
+inventory, hashes, full signing-key fingerprints, RPM signatures, NEVRA,
+architecture, dependency closure, and source-RPM signatures. The renderer
+maps the observed RPM signing key ID to exactly one approved full fingerprint
+and fails closed on malformed or inconsistent output.
+
+An ARM64 lock can be dependency-resolved with DNF's explicit `aarch64` mode
+without executing an ARM binary. Native ARM64 assembly and runtime evidence is
+still required before release and will independently exercise the lock on the
+target architecture.
 
 ### 2. Acquire locked files outside the build
 
@@ -83,6 +124,22 @@ unapproved hosts, or changes to locked content fail the job.
 Base images are also pulled before assembly and checked against their expected
 manifest digests. The build uses the already-present local image and disables
 pulling.
+
+Acquire the binary bundle for the native architecture from the official
+publisher URLs and then perform RPM-level verification:
+
+```console
+python scripts/artifacts.py acquire \
+  --lock artifacts/locks/amd64.json \
+  --output .artifact-bundle/amd64
+bash scripts/verify-rpm-bundle.sh \
+  artifacts/locks/amd64.json .artifact-bundle/amd64
+```
+
+Add `--include-sources` to both commands when preparing a redistribution and
+source-compliance bundle. Acquisition is atomic and refuses to replace an
+existing output directory. The published directory contains only the exact
+locked inputs plus lock-bound key, RPM, and optional source manifests.
 
 ### 3. Verify outside the build
 
@@ -142,6 +199,29 @@ A runner can reach a private source only when an approved network path exists.
 Otherwise the controlled workflow needs a hardened runner within that boundary
 or a separately approved artifact-transfer stage.
 
+Pass an external JSON source map with `--source-map`. It must contain exactly
+one HTTPS URL for every logical path required by the selected lock and bundle
+mode:
+
+```json
+{
+  "schema_version": 1,
+  "artifacts": {
+    "keys/nginx_signing.key": "https://approved.example/keys/nginx_signing.key",
+    "rpms/example.rpm": "https://approved.example/rpms/example.rpm"
+  }
+}
+```
+
+This abbreviated shape illustrates the interface; a real map must enumerate
+the complete lock. URLs containing credentials, query strings, or fragments
+are rejected. Redirects may remain only on the original HTTPS host. Use
+`--token-env VARIABLE_NAME` to read a bearer token from the runner
+environment and `--ca-bundle PATH` for externally provisioned CA trust. The
+tool does not print source URLs or token values on download errors. Source
+maps, credentials, and private CA material are protected runner inputs and
+must not be committed or added to the build context.
+
 ## Local development
 
 Local development uses the same preparation and assembly interface. A developer
@@ -149,7 +229,7 @@ first prepares or receives a verified artifact bundle, then builds without
 network access. A cached but unverified file is not accepted merely because it
 is local.
 
-The preparation tooling will provide actionable messages for missing source
+The preparation tooling provides actionable messages for missing source
 configuration and will use the official public source by default. The artifact
 lock, verification semantics, and network-disabled assembly remain identical
 when an alternate source is deliberately selected.
@@ -160,8 +240,11 @@ dependency.
 
 ## Required tests
 
-The implementation is incomplete until automated tests demonstrate rejection
-of:
+Unit tests exercise schema, reviewed-input, digest, and inventory rejection
+without downloads.
+
+The implementation is incomplete until automated tests additionally
+demonstrate rejection of:
 
 - a modified RPM;
 - an RPM signed by an unapproved key;
