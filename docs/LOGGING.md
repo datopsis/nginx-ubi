@@ -97,7 +97,10 @@ session reuse, and the client-certificate verification result. They omit client
 certificate identity and content. The exact field schemas and operational
 boundary are documented in [Qualified HTTP and TLS configuration profiles](CONFIGURATION-PROFILES.md).
 These examples do not change the generic development default described above
-and do not qualify a runtime collector or its retention controls.
+and do not qualify a runtime collector or its retention controls. They emit an
+access event only for a real application request; a rejected TLS handshake or a
+malformed request line is reported through the error stream instead of a
+structured event with empty method, URI, and protocol fields.
 
 ## Collection by runtime
 

@@ -23,6 +23,16 @@ Both profiles:
 - emit one JSON access event per application request to stdout while sending
   operational messages at `notice` or higher to stderr.
 
+A connection that never produces a request has no method: a rejected TLS
+handshake, a malformed request line, or a client that disconnects before its
+request is read. Those are not application requests, so the profiles suppress
+their access events rather than emit a structured record whose method, URI, and
+protocol are empty. They remain visible in the error stream, which is where a
+failed handshake belongs. Deployments that need connection-level accounting
+should collect the error stream or the platform's network telemetry rather than
+relax this rule, because an access schema that admits empty required fields
+cannot be validated.
+
 The access event records `$uri`, never `$request`, `$request_uri`, `$args`,
 headers, or bodies. Query strings, credentials, cookies, referrers, user-agent
 values, and client-provided forwarding chains are therefore absent. JSON
