@@ -222,6 +222,45 @@ class ProfileLogTests(unittest.TestCase):
                 with self.assertRaises(logs.ProfileLogError):
                     logs.parse_events(encoded(invalid), "websocket")
 
+    def test_rate_limited_requires_recognised_limit_outcomes(self) -> None:
+        limits = {"limit_req_result": "PASSED", "limit_conn_result": "PASSED"}
+        expected = event(**limits)
+        self.assertEqual(
+            logs.parse_events(encoded(expected), "rate-limited"), [expected]
+        )
+        for outcome in ("REJECTED", "DELAYED", "NOT_EVALUATED"):
+            with self.subTest(outcome=outcome):
+                valid = event(
+                    limit_req_result=outcome, limit_conn_result="PASSED"
+                )
+                self.assertEqual(
+                    logs.parse_events(encoded(valid), "rate-limited"), [valid]
+                )
+
+    def test_rate_limited_rejects_unknown_limit_outcomes(self) -> None:
+        for changes in (
+            {"limit_req_result": "", "limit_conn_result": "PASSED"},
+            {"limit_req_result": "passed", "limit_conn_result": "PASSED"},
+            {"limit_req_result": "PASSED", "limit_conn_result": "DELAYED"},
+            {"limit_req_result": "PASSED", "limit_conn_result": "unknown"},
+        ):
+            with self.subTest(changes=changes):
+                with self.assertRaises(logs.ProfileLogError):
+                    logs.parse_events(encoded(event(**changes)), "rate-limited")
+
+    def test_repeated_identity_is_rejected_unless_allowed(self) -> None:
+        # A scenario that issues identical requests on purpose opts in; every
+        # other scenario must still fail when an identity is ambiguous.
+        repeated = [event(), event()]
+        with self.assertRaisesRegex(logs.ProfileLogError, "found 2"):
+            logs.select_events(repeated, "/resource", "request.valid-1", 200)
+        self.assertEqual(
+            logs.select_events(
+                repeated, "/resource", "request.valid-1", 200, allow_repeated=True
+            ),
+            repeated,
+        )
+
     def test_exactly_one_scenario_event_is_required(self) -> None:
         observed = [event(), event(request_id="other")]
         self.assertEqual(

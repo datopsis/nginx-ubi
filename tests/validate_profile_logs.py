@@ -29,6 +29,18 @@ UPSTREAM_FIELDS = {
     "upstream_response_time",
 }
 WEBSOCKET_FIELDS = {"connection_upgrade"}
+LIMIT_FIELDS = {"limit_req_result", "limit_conn_result"}
+# NGINX reports these outcomes; the profile maps the empty value, which means
+# the limit was not evaluated for that location, onto an explicit token.
+LIMIT_REQ_RESULTS = {
+    "PASSED",
+    "DELAYED",
+    "REJECTED",
+    "DELAYED_DRY_RUN",
+    "REJECTED_DRY_RUN",
+    "NOT_EVALUATED",
+}
+LIMIT_CONN_RESULTS = {"PASSED", "REJECTED", "REJECTED_DRY_RUN", "NOT_EVALUATED"}
 TLS_FIELDS = {
     "tls_protocol",
     "tls_cipher",
@@ -41,6 +53,7 @@ PROFILES = {
     "reverse-proxy",
     "load-balancer",
     "websocket",
+    "rate-limited",
     "tls-termination",
     "mutual-tls",
     "tls-upstream",
@@ -107,11 +120,13 @@ def parse_events(
         "tls-upstream",
     }
     websocket = profile == "websocket"
+    limited = profile == "rate-limited"
     tls = profile in {"tls-termination", "mutual-tls"}
     fields = (
         COMMON_FIELDS
         | (UPSTREAM_FIELDS if upstream else set())
         | (WEBSOCKET_FIELDS if websocket else set())
+        | (LIMIT_FIELDS if limited else set())
         | (TLS_FIELDS if tls else set())
     )
     events = []
@@ -137,6 +152,11 @@ def parse_events(
             # the log or the map was changed without updating this contract.
             if event["connection_upgrade"] not in {"upgrade", "close"}:
                 fail("connection_upgrade must be 'upgrade' or 'close'")
+        if limited:
+            if event["limit_req_result"] not in LIMIT_REQ_RESULTS:
+                fail("limit_req_result is not a recognised limit outcome")
+            if event["limit_conn_result"] not in LIMIT_CONN_RESULTS:
+                fail("limit_conn_result is not a recognised limit outcome")
         if tls:
             for field in TLS_FIELDS:
                 if not isinstance(event[field], str):
@@ -165,10 +185,20 @@ def upstream_attempts(event: dict[str, object]) -> int:
     return sum(len(part.split(" : ")) for part in addresses.split(", "))
 
 
-def select_event(
-    events: Iterable[dict[str, object]], uri: str, request_id: str, status: int
-) -> dict[str, object]:
-    """Require exactly one event matching the scenario identity."""
+def select_events(
+    events: Iterable[dict[str, object]],
+    uri: str,
+    request_id: str,
+    status: int,
+    allow_repeated: bool = False,
+) -> list[dict[str, object]]:
+    """Return the events matching the scenario identity.
+
+    A scenario that deliberately issues many identical requests, such as
+    exhausting a limit, cannot give each one its own correlation ID. Those
+    scenarios set `allow_repeated`, and the caller then requires that at least
+    one of the matches satisfies the remaining assertions.
+    """
     matches = [
         event
         for event in events
@@ -176,9 +206,18 @@ def select_event(
         and event["request_id"] == request_id
         and event["status"] == status
     ]
-    if len(matches) != 1:
+    if not matches:
+        fail("expected exactly one matching event; found 0")
+    if len(matches) != 1 and not allow_repeated:
         fail(f"expected exactly one matching event; found {len(matches)}")
-    return matches[0]
+    return matches
+
+
+def select_event(
+    events: Iterable[dict[str, object]], uri: str, request_id: str, status: int
+) -> dict[str, object]:
+    """Require exactly one event matching the scenario identity."""
+    return select_events(events, uri, request_id, status)[0]
 
 
 def main() -> int:
@@ -196,6 +235,21 @@ def main() -> int:
         help="require this derived connection disposition on the matching event",
     )
     parser.add_argument(
+        "--require-field",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="require the matching event to carry this exact field value",
+    )
+    parser.add_argument(
+        "--allow-repeated",
+        action="store_true",
+        help=(
+            "permit several events to share the scenario identity, for a "
+            "scenario that issues identical requests on purpose"
+        ),
+    )
+    parser.add_argument(
         "--upstream-attempts",
         type=int,
         help=(
@@ -205,30 +259,56 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    requirements = []
+    for requirement in args.require_field:
+        name, separator, expected = requirement.partition("=")
+        if not separator:
+            parser.error("--require-field expects NAME=VALUE")
+        requirements.append((name, expected))
+
     try:
         events = parse_events(sys.stdin.read(), args.profile, args.forbidden)
-        event = select_event(events, args.uri, args.request_id, args.status)
+        matches = select_events(
+            events, args.uri, args.request_id, args.status, args.allow_repeated
+        )
     except ProfileLogError as exc:
         parser.error(str(exc))
-    if event["method"] != "GET":
-        parser.error("matching event has an unexpected request method")
-    if args.connection_upgrade is not None:
-        if "connection_upgrade" not in event:
-            parser.error("profile does not record a connection disposition")
-        if event["connection_upgrade"] != args.connection_upgrade:
-            parser.error(
-                f"expected connection_upgrade {args.connection_upgrade}; "
-                f"observed {event['connection_upgrade']}"
-            )
-    if args.upstream_attempts is not None:
-        if "upstream_addr" not in event:
-            parser.error("profile does not record upstream attempts")
-        observed = upstream_attempts(event)
-        if observed != args.upstream_attempts:
-            parser.error(
-                f"expected {args.upstream_attempts} upstream attempts; "
-                f"observed {observed}"
-            )
+
+    def unmet(event: dict[str, object]) -> str | None:
+        """Return why this event fails the assertions, or None if it passes."""
+        if event["method"] != "GET":
+            return "matching event has an unexpected request method"
+        if args.connection_upgrade is not None:
+            if "connection_upgrade" not in event:
+                return "profile does not record a connection disposition"
+            if event["connection_upgrade"] != args.connection_upgrade:
+                return (
+                    f"expected connection_upgrade {args.connection_upgrade}; "
+                    f"observed {event['connection_upgrade']}"
+                )
+        for name, expected in requirements:
+            if name not in event:
+                return f"matching event has no field {name}"
+            if str(event[name]) != expected:
+                return f"expected {name} {expected}; observed {event[name]}"
+        if args.upstream_attempts is not None:
+            if "upstream_addr" not in event:
+                return "profile does not record upstream attempts"
+            observed = upstream_attempts(event)
+            if observed != args.upstream_attempts:
+                return (
+                    f"expected {args.upstream_attempts} upstream attempts; "
+                    f"observed {observed}"
+                )
+        return None
+
+    # When several events share the scenario identity on purpose, the
+    # assertions describe the outcome under test rather than every request that
+    # happened to carry the same correlation ID, so one satisfying event is the
+    # contract. Reporting the first reason keeps the failure readable.
+    reasons = [unmet(event) for event in matches]
+    if all(reason is not None for reason in reasons):
+        parser.error(reasons[0])
 
     print(f"validated {args.profile} structured access event")
     return 0

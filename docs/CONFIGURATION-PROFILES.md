@@ -1,9 +1,9 @@
 # Qualified HTTP and TLS configuration profiles
 
 The repository provides minimal static-serving, HTTP reverse-proxy, HTTP
-load-balancing, and WebSocket-proxying configurations under
+load-balancing, WebSocket-proxying, and request-limiting configurations under
 `examples/profiles`. Static serving, HTTP reverse proxy, HTTP load balancing,
-WebSocket proxying,
+WebSocket proxying, request and connection limiting,
 TLS termination, mutual TLS, and verified HTTPS upstream profiles are exercised
 on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
@@ -60,6 +60,76 @@ Its access-event schema is:
 | `status` | integer | Final client-facing response status. |
 | `body_bytes_sent` | integer | Response-body bytes sent. |
 | `request_time` | number | Total request duration in seconds. |
+
+## Request-rate and connection limiting
+
+[`examples/profiles/rate-limited/nginx.conf`](../examples/profiles/rate-limited/nginx.conf)
+applies three separate budgets to a served tree: request rate, concurrent
+connections, and per-connection bandwidth. They are independent, and a
+deployment that sets only one leaves the others unbounded.
+
+### The limit key decides whether the limit exists
+
+The key is `$binary_remote_addr`, the direct peer address.
+
+Behind a load balancer or ingress controller that address is the *proxy*, so
+every client shares one bucket and a per-client limit silently becomes a global
+cap. A deployment in that position needs a key derived from a forwarded address
+it actually trusts, through `realip` with a trusted-proxy list or an equivalent
+reviewed mechanism.
+
+Never key a limit on a header the client controls. A client that chooses its
+own key gets a fresh bucket for every request, and the limit stops existing
+while continuing to look configured.
+
+The zones are shared across workers and are sized in advance. An exhausted zone
+fails closed and rejects new clients, so size for the expected distinct-client
+count rather than for steady-state traffic.
+
+### Status code
+
+Both limits answer `429`. The NGINX default is `503`, which is
+indistinguishable from an outage and invites clients to retry harder against a
+server that is already shedding load.
+
+### Evaluation order matters when reading logs
+
+`limit_req` is evaluated before `limit_conn`. Once the rate limit is rejecting,
+the connection limit is never reached, and its field records `NOT_EVALUATED`
+rather than `PASSED`. A reader who treats `NOT_EVALUATED` as "allowed" will
+conclude the connection limit is inactive when it is simply downstream of a
+limit that is already firing.
+
+### The health endpoint is outside both limits
+
+A limited health endpoint turns a traffic spike into a failed liveness probe
+and a restart, which removes capacity exactly when it is needed.
+
+### Access-event schema
+
+The profile emits the common fields plus:
+
+| Field | JSON type | Meaning |
+| --- | --- | --- |
+| `limit_req_result` | string | `PASSED`, `DELAYED`, `REJECTED`, a dry-run variant, or `NOT_EVALUATED`. |
+| `limit_conn_result` | string | `PASSED`, `REJECTED`, a dry-run variant, or `NOT_EVALUATED`. |
+
+The limit *key* is deliberately not logged. Recording the outcome supports
+capacity and abuse analysis; recording the raw client identifier for every
+request adds a personal identifier to an access stream that is otherwise free
+of them.
+
+### Qualified behaviour
+
+The tests prove that a request inside both budgets passes, that exhausting the
+request rate produces `429` recorded as `REJECTED`, that concurrent requests
+beyond the connection maximum are rejected by the connection limit
+specifically, and that the health endpoint keeps answering while the client's
+request budget is exhausted.
+
+They do **not** qualify tuning for any particular workload, zone sizing under
+real client populations, behaviour once a zone is exhausted, or the interaction
+between these limits and an upstream rate limiter.
 
 ## WebSocket proxying
 

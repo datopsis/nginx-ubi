@@ -140,6 +140,16 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a qualified preview request-limiting profile applying independent
+  request-rate, concurrent-connection, and per-connection bandwidth budgets,
+  answering `429` rather than the default `503`, keeping the health endpoint
+  outside every limit, and recording limit outcomes without recording the limit
+  key; tests prove rate rejection, connection rejection specifically, and that
+  health checks keep answering while a client's request budget is exhausted.
+- Documented that a limit keyed on the direct peer address becomes a global cap
+  behind a proxy, that keying on a client-controlled header removes the limit
+  entirely, and that `limit_req` is evaluated before `limit_conn` so a
+  rate-rejected request records the connection limit as not evaluated.
 - Added a qualified preview WebSocket-proxying profile that derives the
   upstream connection disposition from a map rather than copying it from the
   client, scopes the long idle timeout to the upgrade location, and never
