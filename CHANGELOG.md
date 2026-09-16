@@ -70,6 +70,12 @@ but container releases use the upstream-derived format documented in
   NGINX RPMs, including trust checks and reproducibility limits.
 - Evaluated official NGINX stable RPMs as the proposed first-release package
   source and defined migration and acceptance requirements.
+- Refreshed the digest-pinned UBI 9.8 Minimal and Micro base images and the
+  pinned NGINX module build so the development build resolves
+  `openssl-libs-1:3.5.8-1.el9_8` from RHSA-2026:67165 and no longer reuses a
+  cached package layer that predates the errata. The previously pinned
+  `nginx-core` build had been superseded and was no longer resolvable, so the
+  legacy pipeline was succeeding only from that cache.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies

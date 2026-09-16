@@ -11,7 +11,7 @@ The current `Containerfile` selects the UBI 9 NGINX `1.26` module stream and
 installs this exact package build:
 
 ```text
-nginx-core-2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3
+nginx-core-2:1.26.3-9.module+el9.8.0+24845+a897661e.4
 ```
 
 RPM metadata from the built AMD64 builder stage identifies:
@@ -23,7 +23,7 @@ RPM metadata from the built AMD64 builder stage identifies:
 | Repository base URL | `https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/$basearch/appstream/os` |
 | Package vendor and packager | Red Hat, Inc. |
 | Architecture | `x86_64` on the AMD64 build; the native ARM64 job resolves its architecture build. |
-| Source RPM | `nginx-1.26.3-9.module+el9.8.0+24599+8fde0ff7.3.src.rpm` |
+| Source RPM | `nginx-1.26.3-9.module+el9.8.0+24845+a897661e.4.src.rpm` |
 | Automatic NGINX dependency | `nginx-filesystem` at the same epoch, version, and release |
 | Upstream project URL in metadata | `https://nginx.org` |
 

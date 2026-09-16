@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.7
 
-ARG UBI_MINIMAL_IMAGE="registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7fbeae18dc9476399f565e68255f602a3374ea8614ba3d14843565131a13ff93"
-ARG UBI_MICRO_IMAGE="registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6"
+ARG UBI_MINIMAL_IMAGE="registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041"
+ARG UBI_MICRO_IMAGE="registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650"
 
 FROM ${UBI_MINIMAL_IMAGE} AS builder
 
 ARG NGINX_MODULE_STREAM="1.26"
-ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3"
+ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24845+a897661e.4"
 
 # Install the exact Red Hat NGINX build and its runtime dependency closure into
 # a separate root. The UBI Micro final stage receives no package-management
@@ -43,7 +43,7 @@ RUN microdnf install -y dnf \
 FROM ${UBI_MICRO_IMAGE}
 
 ARG NGINX_VERSION="1.26.3"
-ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3"
+ARG NGINX_RPM_VERSION="2:1.26.3-9.module+el9.8.0+24845+a897661e.4"
 
 LABEL org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
       org.opencontainers.image.description="A security-oriented, rootless NGINX image built on Red Hat UBI 9 Micro" \
