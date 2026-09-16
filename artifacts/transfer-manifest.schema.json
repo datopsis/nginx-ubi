@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/datopsis/nginx-ubi/blob/main/artifacts/transfer-manifest.schema.json",
+  "title": "nginx-ubi disconnected transfer manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "architecture",
+    "repository_revision",
+    "artifact_lock_sha256",
+    "component_inventory_sha256",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "architecture": {"enum": ["amd64", "arm64"]},
+    "repository_revision": {"type": "string", "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$"},
+    "artifact_lock_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "component_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "size", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  }
+}

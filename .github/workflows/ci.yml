@@ -41,8 +41,11 @@ jobs:
       - name: Run repository checks
         run: pre-commit run --all-files --show-diff-on-failure
 
-      - name: Validate artifact locks
-        run: python -m unittest tests.test_artifacts -v
+      - name: Validate artifact locks and component accountability
+        run: >-
+          python -m unittest
+          tests.test_artifacts tests.test_components tests.test_nginx_features
+          tests.test_transfer -v
 
       - name: Audit GitHub Actions security
         uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
@@ -121,6 +124,12 @@ jobs:
           bash scripts/verify-rpm-bundle.sh
           artifacts/locks/${{ matrix.architecture }}.json
           .artifact-bundle/${{ matrix.architecture }}
+
+      - name: Verify runtime component metadata
+        run: >-
+          python scripts/components.py
+          --lock artifacts/locks/${{ matrix.architecture }}.json
+          --bundle .artifact-bundle/${{ matrix.architecture }}
 
       - name: Reject invalid RPM bundles
         run: >-

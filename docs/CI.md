@@ -32,9 +32,13 @@ pre-commit run --all-files --show-diff-on-failure
 The configured hooks check text normalization, YAML and JSON syntax, merge
 markers, unsafe or broken symlinks, oversized files, private keys, shell code,
 container build files, GitHub Actions, and prohibited co-author trailers.
-The lint job also runs `python -m unittest tests.test_artifacts -v` to validate
-the reviewed lock inputs, both architecture locks, and fail-closed negative
-cases without downloading artifacts.
+The lint job also runs
+`python -m unittest tests.test_artifacts tests.test_components
+tests.test_nginx_features tests.test_transfer -v` to validate the reviewed
+lock inputs, both architecture locks, the lock-bound 79-package component
+accountability inventory, the NGINX compile-feature inventory,
+disconnected-transfer integrity, and fail-closed negative cases without
+downloading artifacts.
 
 The `commit-msg` hook applies only after `pre-commit install` installs the
 configured hook types. CI separately evaluates repository files but cannot
@@ -82,9 +86,11 @@ digest-pinned UBI bases, and build with Podman using `--network none` and
 and cannot fetch an unavailable base. Before assembly, isolated copies of the
 real bundle prove rejection of tampering, signature removal, signer mismatch,
 wrong version, wrong architecture, missing RPMs, and additional RPMs. The
-completed image is transferred by local archive into Docker solely for the
-existing compatibility smoke and scanner steps; that transfer performs no
-image build or registry pull.
+jobs also compare every RPM's publisher-supplied license tag, source RPM, and
+vendor header with `artifacts/components.json`. The completed image is
+transferred by local archive into Docker solely for the existing compatibility
+smoke and scanner steps; that transfer performs no image build or registry
+pull.
 
 The official public source is the default. An alternate approved source can be
 selected through protected CI configuration, but private endpoints,
@@ -101,10 +107,12 @@ The implemented image pipeline performs:
 
 1. Trivy build-configuration scanning.
 2. Verified, network-disabled, no-pull native architecture builds followed by
-   native Podman and Docker-compatibility restricted-runtime tests covering
-   the declared and arbitrary runtime identities, process privileges, a
-   read-only root, hardened temporary storage, static content, health behavior,
-   log streams, reload and shutdown, and actionable startup failures.
+   native Podman and Docker-compatibility restricted-runtime tests. They cover
+   the exact 79-RPM manifest, NGINX compile-feature and empty dynamic-module
+   inventories, declared and arbitrary runtime identities, process privileges,
+   a read-only root, hardened temporary storage, static content, health and log
+   behavior, worker-replacing reload, active-request graceful shutdown, and
+   actionable startup failures.
 3. Trivy image vulnerability scanning.
 4. SPDX inventory generation with Syft.
 5. Independent fixed High/Critical vulnerability gating with Grype and a

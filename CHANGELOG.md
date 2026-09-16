@@ -101,6 +101,22 @@ but container releases use the upstream-derived format documented in
   bound production lock validation to the reviewed base images, NGINX seed,
   and signing-key inputs; and required filenames to agree with RPM metadata
   and official source URLs.
+- Added a lock-bound accountability inventory for all 79 runtime RPMs with
+  exact license and source-RPM metadata, publisher and redistribution policy,
+  lifecycle boundary, and named update ownership; native CI now checks the
+  recorded metadata against every acquired AMD64 and ARM64 RPM.
+- Defined reviewed lock refresh, signing-key rotation and revocation, immutable
+  artifact mirroring, image rollback, and disconnected-transfer procedures;
+  added a schema and fail-closed transfer manifest that binds payload hashes to
+  the repository revision, architecture lock, and component inventory.
+- Embedded the exact verified 79-RPM manifest in the package-manager-free final
+  image; added a reviewed inventory for 22 optional NGINX compile-time modules
+  and features; and made native Podman plus Docker compatibility tests reject
+  package, module, or NGINX build drift.
+- Strengthened rootless failure and lifecycle tests to require precise mounted
+  configuration and unwritable-temporary-path diagnostics, worker-replacing
+  reloads with PID 1 retained, and complete active-request draining on
+  `SIGQUIT` before a clean exit.
 - Expanded logging guidance with a field-by-field explanation of `$request`,
   a sensitive ClickHouse example, and safer variable choices.
 - Defined a source-independent pipeline contract that downloads and verifies

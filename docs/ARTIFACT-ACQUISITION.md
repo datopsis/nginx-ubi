@@ -91,7 +91,10 @@ python scripts/artifacts.py validate-lock artifacts/locks/amd64.json \
   --inputs artifacts/lock-inputs.json
 python scripts/artifacts.py validate-lock artifacts/locks/arm64.json \
   --inputs artifacts/lock-inputs.json
-python -m unittest tests.test_artifacts -v
+python scripts/components.py
+python -m unittest \
+  tests.test_artifacts tests.test_components tests.test_nginx_features \
+  tests.test_transfer -v
 ```
 
 `scripts/fetch-lock-inputs.py`, `scripts/resolve-lock.sh`, and
@@ -133,6 +136,9 @@ python scripts/artifacts.py acquire \
   --output .artifact-bundle/amd64
 bash scripts/verify-rpm-bundle.sh \
   artifacts/locks/amd64.json .artifact-bundle/amd64
+python scripts/components.py \
+  --lock artifacts/locks/amd64.json \
+  --bundle .artifact-bundle/amd64
 ```
 
 Add `--include-sources` to both commands when preparing a redistribution and
@@ -147,6 +153,8 @@ Before the artifact bundle is exposed to the build:
 - compare every file with its locked SHA-256 digest and expected size;
 - verify every RPM signature against the approved full signing fingerprint;
 - verify that RPM NEVRA and architecture match the lock;
+- compare RPM license, source-RPM, and vendor metadata with the lock-bound
+  component accountability inventory;
 - reject unsigned, expired-policy, wrong-architecture, duplicate, and
   additional RPMs;
 - confirm the base-image manifest digest and platform;
@@ -246,6 +254,14 @@ The preparation tooling provides actionable messages for missing source
 configuration and will use the official public source by default. The artifact
 lock, verification semantics, and network-disabled assembly remain identical
 when an alternate source is deliberately selected.
+
+The operational procedures for deliberate lock refresh, signing-key changes,
+mirror population and reacquisition, immutable-image rollback, and controlled
+disconnected transfer are defined in
+[Artifact lifecycle and controlled transfer](ARTIFACT-LIFECYCLE.md). The
+transfer tooling binds an exact payload to its repository revision,
+architecture lock, and component inventory, but its separately conveyed
+manifest digest does not replace RPM publisher signatures.
 
 Local preparation consumes an existing lock by default. Refreshing a lock is a
 separate explicit command so an ordinary local build cannot silently upgrade a
