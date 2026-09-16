@@ -3,11 +3,11 @@
   "locks": {
     "amd64": {
       "path": "artifacts/locks/amd64.json",
-      "sha256": "864428143fb11dcf5bedcf2abf6df950fd557c37650410b2f28c56cbd36ae0d5"
+      "sha256": "ec35b2bcd7f1de1b6f1416a18eed5e3cc186624776f9ad793f22940c9f034456"
     },
     "arm64": {
       "path": "artifacts/locks/arm64.json",
-      "sha256": "213747506323650d82d8dd8db946581ad002071d3c61f2a070aa743b88554b13"
+      "sha256": "9d53e9d6cccb8d291ece70e9e0605248e5e7033c8d7734ea1953d95edf226ad2"
     }
   },
   "policies": [
@@ -87,10 +87,10 @@
     {"name": "ncurses-base", "source_rpm": "ncurses-6.2-12.20210508.el9.src.rpm", "license": "MIT", "policy": "redhat-ubi9"},
     {"name": "ncurses-libs", "source_rpm": "ncurses-6.2-12.20210508.el9.src.rpm", "license": "MIT", "policy": "redhat-ubi9"},
     {"name": "nginx", "source_rpm": "nginx-1.30.4-1.el9.ngx.src.rpm", "license": "2-clause BSD-like license", "policy": "nginx-stable"},
-    {"name": "openssl", "source_rpm": "openssl-3.5.5-6.el9_8.src.rpm", "license": "Apache-2.0", "policy": "redhat-ubi9"},
+    {"name": "openssl", "source_rpm": "openssl-3.5.8-1.el9_8.src.rpm", "license": "Apache-2.0", "policy": "redhat-ubi9"},
     {"name": "openssl-fips-provider", "source_rpm": "openssl-fips-provider-3.0.7-11.el9_8.src.rpm", "license": "ASL 2.0", "policy": "redhat-ubi9"},
     {"name": "openssl-fips-provider-so", "source_rpm": "openssl-fips-provider-3.0.7-11.el9_8.src.rpm", "license": "ASL 2.0", "policy": "redhat-ubi9"},
-    {"name": "openssl-libs", "source_rpm": "openssl-3.5.5-6.el9_8.src.rpm", "license": "Apache-2.0", "policy": "redhat-ubi9"},
+    {"name": "openssl-libs", "source_rpm": "openssl-3.5.8-1.el9_8.src.rpm", "license": "Apache-2.0", "policy": "redhat-ubi9"},
     {"name": "p11-kit", "source_rpm": "p11-kit-0.26.4-1.el9_8.src.rpm", "license": "BSD-3-Clause", "policy": "redhat-ubi9"},
     {"name": "p11-kit-trust", "source_rpm": "p11-kit-0.26.4-1.el9_8.src.rpm", "license": "BSD-3-Clause", "policy": "redhat-ubi9"},
     {"name": "pam", "source_rpm": "pam-1.5.1-28.el9_8.1.src.rpm", "license": "BSD and GPLv2+", "policy": "redhat-ubi9"},
@@ -103,10 +103,10 @@
     {"name": "sed", "source_rpm": "sed-4.8-10.el9.src.rpm", "license": "GPLv3+", "policy": "redhat-ubi9"},
     {"name": "setup", "source_rpm": "setup-2.13.7-10.el9.src.rpm", "license": "Public Domain", "policy": "redhat-ubi9"},
     {"name": "shadow-utils", "source_rpm": "shadow-utils-4.9-16.el9.src.rpm", "license": "BSD and GPLv2+", "policy": "redhat-ubi9"},
-    {"name": "systemd", "source_rpm": "systemd-252-67.el9_8.4.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
-    {"name": "systemd-libs", "source_rpm": "systemd-252-67.el9_8.4.src.rpm", "license": "LGPLv2+ and MIT", "policy": "redhat-ubi9"},
-    {"name": "systemd-pam", "source_rpm": "systemd-252-67.el9_8.4.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
-    {"name": "systemd-rpm-macros", "source_rpm": "systemd-252-67.el9_8.4.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
+    {"name": "systemd", "source_rpm": "systemd-252-67.el9_8.6.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
+    {"name": "systemd-libs", "source_rpm": "systemd-252-67.el9_8.6.src.rpm", "license": "LGPLv2+ and MIT", "policy": "redhat-ubi9"},
+    {"name": "systemd-pam", "source_rpm": "systemd-252-67.el9_8.6.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
+    {"name": "systemd-rpm-macros", "source_rpm": "systemd-252-67.el9_8.6.src.rpm", "license": "LGPLv2+ and MIT and GPLv2+", "policy": "redhat-ubi9"},
     {"name": "tzdata", "source_rpm": "tzdata-2026c-1.el9_8.src.rpm", "license": "Public Domain", "policy": "redhat-ubi9"},
     {"name": "util-linux", "source_rpm": "util-linux-2.37.4-25.el9.src.rpm", "license": "GPLv2 and GPLv2+ and LGPLv2+ and BSD with advertising and Public Domain", "policy": "redhat-ubi9"},
     {"name": "util-linux-core", "source_rpm": "util-linux-2.37.4-25.el9.src.rpm", "license": "GPLv2 and GPLv2+ and LGPLv2+ and BSD with advertising and Public Domain", "policy": "redhat-ubi9"},
