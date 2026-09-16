@@ -23,6 +23,11 @@ ws_network="${prefix}-ws-network"
 ws_backend="${prefix}-ws-backend"
 ws_proxy="${prefix}-ws-proxy"
 limited="${prefix}-limited"
+# The health profile also addresses a generic `backend` service name, so it
+# gets its own network rather than competing for that alias.
+health_network="${prefix}-health-network"
+health_backend="${prefix}-health-backend"
+health_proxy="${prefix}-health-proxy"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
@@ -40,9 +45,11 @@ cleanup() {
     "${runtime}" rm --force "${static}" "${proxy}" "${backend}" \
         "${pool_a}" "${pool_b}" "${balancer}" \
         "${ws_backend}" "${ws_proxy}" "${limited}" \
+        "${health_backend}" "${health_proxy}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${ws_network}" >/dev/null 2>&1 || true
+    "${runtime}" network rm "${health_network}" >/dev/null 2>&1 || true
     rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
         "${balancer_body}" "${ws_body}"
     rm -rf -- "${limited_root}"
@@ -565,12 +572,89 @@ if grep -Fq '/healthz' <<< "${limited_logs}"; then
     exit 1
 fi
 
+# ---------------------------------------------------------------------------
+# Extended health and readiness endpoints
+# ---------------------------------------------------------------------------
+
+"${runtime}" network create "${health_network}" >/dev/null
+
+run_restricted "${health_backend}" 10010 \
+    --network "${health_network}" \
+    --network-alias backend \
+    --volume "${script_dir}/fixtures/profile-backend/nginx.conf:/etc/nginx/nginx.conf:ro"
+"${runtime}" exec "${health_backend}" nginx -t -q -c /etc/nginx/nginx.conf
+assert_process_security "${health_backend}"
+
+run_restricted "${health_proxy}" 10011 \
+    --network "${health_network}" \
+    --publish 127.0.0.1::8080 \
+    --publish 127.0.0.1::8081 \
+    --volume "${examples_dir}/health/nginx.conf:/etc/nginx/nginx.conf:ro"
+health_binding=$("${runtime}" port "${health_proxy}" 8080/tcp)
+health_port=${health_binding##*:}
+health_url="http://127.0.0.1:${health_port}"
+status_binding=$("${runtime}" port "${health_proxy}" 8081/tcp)
+status_port=${status_binding##*:}
+wait_for_http "${health_url}/healthz" "${health_proxy}"
+assert_process_security "${health_proxy}"
+"${runtime}" exec "${health_proxy}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# With the upstream reachable, the instance is ready.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --header 'X-Request-ID: health.ready-1' \
+    "${health_url}/readyz")" = 200
+
+# The operator status surface serves nobody by default. Publishing the port is
+# not enough to read it, which is the property that keeps an accidentally
+# exposed port from becoming an information source.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    "http://127.0.0.1:${status_port}/status")" = 403
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    "http://127.0.0.1:${status_port}/")" = 404
+
+"${runtime}" stop --time 10 "${health_backend}" >/dev/null
+
+# Liveness must not depend on the upstream. If this returned non-200 with the
+# backend down, an orchestrator would restart healthy proxies during a
+# dependency outage and remove the capacity needed to recover.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    "${health_url}/healthz")" = 200
+
+# Readiness must depend on it, so the instance leaves rotation instead.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --header 'X-Request-ID: health.unready-1' \
+    "${health_url}/readyz")" = 503
+
+validate_event "${health_proxy}" \
+    --profile health \
+    --uri /readyz \
+    --request-id health.unready-1 \
+    --status 503
+
+health_logs=$("${runtime}" logs "${health_proxy}" 2>&1)
+# A succeeding probe is not an event. Liveness is never logged, and readiness
+# is logged only when it fails, so probe traffic cannot bury real requests.
+#
+# These match structured fields rather than bare substrings. A failed readiness
+# probe names the upstream it tried, `http://.../healthz`, in the error stream,
+# so a substring search for the liveness path reports an access event that was
+# never written.
+if grep -Fq '"request_id":"health.ready-1"' <<< "${health_logs}"; then
+    echo "A successful readiness probe unexpectedly wrote an access event" >&2
+    exit 1
+fi
+if grep -Fq '"uri":"/healthz"' <<< "${health_logs}"; then
+    echo "The liveness endpoint unexpectedly wrote an access event" >&2
+    exit 1
+fi
+
 "${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" "${ws_proxy}" \
-    "${limited}" >/dev/null
+    "${limited}" "${health_proxy}" >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${ws_proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${limited}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${health_proxy}")" = 0
 
-echo "Static, reverse-proxy, load-balancer, websocket, and rate-limited profile qualification passed for ${image}"
+echo "Static, reverse-proxy, load-balancer, websocket, rate-limited, and health profile qualification passed for ${image}"
