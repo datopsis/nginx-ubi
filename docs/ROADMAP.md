@@ -70,16 +70,15 @@ parallel only where it does not assume an unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 
-- [ ] Provide tested, minimal examples for load balancing, WebSocket proxying,
-  extended health/readiness endpoints, rate limits, connection limits, and
-  ClickHouse HTTP proxying.
+- [ ] Provide tested, minimal examples for WebSocket proxying, extended
+  health/readiness endpoints, rate limits, connection limits, and ClickHouse
+  HTTP proxying.
 - [ ] Extend the qualified defaults to DNS resolution, upstream verification,
   and the remaining profiles without silently breaking general-purpose use.
 - [ ] Document configuration mounting, validation, reload, rollback, logging,
   troubleshooting, and secret redaction.
-- [ ] Implement and test structured logging for load balancing, TLS and mTLS,
-  WebSockets, ClickHouse, extended health endpoints, and request and connection
-  limiting.
+- [ ] Implement and test structured logging for WebSockets, ClickHouse,
+  extended health endpoints, and request and connection limiting.
 - [ ] Qualify runtime collection, rotation ownership, pipeline failure, and
   retention evidence for the selected logging platform.
 - [ ] Qualify lifecycle-alert delivery and exact platform cryptographic-policy

@@ -131,6 +131,15 @@ but container releases use the upstream-derived format documented in
   schemas, JSON escaping, type confusion, numeric bounds, timestamps,
   correlation IDs, query exclusion, TLS results, upstream timing fields,
   secret detection, and unique scenario selection.
+- Added a qualified preview HTTP load-balancing profile with weighted
+  round-robin distribution, passive member failure handling, retries restricted
+  to pre-application failures, bounded retry attempts and time, and structured
+  failover events; native Podman and Docker compatibility tests require that
+  every healthy member receives traffic, that a stopped member causes no
+  client-visible failure, and that a retry is actually recorded.
+- Suppressed structured access events for connections that never produce a
+  request, such as a rejected TLS handshake or a malformed request line, so the
+  access schema no longer has to tolerate empty required fields.
 - Enforced mounted CRLs for mutual-TLS clients and HTTPS upstreams; extended the
   ephemeral PKI rehearsal to reject revoked certificates and to prove old,
   overlapping, and new-only CA trust states without disabling chain or hostname
