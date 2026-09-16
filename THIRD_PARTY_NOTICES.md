@@ -26,6 +26,11 @@ describes the principal packaging and NGINX license relationship; consumers
 must also review the SBOM, embedded notices, UBI terms, and every component's
 license.
 
+The machine-validated
+[runtime component inventory](docs/COMPONENT-OWNERSHIP.md) records the exact
+RPM license tag and source RPM for every locked binary package. RPM license
+tags are upstream metadata rather than a project-authored legal conclusion.
+
 ## Release review
 
 Before publishing a release:

@@ -51,35 +51,22 @@ are separately approved. They must not delay the core first release.
 
 Work proceeds in this dependency order:
 
-1. Close rootless failure diagnostics, graceful lifecycle tests, and
-   package/module inventory checks.
-2. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
+1. Qualify the minimum static, reverse-proxy, structured-logging, and TLS
    profiles needed for the first supported image; keep additional profiles
    explicitly preview until their tests close.
-3. Complete the repository policy files, support boundary, threat model,
+2. Complete the repository policy files, support boundary, threat model,
    requirement analysis, control ownership, vulnerability policy, tailored
    SCAP evidence, and deployment cyber package needed for review.
-4. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
+3. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
    journald collection, controlled-network operation, and rollback on an exact
    supported Linux host.
-5. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+4. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
    verification workflow from an untagged release candidate.
-6. Freeze inputs, regenerate release-candidate evidence, approve findings,
+5. Freeze inputs, regenerate release-candidate evidence, approve findings,
    create the immutable tag, publish by digest, and verify the release.
 
-Step 1 is the immediate engineering critical path. Steps 2 and 3 can proceed
-in parallel only where they do not assume an unfrozen NGINX package or module
-set.
-
-## Package 2: rootless minimal image
-
-- [ ] Record source, redistribution, licensing, support lifecycle, and update
-  ownership for every runtime component.
-- [ ] Define lock refresh, key rotation, artifact mirroring, rollback, and
-  disconnected artifact-transfer procedures.
-
-**Fast-release checkpoint:** after Package 2, a development image is usable for
-local evaluation but is not yet a supported release.
+Step 1 is the immediate engineering critical path. Step 2 can proceed in
+parallel only where it does not assume an unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 

@@ -113,6 +113,15 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
 - [External artifact acquisition](docs/ARTIFACT-ACQUISITION.md) defines the
   pre-build download and verification process and hermetic image assembly
   contract.
+- [Artifact lifecycle and controlled transfer](docs/ARTIFACT-LIFECYCLE.md)
+  defines lock refresh, signing-key rotation, immutable mirrors, rollback, and
+  disconnected transfer and verification.
+- [Runtime component accountability](docs/COMPONENT-OWNERSHIP.md) binds every
+  locked runtime RPM to its source, license metadata, redistribution and
+  lifecycle policy, and named update owner.
+- [Rootless runtime and lifecycle contract](docs/RUNTIME-CONTRACT.md) records
+  startup diagnostics, reload and graceful-stop behavior, and the enforced RPM
+  and NGINX module inventories.
 
 TLS, configuration, architecture, control-matrix/OSCAL, SCAP,
 vulnerability-management, and disconnected-network guides will be added as
@@ -152,10 +161,14 @@ python -m pip install --require-hashes --only-binary=:all: \
 pre-commit run --all-files --show-diff-on-failure
 ```
 
-Validate the reviewed artifact locks and their negative cases with:
+Validate the reviewed artifact locks, component inventory, and their negative
+cases with:
 
 ```console
-python -m unittest tests.test_artifacts -v
+python -m unittest \
+  tests.test_artifacts tests.test_components tests.test_nginx_features \
+  tests.test_transfer -v
+python scripts/components.py
 ```
 
 Acquire and verify the exact AMD64 RPM bundle from the official sources:
