@@ -216,6 +216,7 @@ wait_for_http "${proxy_url}/healthz" "${proxy}"
 assert_process_security "${proxy}"
 "${runtime}" exec "${proxy}" nginx -t -q -c /etc/nginx/nginx.conf
 
+# Requirements: L3-PRX-001 L3-LOG-003
 curl --fail --silent --show-error \
     --header 'X-Request-ID: proxy.valid-1' \
     --header 'X-Forwarded-For: 203.0.113.9' \
@@ -248,6 +249,7 @@ validate_event "${proxy}" \
     --status 200 \
     --forbidden reverse-secret \
     --forbidden do-not-log
+# Requirements: L3-PRX-007
 validate_event "${proxy}" \
     --profile reverse-proxy \
     --uri /unavailable \
@@ -293,6 +295,7 @@ assert_process_security "${balancer}"
 # legitimately observe one member. Retrying past `fail_timeout` distinguishes a
 # pool that never balances from one that has not finished starting, without
 # weakening the assertion that both members serve traffic.
+# Requirements: L3-PRX-003
 members_seen=""
 for round in $(seq 1 20); do
     members_seen=$(for attempt in 1 2 3 4; do
@@ -373,6 +376,7 @@ done
 # what distinguishes a real retry from a request that happened to be routed to
 # the surviving member, and it proves the dead member was actually tried.
 balancer_logs=$("${runtime}" logs "${balancer}" 2>&1)
+# Requirements: L3-PRX-004
 failover_retries=0
 for attempt in 1 2 3; do
     if printf '%s\n' "${balancer_logs}" | "${python}" \
@@ -444,6 +448,7 @@ assert payload["request_id"] == "websocket.plain-1", payload' \
 #
 # The proxy tunnels after 101 and neither side sends anything further, so the
 # client bounds its own wait. curl reports the status it already received.
+# Requirements: L3-PRX-005
 upgrade_status=$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
     --max-time 5 \
     --header 'X-Request-ID: websocket.upgrade-1' \
@@ -530,6 +535,7 @@ validate_event "${limited}" \
 # events therefore share this correlation ID with different outcomes, and the
 # assertion requires that at least one of them was rejected by the connection
 # limit specifically.
+# Requirements: L3-LIM-002 L2-LIM-003
 conn_urls=()
 for _ in $(seq 1 24); do
     conn_urls+=("${limited_url}/payload.bin")
@@ -560,6 +566,7 @@ burst_urls=()
 for _ in $(seq 1 200); do
     burst_urls+=("${limited_url}/index.html")
 done
+# Requirements: L3-LIM-001
 burst_codes=$(curl --silent --output "${null_device}" \
     --write-out '%{http_code}\n' \
     --header 'X-Request-ID: limits.burst-1' \
@@ -570,6 +577,7 @@ if test "$(grep -c '^429$' <<< "${burst_codes}")" -lt 1; then
     exit 1
 fi
 
+# Requirements: L3-LIM-004
 # The health endpoint stays outside the limit, so it must still answer while
 # the client's request budget is exhausted.
 test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
@@ -623,6 +631,7 @@ test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
     --header 'X-Request-ID: health.ready-1' \
     "${health_url}/readyz")" = 200
 
+# Requirements: L3-HLT-003
 # The operator status surface serves nobody by default. Publishing the port is
 # not enough to read it, which is the property that keeps an accidentally
 # exposed port from becoming an information source.
@@ -633,12 +642,14 @@ test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
 
 "${runtime}" stop --time 10 "${health_backend}" >/dev/null
 
+# Requirements: L3-HLT-001
 # Liveness must not depend on the upstream. If this returned non-200 with the
 # backend down, an orchestrator would restart healthy proxies during a
 # dependency outage and remove the capacity needed to recover.
 test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
     "${health_url}/healthz")" = 200
 
+# Requirements: L3-HLT-002
 # Readiness must depend on it, so the instance leaves rotation instead.
 test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
     --header 'X-Request-ID: health.unready-1' \
@@ -650,6 +661,7 @@ validate_event "${health_proxy}" \
     --request-id health.unready-1 \
     --status 503
 
+# Requirements: L3-HLT-004
 health_logs=$("${runtime}" logs "${health_proxy}" 2>&1)
 # A succeeding probe is not an event. Liveness is never logged, and readiness
 # is logged only when it fails, so probe traffic cannot bury real requests.
@@ -710,6 +722,7 @@ assert payload["request_id"] == "clickhouse.query-1", payload
 assert payload["method"] == "POST", payload' \
     "${clickhouse_body}"
 
+# Requirements: L3-LOG-004
 # The ClickHouse HTTP interface accepts credentials and query text as request
 # parameters, so this is the case that matters most: neither may reach the log.
 curl --fail --silent --show-error --output "${null_device}" \
@@ -819,6 +832,7 @@ assert_process_security "${dynamic_backend_two}"
 
 # No reload is issued. Recovery has to come from re-resolution alone, bounded
 # by the resolver validity in the mounted file.
+# Requirements: L3-PRX-006
 dynamic_recovered=""
 for _ in $(seq 1 30); do
     if test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \

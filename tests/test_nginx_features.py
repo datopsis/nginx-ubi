@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import nginx_features  # noqa: E402
+from tests.requirements import requirements
 
 
 class NginxFeatureInventoryTests(unittest.TestCase):
@@ -29,9 +30,11 @@ class NginxFeatureInventoryTests(unittest.TestCase):
             f"configure arguments: {' '.join(selected)}\n"
         )
 
+    @requirements("L3-IMG-004")
     def test_reviewed_feature_inventory_is_accepted(self) -> None:
         nginx_features.validate_nginx_v(self.output(), self.inventory)
 
+    @requirements("L3-IMG-004")
     def test_missing_or_unexpected_module_is_rejected(self) -> None:
         arguments = (
             self.inventory["compiled_features"]

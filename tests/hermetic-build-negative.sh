@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Requirements: L3-SUP-008 L2-SUP-004
 set -euo pipefail
 
 architecture=${1:?usage: hermetic-build-negative.sh ARCHITECTURE}

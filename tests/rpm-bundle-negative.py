@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Requirements: L3-SUP-007
 """Exercise fail-closed verification against a real acquired RPM bundle."""
 
 from __future__ import annotations

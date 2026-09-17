@@ -115,6 +115,9 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   sensitive-data rules, and controlled-network responsibilities.
 - [Architecture decision records](docs/adr/README.md) record accepted decisions,
   the options weighed, and what each one gave up in exchange.
+- [Requirements](docs/L1-REQ.md) state what the product must do, decomposed
+  through [L2](docs/L2-REQ.md) and [L3](docs/L3-REQ.md) and traced to their
+  verifying tests in the generated [trace matrix](docs/TRACE-MATRIX.md).
 - [Configuration operations](docs/CONFIGURATION-OPERATIONS.md) covers mounting,
   validating a candidate, reloading, rollback, troubleshooting, and the
   redaction rules that go with a configuration change.

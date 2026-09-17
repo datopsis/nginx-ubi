@@ -7,6 +7,7 @@ import math
 import unittest
 
 from tests import validate_profile_logs as logs
+from tests.requirements import requirements
 
 
 def event(**changes: object) -> dict[str, object]:
@@ -33,6 +34,7 @@ class ProfileLogTests(unittest.TestCase):
         raw = "notice: worker started\n" + encoded(event())
         self.assertEqual(logs.parse_events(raw, "static"), [event()])
 
+    @requirements("L3-LOG-002")
     def test_json_escaped_path_round_trips(self) -> None:
         expected = event(uri='/quote"and\\slash')
         self.assertEqual(logs.parse_events(encoded(expected), "static"), [expected])
@@ -87,12 +89,14 @@ class ProfileLogTests(unittest.TestCase):
                 with self.assertRaisesRegex(logs.ProfileLogError, "request_id"):
                     logs.parse_events(encoded(event(request_id=request_id)), "static")
 
+    @requirements("L3-LOG-001")
     def test_uri_must_be_absolute_and_query_free(self) -> None:
         for uri in ("relative", "/path?credential=secret"):
             with self.subTest(uri=uri):
                 with self.assertRaisesRegex(logs.ProfileLogError, "uri"):
                     logs.parse_events(encoded(event(uri=uri)), "static")
 
+    @requirements("L3-LOG-002")
     def test_upstream_profiles_require_exact_timing_fields(self) -> None:
         upstream = {
             "upstream_addr": "10.0.0.2:8443",
@@ -222,6 +226,7 @@ class ProfileLogTests(unittest.TestCase):
                 with self.assertRaises(logs.ProfileLogError):
                     logs.parse_events(encoded(invalid), "websocket")
 
+    @requirements("L3-LIM-003")
     def test_rate_limited_requires_recognised_limit_outcomes(self) -> None:
         limits = {"limit_req_result": "PASSED", "limit_conn_result": "PASSED"}
         expected = event(**limits)
@@ -237,6 +242,7 @@ class ProfileLogTests(unittest.TestCase):
                     logs.parse_events(encoded(valid), "rate-limited"), [valid]
                 )
 
+    @requirements("L3-LIM-003")
     def test_rate_limited_rejects_unknown_limit_outcomes(self) -> None:
         for changes in (
             {"limit_req_result": "", "limit_conn_result": "PASSED"},

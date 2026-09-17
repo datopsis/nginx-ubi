@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Requirements: L3-LOG-005
 """Validate structured access events emitted by tested NGINX profiles."""
 
 from __future__ import annotations

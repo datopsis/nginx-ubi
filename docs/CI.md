@@ -32,6 +32,10 @@ pre-commit run --all-files --show-diff-on-failure
 The configured hooks check text normalization, YAML and JSON syntax, merge
 markers, unsafe or broken symlinks, oversized files, private keys, shell code,
 container build files, GitHub Actions, and prohibited co-author trailers.
+The lint job regenerates the requirement trace matrix and fails when the
+committed copy has drifted from the requirement documents or the test markers,
+so a requirement cannot lose its evidence silently.
+
 The lint job also runs
 `python -m unittest tests.test_artifacts tests.test_components
 tests.test_nginx_features tests.test_profile_policy tests.test_transfer -v`
