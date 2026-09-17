@@ -70,12 +70,10 @@ parallel only where it does not assume an unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 
-- [ ] Provide a tested, minimal example for ClickHouse HTTP proxying.
 - [ ] Extend the qualified defaults to DNS resolution, upstream verification,
   and the remaining profiles without silently breaking general-purpose use.
 - [ ] Document configuration mounting, validation, reload, rollback, logging,
   troubleshooting, and secret redaction.
-- [ ] Implement and test structured logging for ClickHouse.
 - [ ] Qualify runtime collection, rotation ownership, pipeline failure, and
   retention evidence for the selected logging platform.
 - [ ] Qualify lifecycle-alert delivery and exact platform cryptographic-policy

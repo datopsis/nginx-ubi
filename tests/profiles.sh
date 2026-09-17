@@ -28,12 +28,18 @@ limited="${prefix}-limited"
 health_network="${prefix}-health-network"
 health_backend="${prefix}-health-backend"
 health_proxy="${prefix}-health-proxy"
+# The ClickHouse stand-in also answers to a generic `backend` service name.
+clickhouse_network="${prefix}-clickhouse-network"
+clickhouse_backend="${prefix}-clickhouse-backend"
+clickhouse_proxy="${prefix}-clickhouse-proxy"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
 proxy_body=$(mktemp "${tmp_root}/nginx-proxy-body.XXXXXX")
 balancer_body=$(mktemp "${tmp_root}/nginx-balancer-body.XXXXXX")
 ws_body=$(mktemp "${tmp_root}/nginx-ws-body.XXXXXX")
+clickhouse_body=$(mktemp "${tmp_root}/nginx-clickhouse-body.XXXXXX")
+clickhouse_payload=$(mktemp "${tmp_root}/nginx-clickhouse-payload.XXXXXX")
 limited_root=$(mktemp -d "${tmp_root}/nginx-limited-root.XXXXXX")
 no_new_privileges="no-new-privileges:true"
 
@@ -46,12 +52,15 @@ cleanup() {
         "${pool_a}" "${pool_b}" "${balancer}" \
         "${ws_backend}" "${ws_proxy}" "${limited}" \
         "${health_backend}" "${health_proxy}" \
+        "${clickhouse_backend}" "${clickhouse_proxy}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${ws_network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${health_network}" >/dev/null 2>&1 || true
+    "${runtime}" network rm "${clickhouse_network}" >/dev/null 2>&1 || true
     rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
-        "${balancer_body}" "${ws_body}"
+        "${balancer_body}" "${ws_body}" "${clickhouse_body}" \
+        "${clickhouse_payload}"
     rm -rf -- "${limited_root}"
 }
 trap cleanup EXIT
@@ -648,13 +657,99 @@ if grep -Fq '"uri":"/healthz"' <<< "${health_logs}"; then
     exit 1
 fi
 
+# ---------------------------------------------------------------------------
+# ClickHouse HTTP proxying
+#
+# The fixture stands in for the ClickHouse HTTP interface. It reports what the
+# proxy forwarded and can answer with an exception code; it executes nothing.
+# This qualifies the proxy's request handling and credential hygiene, not
+# ClickHouse protocol behaviour.
+# ---------------------------------------------------------------------------
+
+"${runtime}" network create "${clickhouse_network}" >/dev/null
+
+run_restricted "${clickhouse_backend}" 10012 \
+    --network "${clickhouse_network}" \
+    --network-alias backend \
+    --volume "${script_dir}/fixtures/profile-clickhouse/nginx.conf:/etc/nginx/nginx.conf:ro"
+"${runtime}" exec "${clickhouse_backend}" nginx -t -q -c /etc/nginx/nginx.conf
+assert_process_security "${clickhouse_backend}"
+
+run_restricted "${clickhouse_proxy}" 10013 \
+    --network "${clickhouse_network}" \
+    --publish 127.0.0.1::8080 \
+    --volume "${examples_dir}/clickhouse/nginx.conf:/etc/nginx/nginx.conf:ro"
+clickhouse_binding=$("${runtime}" port "${clickhouse_proxy}" 8080/tcp)
+clickhouse_port=${clickhouse_binding##*:}
+clickhouse_url="http://127.0.0.1:${clickhouse_port}"
+wait_for_http "${clickhouse_url}/healthz" "${clickhouse_proxy}"
+assert_process_security "${clickhouse_proxy}"
+"${runtime}" exec "${clickhouse_proxy}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# A query sent as a POST body must reach the upstream unchanged.
+printf 'SELECT 1' > "${clickhouse_payload}"
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: clickhouse.query-1' \
+    --data-binary "@${clickhouse_payload}" \
+    --output "${clickhouse_body}" \
+    "${clickhouse_url}/query"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["request_id"] == "clickhouse.query-1", payload
+assert payload["method"] == "POST", payload' \
+    "${clickhouse_body}"
+
+# The ClickHouse HTTP interface accepts credentials and query text as request
+# parameters, so this is the case that matters most: neither may reach the log.
+curl --fail --silent --show-error --output "${null_device}" \
+    --header 'X-Request-ID: clickhouse.secret-1' \
+    "${clickhouse_url}/query?user=analytics&password=do-not-log-this&query=SELECT%20secret_column"
+
+# An upstream failure must be reported by its exception code, never by echoing
+# the statement that produced it.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --header 'X-Request-ID: clickhouse.failure-1' \
+    "${clickhouse_url}/query?fail=1")" = 500
+
+# Methods outside the interface are refused by the proxy.
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --request DELETE \
+    "${clickhouse_url}/query")" = 403
+
+# A body beyond the configured bound is refused before it reaches the database.
+head -c 11534336 /dev/zero | tr '\0' 'x' > "${clickhouse_payload}"
+test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+    --header 'X-Request-ID: clickhouse.oversize-1' \
+    --data-binary "@${clickhouse_payload}" \
+    "${clickhouse_url}/query")" = 413
+
+validate_event "${clickhouse_proxy}" \
+    --profile clickhouse \
+    --uri /query \
+    --request-id clickhouse.query-1 \
+    --status 200 \
+    --method POST \
+    --require-field clickhouse_exception_code=NONE \
+    --forbidden do-not-log-this \
+    --forbidden secret_column \
+    --forbidden password=
+
+validate_event "${clickhouse_proxy}" \
+    --profile clickhouse \
+    --uri /query \
+    --request-id clickhouse.failure-1 \
+    --status 500 \
+    --require-field clickhouse_exception_code=241
+
 "${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" "${ws_proxy}" \
-    "${limited}" "${health_proxy}" >/dev/null
+    "${limited}" "${health_proxy}" "${clickhouse_proxy}" >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${ws_proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${limited}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${health_proxy}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${clickhouse_proxy}")" = 0
 
-echo "Static, reverse-proxy, load-balancer, websocket, rate-limited, and health profile qualification passed for ${image}"
+echo "Static, reverse-proxy, load-balancer, websocket, rate-limited, health, and ClickHouse profile qualification passed for ${image}"

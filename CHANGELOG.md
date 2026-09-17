@@ -140,6 +140,15 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a qualified preview ClickHouse HTTP proxying profile that bounds
+  methods, body size, timeouts, and temporary storage, reports failures by
+  exception code rather than by statement, and records `NONE` upstream fields
+  for a request the proxy refused; tests prove a password and column name sent
+  as request parameters reach neither the access stream nor the error stream.
+- Stated that the ClickHouse proxy is not an authorization boundary, because
+  NGINX parses HTTP rather than SQL and cannot enforce read-only access,
+  restrict statements, or bound returned rows; those remain ClickHouse
+  `readonly` settings, quotas, row policies, and grants.
 - Added a qualified preview health-endpoint profile separating
   upstream-independent liveness from upstream-reflecting readiness, logging
   only failing probes, and exposing `stub_status` on a separate listener that

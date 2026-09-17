@@ -1,10 +1,10 @@
 # Qualified HTTP and TLS configuration profiles
 
 The repository provides minimal static-serving, HTTP reverse-proxy, HTTP
-load-balancing, WebSocket-proxying, request-limiting, and health-endpoint
-configurations under `examples/profiles`. Static serving, HTTP reverse proxy,
-HTTP load balancing, WebSocket proxying, request and connection limiting,
-health and readiness endpoints,
+load-balancing, WebSocket-proxying, request-limiting, health-endpoint, and
+ClickHouse-proxying configurations under `examples/profiles`. Static serving,
+HTTP reverse proxy, HTTP load balancing, WebSocket proxying, request and
+connection limiting, health and readiness endpoints, ClickHouse HTTP proxying,
 TLS termination, mutual TLS, and verified HTTPS upstream profiles are exercised
 on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
@@ -61,6 +61,81 @@ Its access-event schema is:
 | `status` | integer | Final client-facing response status. |
 | `body_bytes_sent` | integer | Response-body bytes sent. |
 | `request_time` | number | Total request duration in seconds. |
+
+## ClickHouse HTTP proxying
+
+[`examples/profiles/clickhouse/nginx.conf`](../examples/profiles/clickhouse/nginx.conf)
+proxies the ClickHouse HTTP interface.
+
+### This proxy is not an authorization boundary
+
+NGINX parses HTTP, not SQL. It cannot make a session read-only, restrict which
+statements run, bound how many rows a query returns, or tell a `SELECT` from a
+`DROP`.
+
+Anything that depends on the content of a query belongs to ClickHouse:
+`readonly` user settings, quotas, row policies, and per-user grants. Treating
+this file as the control that stops clients modifying data is a misreading of
+what it does. The profile restricts methods and body size, which bounds the
+shape of a request, not its meaning.
+
+### Credentials and query text in the request target
+
+This is the profile where the repository-wide logging rule earns its keep.
+
+The ClickHouse HTTP interface accepts `?query=...`, and many deployments accept
+`?user=...&password=...`. The request target therefore routinely carries both
+credentials and customer data. Every profile here logs `$uri` and never
+`$request`, `$request_uri`, or `$args`, so passwords and query text are
+structurally absent from the access stream rather than filtered out of it.
+
+The test asserts this directly: it issues a request carrying a password and a
+column name as parameters, then requires that neither string appears anywhere
+in the container's output.
+
+An operator should confirm the same property for anything downstream. A log
+collector, an error tracker, or a reverse proxy in front that records full
+request lines reintroduces exactly what this profile removes.
+
+### Failures are reported by code, not by statement
+
+`X-ClickHouse-Exception-Code` is recorded as a structured field, which gives
+the failure class without putting any part of the query into the log. A request
+the proxy refuses never reaches the database, so its upstream fields record
+`NONE`, keeping "the database rejected this" distinguishable from "the database
+never saw it".
+
+### Temporary storage
+
+`proxy_max_temp_file_size 0` with buffering off is deliberate. A result set
+larger than the proxy buffers would otherwise spill to `proxy_temp_path`, which
+is on the container's `/tmp` tmpfs. One large result could consume the tmpfs
+and take the container down, so the response is streamed instead.
+
+### Timeouts and capacity
+
+Analytical queries run far longer than web requests, so the read timeout is
+large and scoped to the query location. Each waiting query holds a worker
+connection, so size `worker_connections` for the expected concurrent query
+count rather than for request rate. Retries are disabled: re-running a
+statement is unsafe for anything that writes and wasteful for anything else.
+
+### Qualified behaviour
+
+The tests run against a stand-in for the ClickHouse HTTP interface built from
+this image. It reports what the proxy forwarded and can answer with an
+exception code; it executes nothing and implements no part of the ClickHouse
+protocol.
+
+They prove that a POST body reaches the upstream, that credentials and query
+text in the request target never reach the log, that an exception code is
+recorded, that methods outside the interface are refused, and that an oversized
+body is refused before reaching the database.
+
+They do **not** qualify interoperation with a real ClickHouse server, protocol
+or version behaviour, query semantics, compression negotiation, or performance
+against real result sets. A deployment must qualify those against its own
+server.
 
 ## Extended health and readiness endpoints
 
