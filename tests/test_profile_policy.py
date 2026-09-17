@@ -16,8 +16,10 @@ make either one fail before it is merged.
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import re
 import unittest
+from tests.requirements import requirements
 
 REPOSITORY = Path(__file__).resolve().parent.parent
 CONFIGURATION_ROOTS = (REPOSITORY / "examples", REPOSITORY / "container")
@@ -69,6 +71,7 @@ class ProfilePolicyTests(unittest.TestCase):
         # below are only meaningful while this holds.
         self.assertGreaterEqual(len(configuration_files()), 10)
 
+    @requirements("L3-PRX-002")
     def test_no_commercial_directive_is_used(self) -> None:
         for path in configuration_files():
             for number, statement in directive_lines(path):
@@ -82,6 +85,7 @@ class ProfilePolicyTests(unittest.TestCase):
                         f"project packages open source NGINX only.",
                     )
 
+    @requirements("L3-PRX-002")
     def test_no_profile_enables_non_idempotent_retries(self) -> None:
         for path in configuration_files():
             for number, statement in directive_lines(path):
@@ -107,6 +111,32 @@ class ProfilePolicyTests(unittest.TestCase):
             "non_idempotent",
             " ".join(statement for _, statement in directive_lines(load_balancer)),
         )
+
+
+class BaseImageBindingTests(unittest.TestCase):
+    """The lock and the Containerfile both name the base images.
+
+    If they can disagree, the lock describes something other than what was
+    built, and every claim derived from the lock inherits that gap.
+    """
+
+    @requirements("L2-IMG-001")
+    def test_containerfile_bases_match_every_architecture_lock(self) -> None:
+        containerfile = (REPOSITORY / "Containerfile").read_text(encoding="utf-8")
+        locks = sorted((REPOSITORY / "artifacts" / "locks").glob("*.json"))
+        self.assertGreaterEqual(len(locks), 2, "expected one lock per architecture")
+
+        for lock_path in locks:
+            lock = json.loads(lock_path.read_text(encoding="utf-8"))
+            for role in ("builder", "runtime"):
+                digest = lock["base_images"][role]["digest"]
+                with self.subTest(lock=lock_path.name, role=role):
+                    self.assertIn(
+                        digest,
+                        containerfile,
+                        f"{lock_path.name} pins the {role} base at {digest}, "
+                        f"which the Containerfile does not reference.",
+                    )
 
 
 if __name__ == "__main__":

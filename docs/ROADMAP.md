@@ -202,30 +202,6 @@ implementation does not yet meet. Those become defects to close or
 non-requirements to record, not text to soften, and either outcome is a
 release-blocking finding.
 
-- [ ] Establish the requirement tree in `docs/L1-REQ.md`, `docs/L2-REQ.md`, and
-  `docs/L3-REQ.md`. L1 states what the product must do, L2 decomposes each L1
-  into architectural obligations, and L3 decomposes each L2 into implementation
-  obligations. Identifiers take the form `L<n>-<CATEGORY>-<NNN>`, are permanent,
-  and are never reused once retired. Every requirement carries a statement,
-  a rationale, and a verification method drawn from Test, Analysis, Inspection,
-  and Demonstration.
-- [ ] Record explicit out-of-scope items as `NR-<NNN>` non-requirements, so a
-  deliberate exclusion is distinguishable from an oversight. The existing
-  deferred-feature list is the starting set.
-- [ ] Define the verification-marker convention for the test forms this
-  repository actually uses: Python `unittest` cases and the Bash scenario
-  suites. A requirement's evidence must be selectable by the test runner rather
-  than asserted in prose, so the marker has to be something the runner can
-  filter on rather than a comment nobody executes.
-- [ ] Generate `docs/TRACE-MATRIX.md` with `scripts/build-trace-matrix.py` from
-  the requirement documents and those markers. The matrix is the single source
-  of truth for requirement status; the requirement documents carry only the
-  specification. Add a `--check` mode that fails when the committed matrix has
-  drifted from its sources, and run it in CI.
-- [ ] Record accepted decisions as ADRs under `docs/adr/`, numbered
-  sequentially and permanently, using a fixed template with status, date,
-  decision makers, context and problem statement, decision drivers, considered
-  options, outcome, and consequences.
 - [ ] Author profile and use-case diagrams under `docs/architecture/`, with the
   diagram source committed alongside its generated SVG, and add a CI check that
   the rendered SVG matches its source. Decide and record the rendering

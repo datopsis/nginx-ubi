@@ -11,6 +11,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import artifacts  # noqa: E402
+from tests.requirements import requirements
 
 
 FINGERPRINT = "8540A6F18833A80E9C1653A42FD21310B49F6B46"
@@ -126,6 +127,7 @@ class ArtifactLockTests(unittest.TestCase):
             ],
         )
 
+    @requirements("L3-SUP-001")
     def test_repository_inputs_and_generated_locks_are_valid(self) -> None:
         repository = Path(__file__).resolve().parents[1]
         inputs = artifacts.validate_inputs(repository / "artifacts" / "lock-inputs.json")
@@ -149,6 +151,7 @@ class ArtifactLockTests(unittest.TestCase):
             }
             self.assertEqual(actual_keys, expected_keys)
 
+    @requirements("L3-SUP-001")
     def test_malformed_and_unexpected_fields_fail_closed(self) -> None:
         path = self.root / "bad.json"
         path.write_text("{", encoding="utf-8")
@@ -158,6 +161,7 @@ class ArtifactLockTests(unittest.TestCase):
         value["unexpected"] = True
         self.assert_rejected(value)
 
+    @requirements("L3-SUP-002")
     def test_wrong_arch_version_nevra_source_and_base_are_rejected(self) -> None:
         mutations = []
         value = valid_lock()
@@ -182,6 +186,7 @@ class ArtifactLockTests(unittest.TestCase):
             with self.subTest(mutation=mutation):
                 self.assert_rejected(mutation)
 
+    @requirements("L3-SUP-002")
     def test_base_digest_drift_from_reviewed_inputs_is_rejected(self) -> None:
         repository = Path(__file__).resolve().parents[1]
         lock = json.loads(
@@ -195,6 +200,7 @@ class ArtifactLockTests(unittest.TestCase):
         with self.assertRaises(artifacts.LockError):
             artifacts.validate_lock(lock_path, repository / "artifacts" / "lock-inputs.json")
 
+    @requirements("L3-SUP-002")
     def test_duplicate_and_unapproved_signer_or_url_are_rejected(self) -> None:
         value = valid_lock()
         value["packages"].append(copy.deepcopy(value["packages"][0]))
@@ -220,6 +226,7 @@ class ArtifactLockTests(unittest.TestCase):
                             path.rmdir()
                     bundle.rmdir()
 
+    @requirements("L3-SUP-007")
     def test_tampered_missing_unexpected_and_wrong_lock_bundles_fail_closed(self) -> None:
         cases = ("tampered", "missing", "unexpected", "wrong-lock")
         for case in cases:
@@ -245,6 +252,7 @@ class ArtifactLockTests(unittest.TestCase):
                         path.rmdir()
                 bundle.rmdir()
 
+    @requirements("L3-SUP-004")
     def test_alternate_source_map_requires_an_exact_safe_mapping(self) -> None:
         value = valid_lock()
         expected = set(artifacts.bundle_artifacts(value))
@@ -277,6 +285,7 @@ class ArtifactLockTests(unittest.TestCase):
         with self.assertRaises(artifacts.LockError):
             artifacts.read_source_map(path, expected)
 
+    @requirements("L3-SUP-003")
     def test_acquisition_publishes_only_a_complete_verified_bundle(self) -> None:
         value = valid_lock()
         value["signing_keys"][0]["sha256"] = artifacts.hashlib.sha256(b"k").hexdigest()

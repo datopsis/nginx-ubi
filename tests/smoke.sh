@@ -46,6 +46,7 @@ run_restricted() {
         "${image}" >/dev/null
 }
 
+# Requirements: L3-RUN-001 L3-RUN-002
 assert_process_security() {
     local name="$1"
     # The variables expand in the inner container shell, not this script.
@@ -131,6 +132,7 @@ worker_pids() {
     ' | sort -n
 }
 
+# Requirements: L3-RUN-005
 assert_reload_replaced_workers() {
     local name="$1"
     local old_workers
@@ -163,6 +165,7 @@ assert_reload_replaced_workers() {
     return 1
 }
 
+# Requirements: L3-RUN-006
 assert_active_request_drains_on_stop() {
     local binding
     local host_port
@@ -276,6 +279,7 @@ test "$("${runtime}" exec "${primary}" id -g)" = "0"
 assert_process_security "${primary}"
 assert_tmpfs_security "${primary}"
 "${runtime}" exec "${primary}" nginx -t -q
+# Requirements: L3-IMG-001 L3-IMG-002 L3-IMG-003 L3-IMG-004 L3-RUN-003 L3-RUN-004
 nginx_build=$("${runtime}" exec "${primary}" nginx -V 2>&1)
 printf '%s\n' "${nginx_build}" | "${python}" \
     "${repository}/scripts/nginx_features.py"
@@ -342,6 +346,7 @@ assert_tmpfs_security "${arbitrary}"
     --security-opt "${no_new_privileges}" \
     "${image}" >/dev/null
 wait_for_exit "${missing_tmp}"
+# Requirements: L3-RUN-007
 missing_tmp_logs=$("${runtime}" logs "${missing_tmp}" 2>&1)
 grep -Fq '/tmp/nginx-client-body' <<< "${missing_tmp_logs}"
 grep -Eiq 'read-only file system|permission denied' <<< "${missing_tmp_logs}"
@@ -355,6 +360,7 @@ grep -Eiq 'read-only file system|permission denied' <<< "${missing_tmp_logs}"
     "${image}" \
     >/dev/null
 wait_for_exit "${invalid_config}"
+# Requirements: L3-RUN-008 L3-OPS-001
 invalid_logs=$("${runtime}" logs "${invalid_config}" 2>&1)
 grep -Eiq 'unknown directive.*invalid_directive' <<< "${invalid_logs}"
 grep -Fq '/etc/nginx/nginx.conf:1' <<< "${invalid_logs}"

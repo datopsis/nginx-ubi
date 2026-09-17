@@ -12,6 +12,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import components  # noqa: E402
+from tests.requirements import requirements
 
 
 class ComponentInventoryTests(unittest.TestCase):
@@ -30,6 +31,7 @@ class ComponentInventoryTests(unittest.TestCase):
             json.dump(value, temporary)
         return Path(temporary.name)
 
+    @requirements("L3-SUP-006")
     def test_repository_inventory_covers_both_reviewed_locks(self) -> None:
         result = components.validate_inventory(self.inventory_path, self.repository)
         self.assertEqual(len(result["components"]), 79)
@@ -40,6 +42,7 @@ class ComponentInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(components.InventoryError, "component names differ"):
             components.validate_inventory(self.write_inventory(value), self.repository)
 
+    @requirements("L3-SUP-006")
     def test_lock_hash_drift_is_rejected(self) -> None:
         value = copy.deepcopy(self.inventory)
         value["locks"]["amd64"]["sha256"] = "0" * 64
@@ -53,6 +56,7 @@ class ComponentInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(components.InventoryError, "wrong publisher policy"):
             components.validate_inventory(self.write_inventory(value), self.repository)
 
+    @requirements("L3-SUP-006")
     def test_rpm_headers_must_match_the_reviewed_metadata(self) -> None:
         inventory = components.validate_inventory(self.inventory_path, self.repository)
         records = {item["name"]: item for item in inventory["components"]}

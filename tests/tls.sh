@@ -171,6 +171,7 @@ wait_for_exit() {
     return 1
 }
 
+# Requirements: L2-TLS-001
 assert_process_security() {
     local name="$1"
     # Values expand inside the container, not in this test process.
@@ -302,6 +303,7 @@ for tls_version in 1.2 1.3; do
         --header "X-Request-ID: tls.valid-${tls_version}" \
         "${termination_url}/")" = static-profile-ok
 done
+# Requirements: L3-TLS-001
 if curl --silent --show-error --tls-max 1.1 \
     --cacert "${evidence}/ingress-ca/ca.crt" \
     --resolve "localhost:${termination_port}:127.0.0.1" \
@@ -309,6 +311,7 @@ if curl --silent --show-error --tls-max 1.1 \
     echo "TLS 1.1 unexpectedly succeeded" >&2
     exit 1
 fi
+# Requirements: L3-TLS-002
 if curl --silent --show-error \
     --cacert "${evidence}/untrusted-ca/ca.crt" \
     --resolve "localhost:${termination_port}:127.0.0.1" \
@@ -321,11 +324,13 @@ printf '%s\n' "${termination_logs}" | "${python}" \
     "${script_dir}/validate_profile_logs.py" \
     --profile tls-termination --uri /index.html \
     --request-id tls.valid-1.3 --status 200
+# Requirements: L3-TLS-004
 if grep -Eq 'BEGIN .*PRIVATE KEY|client\.test' <<< "${termination_logs}"; then
     echo "TLS termination logs exposed private-key or client identity data" >&2
     exit 1
 fi
 
+# Requirements: L3-TLS-006
 old_serial=$("${openssl}" x509 -in "${evidence}/ingress/server.crt" \
     -noout -serial)
 new_serial=$("${openssl}" x509 -in "${evidence}/ingress-renewed/server.crt" \
@@ -358,6 +363,7 @@ for client_options in \
     "" \
     "--cert ${evidence}/untrusted-client/server.crt --key ${evidence}/untrusted-client/server.key" \
     "--cert ${evidence}/revoked-client/server.crt --key ${evidence}/revoked-client/server.key"; do
+    # Requirements: L3-TLS-003
     # Word splitting is intentional for the two fixed curl option strings.
     # shellcheck disable=SC2086
     if curl --fail --silent --show-error \

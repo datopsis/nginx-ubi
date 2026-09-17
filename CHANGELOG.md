@@ -140,6 +140,16 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Established the three-level requirement tree with permanent identifiers,
+  stated exclusions as numbered non-requirements, and added a marker convention
+  that lets a `unittest` case declare which requirements it verifies and lets
+  those tests be run by requirement.
+- Added a generated requirement trace matrix that derives status from the
+  requirement documents and the test markers, so status cannot drift between
+  them, with a check that fails when the committed matrix is stale.
+- Closed every requirement the first matrix reported as uncovered, including one
+  obligation with no test at all: the Containerfile's base images are now
+  asserted to match every architecture lock, which nothing previously checked.
 - Added configuration policy checks that reject a commercial NGINX directive or
   an enabled non-idempotent retry in any shipped configuration, closing the two
   accepted decisions that had no automated enforcement. The checks strip

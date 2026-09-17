@@ -9,6 +9,7 @@ import unittest
 from unittest import mock
 
 from scripts import tls_material
+from tests.requirements import requirements
 
 
 NOW = datetime(2026, 9, 15, 1, 2, 3, tzinfo=timezone.utc)
@@ -78,6 +79,7 @@ class TLSMaterialTests(unittest.TestCase):
             tls_material.parse_now("2026-09-15T01:02:03")
 
     @mock.patch("scripts.tls_material.subprocess.run")
+    @requirements("L3-TLS-005")
     def test_certificate_inspection_uses_public_metadata_only(self, run: mock.Mock) -> None:
         run.return_value = subprocess.CompletedProcess(
             [], 0, stdout="notAfter=Sep 16 01:02:03 2026 GMT\n", stderr=""
@@ -95,6 +97,7 @@ class TLSMaterialTests(unittest.TestCase):
         )
 
     @mock.patch("scripts.tls_material.subprocess.run")
+    @requirements("L3-TLS-005")
     def test_crl_inspection_reports_warning(self, run: mock.Mock) -> None:
         run.return_value = subprocess.CompletedProcess(
             [], 0, stdout="nextUpdate=Sep 15 02:02:03 2026 GMT\n", stderr=""
@@ -106,6 +109,7 @@ class TLSMaterialTests(unittest.TestCase):
         self.assertEqual(result["seconds_remaining"], 3600)
 
     @mock.patch("scripts.tls_material.subprocess.run")
+    @requirements("L3-TLS-005")
     def test_openssl_failure_is_fail_closed_without_stderr_leak(self, run: mock.Mock) -> None:
         run.side_effect = subprocess.CalledProcessError(
             1, ["openssl"], stderr="sensitive diagnostic"
