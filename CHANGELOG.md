@@ -140,6 +140,10 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added README status badges for the build, code-scanning, and OpenSSF
+  Scorecard workflows, the license, and the release and support position,
+  keeping the last two static so no badge implies a qualification the project
+  has not completed.
 - Added a release-gating roadmap package for the product requirement tree, its
   generated trace matrix, architecture decision records, and profile and
   use-case diagrams, and bound it to the control-mapping work so no published
