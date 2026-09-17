@@ -261,6 +261,38 @@ class ProfileLogTests(unittest.TestCase):
             repeated,
         )
 
+    def test_clickhouse_requires_a_numeric_or_absent_exception_code(self) -> None:
+        upstream = {
+            "upstream_addr": "10.0.0.1:8123",
+            "upstream_status": "200",
+            "upstream_connect_time": "0.001",
+            "upstream_header_time": "0.002",
+            "upstream_response_time": "0.003",
+        }
+        for code in ("NONE", "241", "0"):
+            with self.subTest(code=code):
+                valid = event(clickhouse_exception_code=code, **upstream)
+                self.assertEqual(
+                    logs.parse_events(encoded(valid), "clickhouse"), [valid]
+                )
+
+    def test_clickhouse_rejects_an_unvalidated_exception_header(self) -> None:
+        # The value comes from an upstream response header, so anything that is
+        # neither digits nor the explicit absent token means it reached the log
+        # without being checked.
+        upstream = {
+            "upstream_addr": "10.0.0.1:8123",
+            "upstream_status": "200",
+            "upstream_connect_time": "0.001",
+            "upstream_header_time": "0.002",
+            "upstream_response_time": "0.003",
+        }
+        for code in ("", "none", "241; DROP", "Exception 241"):
+            with self.subTest(code=code):
+                invalid = event(clickhouse_exception_code=code, **upstream)
+                with self.assertRaises(logs.ProfileLogError):
+                    logs.parse_events(encoded(invalid), "clickhouse")
+
     def test_exactly_one_scenario_event_is_required(self) -> None:
         observed = [event(), event(request_id="other")]
         self.assertEqual(

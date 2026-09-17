@@ -29,6 +29,7 @@ UPSTREAM_FIELDS = {
     "upstream_response_time",
 }
 WEBSOCKET_FIELDS = {"connection_upgrade"}
+CLICKHOUSE_FIELDS = {"clickhouse_exception_code"}
 LIMIT_FIELDS = {"limit_req_result", "limit_conn_result"}
 # NGINX reports these outcomes; the profile maps the empty value, which means
 # the limit was not evaluated for that location, onto an explicit token.
@@ -55,6 +56,7 @@ PROFILES = {
     "websocket",
     "rate-limited",
     "health",
+    "clickhouse",
     "tls-termination",
     "mutual-tls",
     "tls-upstream",
@@ -119,15 +121,18 @@ def parse_events(
         "load-balancer",
         "websocket",
         "health",
+        "clickhouse",
         "tls-upstream",
     }
     websocket = profile == "websocket"
+    clickhouse = profile == "clickhouse"
     limited = profile == "rate-limited"
     tls = profile in {"tls-termination", "mutual-tls"}
     fields = (
         COMMON_FIELDS
         | (UPSTREAM_FIELDS if upstream else set())
         | (WEBSOCKET_FIELDS if websocket else set())
+        | (CLICKHOUSE_FIELDS if clickhouse else set())
         | (LIMIT_FIELDS if limited else set())
         | (TLS_FIELDS if tls else set())
     )
@@ -154,6 +159,13 @@ def parse_events(
             # the log or the map was changed without updating this contract.
             if event["connection_upgrade"] not in {"upgrade", "close"}:
                 fail("connection_upgrade must be 'upgrade' or 'close'")
+        if clickhouse:
+            code = event["clickhouse_exception_code"]
+            # Either a numeric ClickHouse exception code or the explicit
+            # "no exception" token. Anything else means the upstream header
+            # reached the log unvalidated.
+            if code != "NONE" and not (isinstance(code, str) and code.isdigit()):
+                fail("clickhouse_exception_code must be digits or NONE")
         if limited:
             if event["limit_req_result"] not in LIMIT_REQ_RESULTS:
                 fail("limit_req_result is not a recognised limit outcome")
@@ -232,6 +244,14 @@ def main() -> int:
     parser.add_argument("--status", required=True, type=int)
     parser.add_argument("--forbidden", action="append", default=[])
     parser.add_argument(
+        "--method",
+        default="GET",
+        help=(
+            "request method the matching event must carry; a scenario that "
+            "sends a body states it explicitly"
+        ),
+    )
+    parser.add_argument(
         "--connection-upgrade",
         choices=("upgrade", "close"),
         help="require this derived connection disposition on the matching event",
@@ -278,8 +298,8 @@ def main() -> int:
 
     def unmet(event: dict[str, object]) -> str | None:
         """Return why this event fails the assertions, or None if it passes."""
-        if event["method"] != "GET":
-            return "matching event has an unexpected request method"
+        if event["method"] != args.method:
+            return f"expected method {args.method}; observed {event['method']}"
         if args.connection_upgrade is not None:
             if "connection_upgrade" not in event:
                 return "profile does not record a connection disposition"

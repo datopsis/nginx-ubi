@@ -8,9 +8,9 @@ against the released image.
 
 The development image has tested preview profiles for static content, HTTP and
 verified-HTTPS upstream proxying, HTTP load balancing, WebSocket proxying,
-request and connection limiting, health and readiness endpoints, TLS
-termination, and mutual TLS, including structured logging on unprivileged
-ports. The other
+request and connection limiting, health and readiness endpoints, ClickHouse
+HTTP proxying, TLS termination, and mutual TLS, including structured logging on
+unprivileged ports. The other
 profiles below are design targets for the first release unless stated
 otherwise. See [Qualified HTTP and TLS configuration profiles](CONFIGURATION-PROFILES.md)
 for the exact implemented boundary.
