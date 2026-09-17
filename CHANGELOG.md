@@ -140,6 +140,21 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Qualified upstream resolution in both modes: the existing profiles resolve
+  once at load and recover from a replaced endpoint on reload, and a new
+  mountable dynamic-upstream profile re-resolves per request and recovers
+  without one. Recorded what the dynamic mode gives up in exchange, since
+  holding the endpoint in a variable removes the upstream block and with it
+  balancing, passive failure tracking, failover, and connection reuse.
+- Recorded that the resolver address is supplied by the deployment through a
+  mounted include, that resolver validity bounds how long traffic can reach a
+  replaced endpoint, and that DNS becomes part of the trust boundary in that
+  mode because no reload or review step stands between a resolver answer and
+  live traffic.
+- Recorded that upstream certificate verification applies only to HTTPS
+  upstreams, that the plain-HTTP proxying profiles assume an already-trusted
+  segment, and that adding `https://` without the verified-upstream pattern is
+  worse than plain HTTP because it looks verified and is not.
 - Added a configuration-operations guide covering mounting, offline validation
   of a candidate with the same image, reload, rollback, troubleshooting, and
   secret redaction.

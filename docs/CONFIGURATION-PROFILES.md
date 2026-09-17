@@ -268,6 +268,106 @@ They do **not** qualify tuning for any particular workload, zone sizing under
 real client populations, behaviour once a zone is exhausted, or the interaction
 between these limits and an upstream rate limiter.
 
+## Upstream resolution: static by default, dynamic by choice
+
+Every proxying profile in this repository resolves its upstream **once, when
+the configuration loads**. That is the default, and it is the right default.
+
+It is also a real constraint: if the endpoint behind the name is replaced on a
+new address, those profiles keep sending traffic to the old one. Verified
+against this image — after replacing a backend container with another on a
+different address under the same name, requests fail until the proxy is
+reloaded, and `SIGHUP` recovers them because a reload re-resolves.
+
+For a deployment whose endpoint addresses are stable, or which can reload when
+membership changes, that is the whole story and the static profiles are the
+right choice.
+
+### When a reload is not available
+
+[`examples/profiles/dynamic-upstream/nginx.conf`](../examples/profiles/dynamic-upstream/nginx.conf)
+re-resolves per request instead. Verified the same way: after the same
+replacement, it recovers on its own, with no reload, bounded by the resolver
+validity.
+
+This is a **different file to mount**, not a setting to toggle. The two modes
+need structurally different directives, so one configuration cannot offer both.
+
+### What the dynamic profile gives up
+
+Holding the endpoint in a variable is what makes NGINX resolve it per request.
+It is also what removes the `upstream` block, and everything that lives in one:
+
+| Capability | Static profiles | Dynamic profile |
+| --- | --- | --- |
+| Balancing method across peers | configurable | none |
+| Passive failure tracking (`max_fails`, `fail_timeout`) | yes | none |
+| Failover to another peer | `proxy_next_upstream` | nothing to fail over to |
+| Connection reuse (`keepalive`) | yes | none; `keepalive` is an `upstream` directive |
+| Picks up a replaced endpoint | on reload | on its own, within the resolver validity |
+
+A dead endpoint keeps receiving requests until DNS stops returning it, because
+nothing is tracking failures. The load-balancing profile is not a substitute
+either: its members are resolved at load time like every other static profile.
+
+### The resolver is supplied by the deployment
+
+NGINX does not read `/etc/resolv.conf` for this, so there is no usable default
+and a wrong value fails every request. The profile therefore includes a file
+the deployment mounts:
+
+```console
+--volume /path/to/resolver.conf:/etc/nginx/resolver.conf:ro
+```
+
+containing one directive, for example:
+
+```text
+resolver 10.96.0.10 valid=30s ipv6=off;
+```
+
+`valid` bounds how long a resolved address is reused, and therefore how long
+traffic can keep reaching a replaced endpoint. Setting it below the record's
+own TTL does not make failover faster than the zone allows.
+
+**DNS becomes part of the trust boundary.** A resolver returning an
+attacker-controlled address redirects traffic for the life of the cache entry,
+and unlike the static profiles there is no reload or review step in between.
+Use a resolver the deployment controls.
+
+### A note on `proxy_pass` and the request URI
+
+`proxy_pass` with a variable and no URI part passes the request URI through
+unchanged. The URI-substitution rule that catches people applies when
+`proxy_pass` carries a URI part of its own.
+
+Appending `$request_uri` is therefore redundant rather than safer here. Path,
+query string, and normalisation of a traversal segment were compared both ways
+against this image and behave identically, matching the static profiles.
+
+### Upstream verification applies to HTTPS upstreams only
+
+The proxying profiles other than
+[`tls-upstream`](../examples/profiles/tls-upstream/nginx.conf) reach their
+upstream over plain HTTP, where there is no certificate to verify. That is a
+deployment boundary decision, not an omission: those profiles assume the
+segment between proxy and upstream is already trusted, and a deployment where
+it is not should use the verified-HTTPS pattern, which qualifies chain and
+hostname verification and CRL enforcement.
+
+Adding `https://` to an upstream without that pattern is worse than plain HTTP,
+because it looks verified and is not.
+
+### Qualified behaviour
+
+The tests prove the dynamic profile serves a request with its path intact,
+and that after the endpoint is replaced on a different address under the same
+name it recovers without a reload.
+
+They do **not** qualify resolver failure modes, behaviour when DNS returns
+several addresses, cache behaviour under load, or recovery time against any
+particular zone's TTL.
+
 ## WebSocket proxying
 
 [`examples/profiles/websocket/nginx.conf`](../examples/profiles/websocket/nginx.conf)

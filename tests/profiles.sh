@@ -32,6 +32,12 @@ health_proxy="${prefix}-health-proxy"
 clickhouse_network="${prefix}-clickhouse-network"
 clickhouse_backend="${prefix}-clickhouse-backend"
 clickhouse_proxy="${prefix}-clickhouse-proxy"
+# The dynamic-upstream profile replaces its backend mid-test, so it needs its
+# own network and its own `backend` alias.
+dynamic_network="${prefix}-dynamic-network"
+dynamic_backend_one="${prefix}-dynamic-backend-one"
+dynamic_backend_two="${prefix}-dynamic-backend-two"
+dynamic_proxy="${prefix}-dynamic-proxy"
 tmp_root="${PROFILE_TMPDIR:-/tmp}"
 static_headers=$(mktemp "${tmp_root}/nginx-static-headers.XXXXXX")
 proxy_headers=$(mktemp "${tmp_root}/nginx-proxy-headers.XXXXXX")
@@ -40,6 +46,7 @@ balancer_body=$(mktemp "${tmp_root}/nginx-balancer-body.XXXXXX")
 ws_body=$(mktemp "${tmp_root}/nginx-ws-body.XXXXXX")
 clickhouse_body=$(mktemp "${tmp_root}/nginx-clickhouse-body.XXXXXX")
 clickhouse_payload=$(mktemp "${tmp_root}/nginx-clickhouse-payload.XXXXXX")
+dynamic_root=$(mktemp -d "${tmp_root}/nginx-dynamic-root.XXXXXX")
 limited_root=$(mktemp -d "${tmp_root}/nginx-limited-root.XXXXXX")
 no_new_privileges="no-new-privileges:true"
 
@@ -53,11 +60,14 @@ cleanup() {
         "${ws_backend}" "${ws_proxy}" "${limited}" \
         "${health_backend}" "${health_proxy}" \
         "${clickhouse_backend}" "${clickhouse_proxy}" \
+        "${dynamic_backend_one}" "${dynamic_backend_two}" "${dynamic_proxy}" \
         >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${ws_network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${health_network}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${clickhouse_network}" >/dev/null 2>&1 || true
+    "${runtime}" network rm "${dynamic_network}" >/dev/null 2>&1 || true
+    rm -rf -- "${dynamic_root}"
     rm -f -- "${static_headers}" "${proxy_headers}" "${proxy_body}" \
         "${balancer_body}" "${ws_body}" "${clickhouse_body}" \
         "${clickhouse_payload}"
@@ -742,8 +752,114 @@ validate_event "${clickhouse_proxy}" \
     --status 500 \
     --require-field clickhouse_exception_code=241
 
+# ---------------------------------------------------------------------------
+# Dynamic upstream resolution
+#
+# The distinguishing property of this profile is that a replaced endpoint is
+# picked up without a reload. The static profiles resolve their upstream once
+# at load, so the same swap leaves them failing until they are reloaded.
+# ---------------------------------------------------------------------------
+
+"${runtime}" network create "${dynamic_network}" >/dev/null
+
+# The resolver address is a property of the platform, so the profile includes a
+# file the deployment mounts. The test supplies the container network's own
+# resolver the same way a deployment would supply its cluster DNS.
+chmod 0755 "${dynamic_root}"
+dynamic_resolver=$("${runtime}" run --rm --network "${dynamic_network}" \
+    --entrypoint cat "${image}" /etc/resolv.conf \
+    | awk '/^nameserver/{print $2; exit}')
+test -n "${dynamic_resolver}"
+printf 'resolver %s valid=5s ipv6=off;\n' "${dynamic_resolver}" \
+    > "${dynamic_root}/resolver.conf"
+chmod 0644 "${dynamic_root}/resolver.conf"
+
+run_restricted "${dynamic_backend_one}" 10014 \
+    --network "${dynamic_network}" \
+    --network-alias backend \
+    --hostname dynamic-member-one \
+    --volume "${script_dir}/fixtures/profile-pool/nginx.conf:/etc/nginx/nginx.conf:ro"
+assert_process_security "${dynamic_backend_one}"
+
+run_restricted "${dynamic_proxy}" 10015 \
+    --network "${dynamic_network}" \
+    --publish 127.0.0.1::8080 \
+    --volume "${examples_dir}/dynamic-upstream/nginx.conf:/etc/nginx/nginx.conf:ro" \
+    --volume "${dynamic_root}/resolver.conf:/etc/nginx/resolver.conf:ro"
+dynamic_binding=$("${runtime}" port "${dynamic_proxy}" 8080/tcp)
+dynamic_port=${dynamic_binding##*:}
+dynamic_url="http://127.0.0.1:${dynamic_port}"
+wait_for_http "${dynamic_url}/healthz" "${dynamic_proxy}"
+assert_process_security "${dynamic_proxy}"
+"${runtime}" exec "${dynamic_proxy}" nginx -t -q -c /etc/nginx/nginx.conf
+
+# The request path must survive. A proxy_pass containing a variable does not
+# substitute the URI, so a missing $request_uri sends everything to "/" while
+# still answering 200 from the wrong handler.
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: dynamic.initial-1' \
+    --output "${clickhouse_body}" \
+    "${dynamic_url}/application"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["member"] == "dynamic-member-one", payload
+assert payload["request_id"] == "dynamic.initial-1", payload' \
+    "${clickhouse_body}"
+
+# Replace the endpoint with a different container on a different address,
+# keeping the same name.
+"${runtime}" rm --force "${dynamic_backend_one}" >/dev/null 2>&1
+run_restricted "${dynamic_backend_two}" 10016 \
+    --network "${dynamic_network}" \
+    --network-alias backend \
+    --hostname dynamic-member-two \
+    --volume "${script_dir}/fixtures/profile-pool/nginx.conf:/etc/nginx/nginx.conf:ro"
+assert_process_security "${dynamic_backend_two}"
+
+# No reload is issued. Recovery has to come from re-resolution alone, bounded
+# by the resolver validity in the mounted file.
+dynamic_recovered=""
+for _ in $(seq 1 30); do
+    if test "$(curl --silent --output "${null_device}" --write-out '%{http_code}' \
+        --header 'X-Request-ID: dynamic.replaced-1' \
+        "${dynamic_url}/application" || true)" = 200; then
+        dynamic_recovered=1
+        break
+    fi
+    sleep 1
+done
+if test -z "${dynamic_recovered}"; then
+    "${runtime}" logs "${dynamic_proxy}" >&2
+    echo "The dynamic upstream never re-resolved the replaced endpoint" >&2
+    exit 1
+fi
+
+curl --fail --silent --show-error \
+    --header 'X-Request-ID: dynamic.replaced-2' \
+    --output "${clickhouse_body}" \
+    "${dynamic_url}/application"
+"${python}" -c \
+    'import json, sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["member"] == "dynamic-member-two", payload' \
+    "${clickhouse_body}"
+
+validate_event "${dynamic_proxy}" \
+    --profile dynamic-upstream \
+    --uri /application \
+    --request-id dynamic.initial-1 \
+    --status 200
+
+validate_event "${dynamic_proxy}" \
+    --profile dynamic-upstream \
+    --uri /application \
+    --request-id dynamic.replaced-2 \
+    --status 200
+
 "${runtime}" stop --time 10 "${static}" "${proxy}" "${balancer}" "${ws_proxy}" \
-    "${limited}" "${health_proxy}" "${clickhouse_proxy}" >/dev/null
+    "${limited}" "${health_proxy}" "${clickhouse_proxy}" "${dynamic_proxy}" \
+    >/dev/null
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${static}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${balancer}")" = 0
@@ -751,5 +867,6 @@ test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${ws_proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${limited}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${health_proxy}")" = 0
 test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${clickhouse_proxy}")" = 0
+test "$("${runtime}" inspect --format '{{.State.ExitCode}}' "${dynamic_proxy}")" = 0
 
-echo "Static, reverse-proxy, load-balancer, websocket, rate-limited, health, and ClickHouse profile qualification passed for ${image}"
+echo "Static, reverse-proxy, load-balancer, websocket, rate-limited, health, ClickHouse, and dynamic-upstream profile qualification passed for ${image}"
