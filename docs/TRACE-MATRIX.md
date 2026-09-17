@@ -21,8 +21,8 @@ and counting it as a gap would bury the real gaps.
 | L2 requirements | 43 |
 | L3 requirements | 47 |
 | Counted for coverage | 90 |
-| Covered | 85 |
-| Not test-verified | 5 |
+| Covered | 86 |
+| Not test-verified | 4 |
 | **Uncovered** | **0** |
 
 Composite L1 requirements are excluded from the count: they are verified through their children, which are counted, so counting both would double-count.
@@ -31,7 +31,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 
 | Requirement | Methods | Parent | Children | Verifying artifacts | Status |
 | --- | --- | --- | --- | --- | --- |
-| `L1-EVD-001` | I | — | `L2-EVD-002` | — | **uncovered** |
+| `L1-EVD-001` | I | — | `L2-EVD-002` | — | covered |
 | `L1-EVD-002` | I | — | `L2-EVD-001` | — | **uncovered** |
 | `L1-HLT-001` | T | — | `L2-HLT-001`, `L2-HLT-002` | — | covered |
 | `L1-HLT-002` | T | — | `L2-HLT-003` | — | covered |
@@ -67,7 +67,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | Requirement | Methods | Parent | Children | Verifying artifacts | Status |
 | --- | --- | --- | --- | --- | --- |
 | `L2-EVD-001` | I | `L1-EVD-002` | — | — | not test-verified |
-| `L2-EVD-002` | I | `L1-EVD-001` | — | — | not test-verified |
+| `L2-EVD-002` | I | `L1-EVD-001` | — | `tests.test_diagrams.test_each_diagram_is_described_for_a_reader_who_cannot_see_it` | covered |
 | `L2-HLT-001` | T | `L1-HLT-001` | `L3-HLT-001` | — | covered |
 | `L2-HLT-002` | T | `L1-HLT-001` | `L3-HLT-002` | — | covered |
 | `L2-HLT-003` | T | `L1-HLT-002` | `L3-HLT-003` | — | covered |

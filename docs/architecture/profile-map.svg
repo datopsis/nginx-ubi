@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" width="760" height="470" role="img" aria-labelledby="title desc">
+  <title id="title">Configuration profile map</title>
+  <desc id="desc">Eleven configuration profiles grouped into serving, proxying, transport security, and operational surfaces. Every profile inherits a shared baseline of unprivileged listeners, a health endpoint, bounded request handling, validated correlation identifiers, and query-free JSON access events. All profiles are preview and unqualified.</desc>
+
+  <rect x="0" y="0" width="760" height="470" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Configuration profiles</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">Each profile adds to one shared baseline. All eleven are preview and unqualified.</text>
+
+  <!-- shared baseline -->
+  <rect x="24" y="72" width="712" height="60" rx="6" fill="#eaeef2" stroke="#57606a"/>
+  <text x="38" y="92" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">shared baseline</text>
+  <text x="38" y="112" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#24292f">unprivileged 8080 · unlogged /healthz · arbitrary UID in group 0 · caps dropped · read-only root</text>
+  <text x="38" y="126" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#24292f">server_tokens off · bounded body and timeouts · validated correlation ID · query-free JSON access events</text>
+
+  <!-- serving -->
+  <rect x="24" y="152" width="164" height="150" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="36" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">serving</text>
+  <rect x="36" y="184" width="140" height="34" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="46" y="200" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">static</text>
+  <text x="46" y="212" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">GET/HEAD, no indexes</text>
+
+  <!-- proxying -->
+  <rect x="200" y="152" width="272" height="266" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="212" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">proxying</text>
+
+  <rect x="212" y="184" width="120" height="44" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="222" y="200" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">reverse-proxy</text>
+  <text x="222" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">one upstream,</text>
+  <text x="222" y="224" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">forwarding overwritten</text>
+
+  <rect x="340" y="184" width="120" height="44" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="350" y="200" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">load-balancer</text>
+  <text x="350" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">pool, passive checks,</text>
+  <text x="350" y="224" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">bounded retries</text>
+
+  <rect x="212" y="238" width="120" height="44" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="222" y="254" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">websocket</text>
+  <text x="222" y="268" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">derived disposition,</text>
+  <text x="222" y="278" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">scoped idle timeout</text>
+
+  <rect x="340" y="238" width="120" height="44" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="350" y="254" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">clickhouse</text>
+  <text x="350" y="268" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">bounded body,</text>
+  <text x="350" y="278" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">no disk buffering</text>
+
+  <rect x="212" y="292" width="248" height="44" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="222" y="308" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">dynamic-upstream</text>
+  <text x="222" y="322" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">re-resolves per request — trades away balancing,</text>
+  <text x="222" y="332" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">failure tracking, failover, and connection reuse</text>
+
+  <rect x="212" y="346" width="248" height="58" rx="4" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="222" y="364" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#633c01">common to all proxying</text>
+  <text x="222" y="380" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">client forwarding chain replaced with the peer address</text>
+  <text x="222" y="394" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">non-idempotent retries never enabled</text>
+
+  <!-- transport security -->
+  <rect x="484" y="152" width="252" height="150" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="496" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">transport security</text>
+
+  <rect x="496" y="184" width="228" height="34" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="506" y="200" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">tls-termination</text>
+  <text x="506" y="212" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">TLS 1.2 / 1.3 ingress</text>
+
+  <rect x="496" y="224" width="228" height="34" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="506" y="240" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">mutual-tls</text>
+  <text x="506" y="252" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">client certificates, CRL enforced</text>
+
+  <rect x="496" y="264" width="228" height="34" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="506" y="280" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">tls-upstream</text>
+  <text x="506" y="292" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">chain and hostname verified</text>
+
+  <!-- operational surfaces -->
+  <rect x="484" y="314" width="252" height="104" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="496" y="334" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">operational surfaces</text>
+
+  <rect x="496" y="346" width="228" height="30" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="506" y="362" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">health</text>
+  <text x="600" y="362" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">liveness local, readiness upstream</text>
+
+  <rect x="496" y="380" width="228" height="30" rx="4" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="506" y="396" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">rate-limited</text>
+  <text x="600" y="396" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">rate, connection, bandwidth</text>
+
+  <!-- static column filler note -->
+  <rect x="36" y="228" width="140" height="62" rx="4" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="46" y="246" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#633c01">not a boundary</text>
+  <text x="46" y="262" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">no profile enforces</text>
+  <text x="46" y="274" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">application identity or</text>
+  <text x="46" y="286" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">query semantics</text>
+
+  <text x="24" y="444" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Open source NGINX only: no active health checking, no session persistence, no commercial status surface.</text>
+  <text x="24" y="460" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Profiles are mounted, not composed — one configuration file per container.</text>
+</svg>

@@ -11,6 +11,33 @@ with deterministic CSV and human-readable views. It will describe how the image
 can support a control objective and how to examine and test it; it will not claim
 that a deployed system is authorized.
 
+## Status of this document
+
+**This document does not yet enumerate controls.** It establishes who owns
+what, and groups the product's behaviour into control objectives. It is a
+precursor to the control deliverable, not the deliverable.
+
+It does not contain, and should not be cited as containing:
+
+- control identifiers drawn from a published catalogue
+- per-control implementation statements or organization-defined parameters
+- examine, test, and interview assessment methods
+- classification of each control as image-owned, deployment-supported,
+  inherited, not applicable, unsupported, or research required
+- residual-risk records
+
+Those are open items in [Package 5 of the roadmap](ROADMAP.md), which produces
+the requirement-source register, the classification, the OSCAL Component
+Definition with its generated CSV and human-readable views, and the control
+matrix.
+
+The control mapping will cite identifiers from the
+[requirement tree](L1-REQ.md) and draw its verification evidence from the
+[trace matrix](TRACE-MATRIX.md), so a control cannot be mapped to an obligation
+the product never stated. That reconciliation is itself a roadmap item, and it
+is the reason the requirement tree precedes the control work rather than
+following it.
+
 ## Ownership model
 
 | Owner | Examples of responsibility |

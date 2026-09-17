@@ -48,3 +48,4 @@ record says so, because an unenforced decision decays quietly.
 | [0005](0005-never-retry-non-idempotent-requests.md) | Never retry a non-idempotent request against another upstream | accepted |
 | [0006](0006-answer-429-when-limiting.md) | Answer `429` rather than `503` when a limit rejects a request | accepted |
 | [0007](0007-liveness-independent-of-upstreams.md) | Keep liveness independent of upstream health | accepted |
+| [0008](0008-hand-authored-svg-diagrams.md) | Author diagrams as hand-written SVG with no rendering toolchain | accepted |

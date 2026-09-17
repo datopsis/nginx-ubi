@@ -113,6 +113,8 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   and the security boundary of each one.
 - [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
   sensitive-data rules, and controlled-network responsibilities.
+- [Architecture](docs/architecture/README.md) carries the runtime-contract and
+  profile diagrams, hand-authored so the published file is the reviewed file.
 - [Architecture decision records](docs/adr/README.md) record accepted decisions,
   the options weighed, and what each one gave up in exchange.
 - [Requirements](docs/L1-REQ.md) state what the product must do, decomposed
@@ -195,9 +197,9 @@ cases with:
 
 ```console
 python -m unittest \
-  tests.test_artifacts tests.test_components tests.test_nginx_features \
-  tests.test_profile_logs tests.test_profile_policy tests.test_tls_material \
-  tests.test_transfer -v
+  tests.test_artifacts tests.test_components tests.test_diagrams \
+  tests.test_nginx_features tests.test_profile_logs \
+  tests.test_profile_policy tests.test_tls_material tests.test_transfer -v
 python scripts/components.py
 ```
 

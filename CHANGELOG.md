@@ -140,6 +140,17 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added the architecture section with hand-authored runtime-contract and
+  profile-map diagrams, and recorded the decision to author diagrams as SVG
+  with no rendering toolchain, so the published file is the reviewed file and
+  no source-versus-render check is required.
+- Added diagram checks requiring well-formed, scalable SVG carrying a text
+  description, with no script and no external reference, and requiring every
+  diagram to be referenced by a document.
+- Stated in the security-controls document that it does not yet enumerate
+  controls, listing what it deliberately does not contain and naming the
+  roadmap package that produces the OSCAL component definition, so it cannot be
+  cited as the control deliverable it precedes.
 - Established the three-level requirement tree with permanent identifiers,
   stated exclusions as numbered non-requirements, and added a marker convention
   that lets a `unittest` case declare which requirements it verifies and lets
