@@ -76,8 +76,6 @@ unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 
-- [ ] Extend the qualified defaults to DNS resolution, upstream verification,
-  and the remaining profiles without silently breaking general-purpose use.
 - [ ] Qualify runtime collection, rotation ownership, pipeline failure, and
   retention evidence for the selected logging platform.
 - [ ] Qualify lifecycle-alert delivery and exact platform cryptographic-policy

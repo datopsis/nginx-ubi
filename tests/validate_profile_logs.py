@@ -57,6 +57,7 @@ PROFILES = {
     "rate-limited",
     "health",
     "clickhouse",
+    "dynamic-upstream",
     "tls-termination",
     "mutual-tls",
     "tls-upstream",
@@ -122,6 +123,7 @@ def parse_events(
         "websocket",
         "health",
         "clickhouse",
+        "dynamic-upstream",
         "tls-upstream",
     }
     websocket = profile == "websocket"
