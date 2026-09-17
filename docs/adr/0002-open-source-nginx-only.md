@@ -82,7 +82,10 @@ health endpoint. The operator status surface is `stub_status`.
 
 ### Enforcement
 
-Nothing automated. A grep for the commercial directive names finds no
-occurrences today, but no check prevents one being added. A lint rule rejecting
-Plus-only directives in `examples/profiles/` would close that gap and has not
-been written.
+`tests/test_profile_policy.py` rejects any shipped configuration whose
+directives include a commercial one, and runs in the lint job. It strips
+comments before matching, so a comment explaining why a feature is absent is
+not mistaken for the feature.
+
+The list of commercial directives is maintained by hand, so a Plus feature not
+on it would pass. The check narrows the gap rather than closing it.
