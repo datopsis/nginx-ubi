@@ -140,6 +140,13 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a configuration-operations guide covering mounting, offline validation
+  of a candidate with the same image, reload, rollback, troubleshooting, and
+  secret redaction.
+- Established that configuration is mounted as a directory rather than a single
+  file, because replacing a bind-mounted file by rename leaves the container on
+  the previous inode and the subsequent reload reports success while the old
+  configuration stays live.
 - Added README status badges for the build, code-scanning, and OpenSSF
   Scorecard workflows, the license, and the release and support position,
   keeping the last two static so no badge implies a qualification the project
