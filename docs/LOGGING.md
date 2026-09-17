@@ -104,6 +104,9 @@ access event only for a real application request; a rejected TLS handshake or a
 malformed request line is reported through the error stream instead of a
 structured event with empty method, URI, and protocol fields.
 
+[The data-flow diagram](architecture/README.md#runtime-data-flow) shows what a
+request carries and which of it never reaches a log.
+
 ## Collection by runtime
 
 The runtime captures stdout and stderr. NGINX log rotation is therefore not a

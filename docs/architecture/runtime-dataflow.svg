@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" width="760" height="500" role="img" aria-labelledby="title desc">
+  <title id="title">Runtime data flow and what is excluded from the access log</title>
+  <desc id="desc">A client request crosses the ingress boundary carrying a path, query string, headers, and body. NGINX validates or replaces the correlation identifier, replaces the client forwarding chain with the peer address, and forwards the request to the upstream. The access event records only the path, method, protocol, status, sizes, timings, and derived outcome fields. Query strings, request bodies, headers, cookies, credentials, and the client forwarding chain never reach the log. Operational messages go to the error stream.</desc>
+
+  <rect x="0" y="0" width="760" height="500" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Runtime data flow</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">What a request carries, what the proxy changes, and what never reaches the log.</text>
+
+  <!-- client -->
+  <rect x="24" y="84" width="150" height="120" rx="6" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="36" y="104" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#633c01">client request</text>
+  <text x="36" y="124" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">path</text>
+  <text x="36" y="139" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">?query=…&amp;password=…</text>
+  <text x="36" y="154" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">headers, cookies</text>
+  <text x="36" y="169" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">X-Request-ID</text>
+  <text x="36" y="184" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">X-Forwarded-For</text>
+  <text x="36" y="198" font-family="Consolas, Menlo, monospace" font-size="9" fill="#633c01">body</text>
+
+  <path d="M174 144 L204 144" stroke="#9a6700" stroke-width="2" marker-end="url(#d-amber)"/>
+  <text x="178" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#9a6700">ingress</text>
+
+  <!-- nginx -->
+  <rect x="208" y="84" width="230" height="230" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+  <text x="222" y="104" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">nginx</text>
+
+  <rect x="222" y="114" width="202" height="46" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="232" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#11181c">correlation identifier</text>
+  <text x="232" y="148" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">accepted only if bounded, else generated</text>
+
+  <rect x="222" y="168" width="202" height="46" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="232" y="186" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#11181c">forwarding chain</text>
+  <text x="232" y="202" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">replaced with the peer address</text>
+
+  <rect x="222" y="222" width="202" height="46" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="232" y="240" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#11181c">limits and timeouts</text>
+  <text x="232" y="256" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">body size, rate, connections, bandwidth</text>
+
+  <text x="222" y="292" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">writes only to /tmp · no state survives the container</text>
+  <text x="222" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">no application identity, no query semantics</text>
+
+  <path d="M438 144 L470 144" stroke="#57606a" stroke-width="2" marker-end="url(#d-grey)"/>
+
+  <!-- upstream -->
+  <rect x="474" y="84" width="150" height="120" rx="6" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="486" y="104" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#633c01">upstream</text>
+  <text x="486" y="124" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">receives the request with</text>
+  <text x="486" y="138" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">reviewed headers only</text>
+  <text x="486" y="158" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">TLS chain and hostname</text>
+  <text x="486" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">verified where HTTPS</text>
+  <text x="486" y="192" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">owned by the deployment</text>
+
+  <!-- access log -->
+  <path d="M323 314 L323 342" stroke="#1a7f37" stroke-width="2" marker-end="url(#d-green)"/>
+
+  <rect x="208" y="346" width="230" height="130" rx="6" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="222" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0f5323">access event · stdout</text>
+  <text x="222" y="386" font-family="Consolas, Menlo, monospace" font-size="9" fill="#0f5323">timestamp, request_id</text>
+  <text x="222" y="400" font-family="Consolas, Menlo, monospace" font-size="9" fill="#0f5323">method, uri, protocol</text>
+  <text x="222" y="414" font-family="Consolas, Menlo, monospace" font-size="9" fill="#0f5323">status, body_bytes_sent</text>
+  <text x="222" y="428" font-family="Consolas, Menlo, monospace" font-size="9" fill="#0f5323">request_time</text>
+  <text x="222" y="442" font-family="Consolas, Menlo, monospace" font-size="9" fill="#0f5323">upstream_* · derived outcomes</text>
+  <text x="222" y="462" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">one JSON object per application request</text>
+
+  <!-- excluded -->
+  <rect x="474" y="346" width="262" height="130" rx="6" fill="#ffffff" stroke="#cf222e" stroke-dasharray="5 3"/>
+  <text x="486" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#a40e26">never reaches any log</text>
+  <text x="486" y="386" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">the query string, and everything in it</text>
+  <text x="486" y="400" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">request and response bodies</text>
+  <text x="486" y="414" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">headers, cookies, referrer, user agent</text>
+  <text x="486" y="428" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">the client forwarding chain</text>
+  <text x="486" y="442" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">client certificate identity · private keys</text>
+  <text x="486" y="462" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">structurally absent, not filtered out</text>
+
+  <path d="M438 400 L470 400" stroke="#cf222e" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="454" cy="400" r="9" fill="#ffffff" stroke="#cf222e" stroke-width="2"/>
+  <path d="M450 396 L458 404 M458 396 L450 404" stroke="#cf222e" stroke-width="2"/>
+
+  <!-- error stream -->
+  <rect x="24" y="346" width="150" height="88" rx="6" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="36" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0f5323">error stream</text>
+  <text x="36" y="386" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">startup diagnostics</text>
+  <text x="36" y="400" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">rejected handshakes</text>
+  <text x="36" y="414" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">limit warnings</text>
+  <text x="36" y="428" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">upstream failures</text>
+
+  <path d="M208 390 L178 390" stroke="#1a7f37" stroke-width="2" marker-end="url(#d-green)"/>
+
+  <defs>
+    <marker id="d-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a6700"/>
+    </marker>
+    <marker id="d-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <marker id="d-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a7f37"/>
+    </marker>
+  </defs>
+</svg>

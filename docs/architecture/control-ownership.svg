@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" width="760" height="520" role="img" aria-labelledby="title desc">
+  <title id="title">Control ownership across four layers</title>
+  <desc id="desc">Four owners in concentric responsibility. The image project owns verified inputs, a package-manager-free filesystem, a non-root default, reviewed configuration, and its own evidence. The deployment profile owns digest pinning, mounted material, runtime restrictions, limits, and probes. The host or orchestrator owns the kernel, isolation mechanisms, network policy, secrets, and log collection. The organization owns the control baseline, identities, monitoring, incident response, and authorization. A control the image contributes to is not a control the image satisfies.</desc>
+
+  <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Control ownership</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">Contributing to a control is not satisfying it. Each layer depends on the ones outside it.</text>
+
+  <!-- organization -->
+  <rect x="24" y="76" width="712" height="418" rx="10" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+  <text x="40" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#11181c">organization or system owner</text>
+  <text x="40" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">control baseline and parameters · data classification · identities and separation of duties · central PKI,</text>
+  <text x="40" y="130" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">logging and SIEM · incident response · continuous monitoring · exceptions · evidence retention · authorization</text>
+
+  <!-- host -->
+  <rect x="46" y="144" width="668" height="330" rx="10" fill="#ffffff" stroke="#8c959f" stroke-width="2"/>
+  <text x="62" y="166" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#11181c">host or orchestrator</text>
+  <text x="62" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">kernel and runtime patching · namespaces and cgroups · seccomp · SELinux · firewall and network policy</text>
+  <text x="62" y="198" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">node identity · time synchronisation · journal and collector · secret service · admission policy · availability</text>
+
+  <!-- deployment -->
+  <rect x="68" y="212" width="624" height="242" rx="10" fill="#fff8c5" stroke="#9a6700" stroke-width="2"/>
+  <text x="84" y="234" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#633c01">deployment profile</text>
+  <text x="84" y="252" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">pin the image by digest · mount configuration, content, trust material, and secrets read-only</text>
+  <text x="84" y="266" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">set the read-only root, the tmpfs, dropped capabilities, no-new-privileges, and the assigned UID</text>
+  <text x="84" y="280" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">choose the TLS mode · publish ports · define upstream, DNS, and egress policy · set resource limits</text>
+  <text x="84" y="294" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">wire liveness and readiness probes correctly · own reload, rollback, and workload-specific tests</text>
+
+  <!-- image -->
+  <rect x="90" y="310" width="580" height="128" rx="10" fill="#ddf4e4" stroke="#1a7f37" stroke-width="2"/>
+  <text x="106" y="332" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0f5323">image project</text>
+  <text x="106" y="350" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">verified, pinned inputs and hermetic assembly · package-manager-free filesystem · embedded inventory</text>
+  <text x="106" y="364" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">non-root default identity · unprivileged listeners · no privilege transition at startup</text>
+  <text x="106" y="378" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">reviewed configuration profiles with their tested boundaries · structured logging and its exclusions</text>
+  <text x="106" y="392" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">scanner evidence, SBOM, requirement tree and trace matrix, decision records</text>
+  <rect x="106" y="402" width="548" height="26" rx="4" fill="#ffffff" stroke="#1a7f37"/>
+  <text x="116" y="419" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">the image can be configured insecurely by the layer above it, and cannot prevent that</text>
+
+  <!-- footer -->
+  <text x="24" y="510" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">No layer can discharge a control on behalf of another. A completed control matrix, system security plan, or authorization depends on the deployed boundary.</text>
+</svg>

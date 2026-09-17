@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 460" width="760" height="460" role="img" aria-labelledby="title desc">
+  <title id="title">Controlled-network transfer from a connected environment to a disconnected one</title>
+  <desc id="desc">In the connected environment a reviewed lock drives acquisition and verification, the image is assembled with no network, and a transfer manifest binds the payload to the repository revision, architecture lock, and component inventory. The payload crosses the boundary by an approved medium while the manifest digest is conveyed separately. In the disconnected environment the payload is verified against the separately conveyed digest, loaded into a local registry, and deployed by digest. Publisher signatures are checked on both sides; the manifest binds the set, it does not replace them.</desc>
+
+  <rect x="0" y="0" width="760" height="460" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Controlled-network transfer</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">The manifest binds a payload to what was reviewed. It does not replace publisher signatures.</text>
+
+  <!-- connected -->
+  <rect x="24" y="80" width="300" height="306" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+  <text x="38" y="100" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">connected environment</text>
+
+  <rect x="38" y="112" width="272" height="48" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="48" y="130" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">reviewed lock</text>
+  <text x="48" y="146" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">every artifact with digest, signer, NEVRA, origin</text>
+
+  <path d="M174 160 L174 176" stroke="#57606a" stroke-width="2" marker-end="url(#c-grey)"/>
+
+  <rect x="38" y="180" width="272" height="48" rx="5" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="48" y="198" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#633c01">acquire and verify</text>
+  <text x="48" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">the only stage permitted to reach the network</text>
+
+  <path d="M174 228 L174 244" stroke="#57606a" stroke-width="2" marker-end="url(#c-grey)"/>
+
+  <rect x="38" y="248" width="272" height="48" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="48" y="266" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">assemble</text>
+  <text x="48" y="282" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">--network none --pull=never</text>
+
+  <path d="M174 296 L174 312" stroke="#57606a" stroke-width="2" marker-end="url(#c-grey)"/>
+
+  <rect x="38" y="316" width="272" height="56" rx="5" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="48" y="334" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#0f5323">transfer manifest</text>
+  <text x="48" y="350" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">binds payload hashes to the repository revision,</text>
+  <text x="48" y="362" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">architecture lock, and component inventory</text>
+
+  <!-- boundary -->
+  <line x1="374" y1="80" x2="374" y2="386" stroke="#cf222e" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="352" y="74" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#a40e26">boundary</text>
+
+  <path d="M324 200 L424 200" stroke="#9a6700" stroke-width="2" marker-end="url(#c-amber)"/>
+  <text x="330" y="192" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#9a6700">payload · approved medium</text>
+
+  <path d="M324 344 L424 344" stroke="#1a7f37" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#c-green)"/>
+  <text x="330" y="336" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">manifest digest · separate channel</text>
+  <text x="330" y="360" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">travelling with the payload would</text>
+  <text x="330" y="371" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#0f5323">prove nothing</text>
+
+  <!-- disconnected -->
+  <rect x="428" y="80" width="308" height="306" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+  <text x="442" y="100" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">disconnected environment</text>
+
+  <rect x="442" y="112" width="280" height="62" rx="5" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="452" y="130" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#633c01">verify on arrival</text>
+  <text x="452" y="146" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">payload against the separately conveyed digest</text>
+  <text x="452" y="158" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">RPM publisher signatures, again, here</text>
+  <text x="452" y="170" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">fails closed on any mismatch</text>
+
+  <path d="M582 174 L582 190" stroke="#57606a" stroke-width="2" marker-end="url(#c-grey)"/>
+
+  <rect x="442" y="194" width="280" height="48" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="452" y="212" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">local registry or image store</text>
+  <text x="452" y="228" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">immutable; the mirror is not a rebuild</text>
+
+  <path d="M582 242 L582 258" stroke="#57606a" stroke-width="2" marker-end="url(#c-grey)"/>
+
+  <rect x="442" y="262" width="280" height="48" rx="5" fill="#ffffff" stroke="#8c959f"/>
+  <text x="452" y="280" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">deploy by digest</text>
+  <text x="452" y="296" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">rollback names an exact prior digest</text>
+
+  <rect x="442" y="322" width="280" height="50" rx="5" fill="#ffffff" stroke="#cf222e" stroke-dasharray="4 3"/>
+  <text x="452" y="340" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#a40e26">what does not cross</text>
+  <text x="452" y="356" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">source credentials, private CA material, and any</text>
+  <text x="452" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#a40e26">endpoint that identifies the connected environment</text>
+
+  <text x="24" y="412" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Update follows the same path. There is no route by which the disconnected side reaches an upstream repository,</text>
+  <text x="24" y="428" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">so a patch is a new reviewed lock, a new payload, and a new transfer — not a faster version of one.</text>
+  <text x="24" y="448" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">This procedure is documented and unit-tested. It has not been rehearsed end to end on a real boundary.</text>
+
+  <defs>
+    <marker id="c-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <marker id="c-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a6700"/>
+    </marker>
+    <marker id="c-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a7f37"/>
+    </marker>
+  </defs>
+</svg>

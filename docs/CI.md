@@ -104,6 +104,9 @@ the container build. Verification remains identical after either source
 downloads the artifacts. See
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
+[The assurance-pipeline diagram](architecture/README.md#assurance-pipeline)
+shows the order these stages run in and what each produces.
+
 ## Image assurance
 
 The `main` branch is protected and requires these checks. The README carries

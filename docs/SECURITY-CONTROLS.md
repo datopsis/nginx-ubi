@@ -40,6 +40,9 @@ following it.
 
 ## Ownership model
 
+[The control-ownership diagram](architecture/README.md#control-ownership) shows
+these four layers as containment, because each depends on the ones outside it.
+
 | Owner | Examples of responsibility |
 | --- | --- |
 | Image project | Verified inputs, minimal package-manager-free filesystem, non-root default, safe baseline configuration, documented writable paths and log streams, SBOM/provenance/signature, native tests, vulnerability response, and image-owned SCAP rules. |

@@ -11,7 +11,9 @@ compatibility execution. They remain **preview/unqualified** until an immutable
 image release and its platform evidence explicitly name them as supported.
 
 [The profile map](architecture/README.md#configuration-profiles) shows how the
-profiles relate and what each adds to this baseline.
+profiles relate and what each adds to this baseline, and
+[the profile pages](architecture/profiles/README.md) give each one its own
+request path and qualification boundary.
 
 ## Common contract
 
