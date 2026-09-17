@@ -140,6 +140,10 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a release-gating roadmap package for the product requirement tree, its
+  generated trace matrix, architecture decision records, and profile and
+  use-case diagrams, and bound it to the control-mapping work so no published
+  control cites a requirement the product never stated.
 - Added a qualified preview ClickHouse HTTP proxying profile that bounds
   methods, body size, timeouts, and temporary storage, reports failures by
   exception code rather than by statement, and records `NONE` upstream fields

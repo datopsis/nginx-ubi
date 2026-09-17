@@ -54,19 +54,25 @@ Work proceeds in this dependency order:
 1. Close the remaining operational and platform evidence for the minimum
    qualified HTTP and TLS profiles; keep additional profiles explicitly
    preview until their tests close.
-2. Complete the repository policy files, support boundary, threat model,
+2. Establish the requirement tree, its generated trace matrix, the accepted
+   decision records, and the profile and architecture diagrams.
+3. Complete the repository policy files, support boundary, threat model,
    requirement analysis, control ownership, vulnerability policy, tailored
    SCAP evidence, and deployment cyber package needed for review.
-3. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
+4. Qualify standalone rootless Podman/Quadlet deployment, systemd lifecycle,
    journald collection, controlled-network operation, and rollback on an exact
    supported Linux host.
-4. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
+5. Rehearse the multi-architecture publish, provenance, SBOM, signing, and
    verification workflow from an untagged release candidate.
-5. Freeze inputs, regenerate release-candidate evidence, approve findings,
+6. Freeze inputs, regenerate release-candidate evidence, approve findings,
    create the immutable tag, publish by digest, and verify the release.
 
-Step 1 is the immediate engineering critical path. Step 2 can proceed in
-parallel only where it does not assume an unfrozen NGINX package or module set.
+Step 1 is the immediate engineering critical path. Step 2 precedes step 3
+because the control matrix cites requirement identifiers and draws its
+verification evidence from the trace matrix, so mapping controls before the
+requirements exist produces references that cannot be resolved. Steps 2 and 3
+can otherwise proceed in parallel with step 1 only where they do not assume an
+unfrozen NGINX package or module set.
 
 ## Package 3: supported configurations and TLS
 
@@ -113,7 +119,9 @@ parallel only where it does not assume an unfrozen NGINX package or module set.
 - [ ] Keep findings report-only until the selected profile is reviewed and a
   blocking policy is approved; scanner execution errors always block.
 - [ ] Create architecture, assurance-pipeline, runtime data-flow, TLS trust,
-  controlled-network, and control-ownership diagrams.
+  controlled-network, and control-ownership diagrams, using the committed
+  source and generated-SVG convention defined in Package 8 so the security
+  diagrams and the profile diagrams stay one set.
 - [ ] Publish a threat model covering build inputs, CI, registry, image
   integrity, runtime identity, configuration, ingress/egress, TLS keys and
   trust, logs, denial of service, upstreams, DNS, writable storage, evidence
@@ -177,13 +185,78 @@ parallel only where it does not assume an unfrozen NGINX package or module set.
 - [ ] Verify published digests, platforms, labels, signatures, attestations,
   SBOMs, scan artifacts, documentation links, and rollback instructions.
 
+## Package 8: requirements, decisions, and architecture documentation
+
+This package establishes the product's own requirement tree, its decision
+record, and the diagrams both depend on. It is distinct from Package 5, which
+maps *external* control frameworks onto the product: Package 5 answers "which
+published control does this satisfy", and Package 8 answers "what did this
+project commit to doing, why, and where is that verified". The two meet in the
+trace matrix, which supplies the verification evidence Package 5 cites.
+
+The structure follows the same design as the reference implementation in
+`joey-huckabee/mie-decoder`: a three-level SHALL requirement tree with stable
+identifiers, a generated trace matrix driven by markers in the tests
+themselves, and MADR-style architecture decision records.
+
+**Every item in this package gates the first release.** The requirement tree is
+being written against an implementation that already exists, so it is a
+reconstruction rather than a specification, and it will expose obligations the
+implementation does not yet meet. Those become defects to close or
+non-requirements to record, not text to soften, and either outcome is a
+release-blocking finding.
+
+- [ ] Establish the requirement tree in `docs/L1-REQ.md`, `docs/L2-REQ.md`, and
+  `docs/L3-REQ.md`. L1 states what the product must do, L2 decomposes each L1
+  into architectural obligations, and L3 decomposes each L2 into implementation
+  obligations. Identifiers take the form `L<n>-<CATEGORY>-<NNN>`, are permanent,
+  and are never reused once retired. Every requirement carries a statement,
+  a rationale, and a verification method drawn from Test, Analysis, Inspection,
+  and Demonstration.
+- [ ] Record explicit out-of-scope items as `NR-<NNN>` non-requirements, so a
+  deliberate exclusion is distinguishable from an oversight. The existing
+  deferred-feature list is the starting set.
+- [ ] Define the verification-marker convention for the test forms this
+  repository actually uses: Python `unittest` cases and the Bash scenario
+  suites. A requirement's evidence must be selectable by the test runner rather
+  than asserted in prose, so the marker has to be something the runner can
+  filter on rather than a comment nobody executes.
+- [ ] Generate `docs/TRACE-MATRIX.md` with `scripts/build-trace-matrix.py` from
+  the requirement documents and those markers. The matrix is the single source
+  of truth for requirement status; the requirement documents carry only the
+  specification. Add a `--check` mode that fails when the committed matrix has
+  drifted from its sources, and run it in CI.
+- [ ] Record accepted decisions as ADRs under `docs/adr/`, numbered
+  sequentially and permanently, using a fixed template with status, date,
+  decision makers, context and problem statement, decision drivers, considered
+  options, outcome, and consequences.
+- [ ] Backfill ADRs for decisions already taken and currently recorded only in
+  commit messages and configuration comments: network-disabled assembly from a
+  verified local bundle, open source NGINX only, `429` rather than `503` for
+  limit rejection, liveness deliberately independent of upstream health,
+  refusing non-idempotent retries, logging `$uri` rather than the request line,
+  and Docker as a compatibility target rather than a support boundary.
+- [ ] Author profile and use-case diagrams under `docs/architecture/`, with the
+  diagram source committed alongside its generated SVG, and add a CI check that
+  the rendered SVG matches its source. Decide and record the rendering
+  toolchain, because it becomes a build prerequisite for anyone regenerating a
+  diagram.
+- [ ] Publish one page per profile under `docs/architecture/` carrying its
+  diagram and complete description, and link those pages from
+  `docs/SUPPORT.md` so each support-matrix row points at the profile's own
+  documentation rather than restating it.
+- [ ] Reconcile with Package 5 before either is published: the control matrix
+  and OSCAL component definition must cite requirement identifiers that exist
+  in this tree, and must draw verification evidence from the trace matrix, so
+  no control is mapped to a requirement the product never stated.
+
 ## Assurance completeness gate
 
 Before release, review this repository against the complete assurance model
 below and record any intentionally omitted item with an NGINX-specific
 rationale. The review must cover evidence lifecycle,
-support semantics, qualification ledger, architecture and trust-boundary
-diagrams, rootless runtime and platform qualification, use-case profiles,
+support semantics, qualification ledger, the requirement tree and its trace
+matrix, accepted decision records, architecture and trust-boundary diagrams, rootless runtime and platform qualification, use-case profiles,
 TLS and FIPS boundaries, authoritative requirement analysis, control ownership
 and OSCAL export, tailored SCAP, vulnerability and exception management,
 licensing and notices, supply-chain evidence, controlled-network procedures,
