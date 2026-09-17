@@ -113,6 +113,9 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   and the security boundary of each one.
 - [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
   sensitive-data rules, and controlled-network responsibilities.
+- [Configuration operations](docs/CONFIGURATION-OPERATIONS.md) covers mounting,
+  validating a candidate, reloading, rollback, troubleshooting, and the
+  redaction rules that go with a configuration change.
 - [Qualified HTTP and TLS profiles](docs/CONFIGURATION-PROFILES.md) provides
   tested static-serving, reverse-proxy, TLS termination, mutual-TLS, and
   verified-upstream configurations, structured log schemas, and operational

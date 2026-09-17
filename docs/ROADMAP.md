@@ -78,8 +78,6 @@ unfrozen NGINX package or module set.
 
 - [ ] Extend the qualified defaults to DNS resolution, upstream verification,
   and the remaining profiles without silently breaking general-purpose use.
-- [ ] Document configuration mounting, validation, reload, rollback, logging,
-  troubleshooting, and secret redaction.
 - [ ] Qualify runtime collection, rotation ownership, pipeline failure, and
   retention evidence for the selected logging platform.
 - [ ] Qualify lifecycle-alert delivery and exact platform cryptographic-policy
