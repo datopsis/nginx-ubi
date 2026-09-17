@@ -202,11 +202,12 @@ implementation does not yet meet. Those become defects to close or
 non-requirements to record, not text to soften, and either outcome is a
 release-blocking finding.
 
-- [ ] Author profile and use-case diagrams under `docs/architecture/`, with the
-  diagram source committed alongside its generated SVG, and add a CI check that
-  the rendered SVG matches its source. Decide and record the rendering
-  toolchain, because it becomes a build prerequisite for anyone regenerating a
-  diagram.
+- [ ] Complete the diagram set under `docs/architecture/`: the remaining
+  use-case diagrams, and the assurance-pipeline, TLS trust, controlled-network,
+  and control-ownership diagrams Package 5 requires. The runtime-contract and
+  profile-map diagrams are in place, and the convention is fixed by ADR-0008:
+  hand-authored SVG with no rendering toolchain, so the published file is the
+  reviewed file and no source-versus-render check is needed.
 - [ ] Publish one page per profile under `docs/architecture/` carrying its
   diagram and complete description, and link those pages from
   `docs/SUPPORT.md` so each support-matrix row points at the profile's own

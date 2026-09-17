@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" width="760" height="520" role="img" aria-labelledby="title desc">
+  <title id="title">Runtime contract of the nginx-ubi container</title>
+  <desc id="desc">The container runs as a non-root user in group zero with all capabilities dropped and no-new-privileges set. The root filesystem is read-only. Only a tmpfs at /tmp is writable. Configuration, content, and TLS material are mounted read-only. Listeners are on unprivileged ports 8080 and 8443. Logs leave on stdout and stderr.</desc>
+
+  <rect x="0" y="0" width="760" height="520" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Runtime contract</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">Everything inside the boundary is the image. Everything crossing it is the deployment's responsibility.</text>
+
+  <!-- container boundary -->
+  <rect x="210" y="78" width="340" height="330" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="2"/>
+  <text x="228" y="100" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">container</text>
+
+  <!-- identity block -->
+  <rect x="228" y="112" width="304" height="76" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="242" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">process identity</text>
+  <text x="242" y="150" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">uid != 0   gid = 0</text>
+  <text x="242" y="166" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">CapEff = 0000000000000000</text>
+  <text x="242" y="182" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">NoNewPrivs = 1</text>
+
+  <!-- filesystem block -->
+  <rect x="228" y="200" width="304" height="90" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="242" y="220" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">filesystem</text>
+  <rect x="242" y="230" width="128" height="46" rx="4" fill="#eaeef2" stroke="#8c959f"/>
+  <text x="252" y="248" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">/  read-only</text>
+  <text x="252" y="266" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">no package manager</text>
+  <rect x="384" y="230" width="134" height="46" rx="4" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="394" y="248" font-family="Consolas, Menlo, monospace" font-size="11" fill="#0f5323">/tmp  tmpfs rw</text>
+  <text x="394" y="266" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">noexec nosuid nodev</text>
+
+  <!-- listeners -->
+  <rect x="228" y="302" width="304" height="58" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="242" y="322" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">listeners</text>
+  <text x="242" y="342" font-family="Consolas, Menlo, monospace" font-size="11" fill="#24292f">8080 / 8443   unprivileged, no CAP_NET_BIND_SERVICE</text>
+
+  <text x="228" y="386" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">no privilege transition at startup</text>
+
+  <!-- inbound mounts (left) -->
+  <rect x="24" y="112" width="150" height="178" rx="6" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="36" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#633c01">mounted read-only</text>
+  <text x="36" y="154" font-family="Consolas, Menlo, monospace" font-size="10" fill="#633c01">nginx.conf</text>
+  <text x="36" y="172" font-family="Consolas, Menlo, monospace" font-size="10" fill="#633c01">site content</text>
+  <text x="36" y="190" font-family="Consolas, Menlo, monospace" font-size="10" fill="#633c01">certificates</text>
+  <text x="36" y="208" font-family="Consolas, Menlo, monospace" font-size="10" fill="#633c01">private keys</text>
+  <text x="36" y="226" font-family="Consolas, Menlo, monospace" font-size="10" fill="#633c01">trust stores / CRLs</text>
+  <text x="36" y="252" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">readable through</text>
+  <text x="36" y="266" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">group 0; never</text>
+  <text x="36" y="280" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#633c01">written by the image</text>
+
+  <path d="M174 200 L206 200" stroke="#9a6700" stroke-width="2" fill="none" marker-end="url(#arrow-amber)"/>
+
+  <!-- outbound logs (right) -->
+  <rect x="586" y="112" width="150" height="110" rx="6" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="598" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0f5323">log streams</text>
+  <text x="598" y="154" font-family="Consolas, Menlo, monospace" font-size="10" fill="#0f5323">stdout  JSON access</text>
+  <text x="598" y="172" font-family="Consolas, Menlo, monospace" font-size="10" fill="#0f5323">stderr  operational</text>
+  <text x="598" y="196" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">no query strings,</text>
+  <text x="598" y="210" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#0f5323">bodies, or headers</text>
+
+  <path d="M554 160 L582 160" stroke="#1a7f37" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+
+  <!-- lifecycle (right lower) -->
+  <rect x="586" y="238" width="150" height="122" rx="6" fill="#ffffff" stroke="#8c959f"/>
+  <text x="598" y="258" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">lifecycle</text>
+  <text x="598" y="280" font-family="Consolas, Menlo, monospace" font-size="10" fill="#24292f">SIGHUP</text>
+  <text x="598" y="294" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">workers replaced,</text>
+  <text x="598" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">PID 1 retained</text>
+  <text x="598" y="328" font-family="Consolas, Menlo, monospace" font-size="10" fill="#24292f">SIGQUIT</text>
+  <text x="598" y="342" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">in-flight drained,</text>
+  <text x="598" y="354" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#57606a">exit 0</text>
+
+  <path d="M554 290 L582 290" stroke="#57606a" stroke-width="2" fill="none" marker-end="url(#arrow-grey)"/>
+
+  <!-- deployment responsibility band -->
+  <rect x="24" y="428" width="712" height="66" rx="6" fill="#f6f8fa" stroke="#8c959f" stroke-dasharray="5 3"/>
+  <text x="38" y="448" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">deployment supplies and owns</text>
+  <text x="38" y="468" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">the tmpfs mount, the read-only root flag, dropping capabilities, no-new-privileges, the assigned UID,</text>
+  <text x="38" y="484" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">network policy, log collection and retention, and all trust material. The image cannot enforce any of them.</text>
+
+  <defs>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a6700"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a7f37"/>
+    </marker>
+    <marker id="arrow-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+</svg>

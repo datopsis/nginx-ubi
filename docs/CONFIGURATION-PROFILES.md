@@ -10,6 +10,9 @@ on native AMD64 and ARM64 runners with rootless Podman and then with Docker
 compatibility execution. They remain **preview/unqualified** until an immutable
 image release and its platform evidence explicitly name them as supported.
 
+[The profile map](architecture/README.md#configuration-profiles) shows how the
+profiles relate and what each adds to this baseline.
+
 ## Common contract
 
 Both profiles:

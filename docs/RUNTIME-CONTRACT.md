@@ -1,5 +1,8 @@
 # Rootless runtime and lifecycle contract
 
+[The runtime-contract diagram](architecture/README.md#runtime-contract) shows
+where the boundary falls and what the image cannot enforce.
+
 This document defines the tested baseline behavior of the development image.
 It is image-level evidence, not yet a supported-platform or release claim.
 
