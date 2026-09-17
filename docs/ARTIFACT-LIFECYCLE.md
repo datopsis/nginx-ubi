@@ -6,6 +6,9 @@ environment. It extends the verification contract in
 [External artifact acquisition](ARTIFACT-ACQUISITION.md); it does not replace
 publisher signatures, reviewed locks, or native release evidence.
 
+[The controlled-network diagram](architecture/README.md#controlled-network-transfer)
+shows the transfer path and where the manifest digest travels separately.
+
 ## Roles and approval
 
 | Activity | Preparer | Required reviewer | Evidence owner |

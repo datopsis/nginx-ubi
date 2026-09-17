@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 540" width="760" height="540" role="img" aria-labelledby="title desc">
+  <title id="title">Assurance pipeline from source change to retained evidence</title>
+  <desc id="desc">A change passes repository checks, then on each native architecture the locked artifacts are acquired and verified, invalid bundles are proven to be rejected, the image is assembled with networking disabled and pulling forbidden, hermetic boundaries are proven to fail closed, the suites run under Podman and are repeated under Docker for compatibility, and the image is scanned. Evidence is retained from the scanning stage. Nothing in this pipeline publishes an image.</desc>
+
+  <rect x="0" y="0" width="760" height="540" fill="#ffffff"/>
+
+  <text x="24" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#11181c">Assurance pipeline</text>
+  <text x="24" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#57606a">Every stage must pass before the next runs. No stage publishes an image.</text>
+
+  <!-- repository checks -->
+  <rect x="24" y="76" width="712" height="66" rx="6" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="38" y="96" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">repository checks · runs once</text>
+  <text x="38" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#24292f">pre-commit hooks · shellcheck · Dockerfile and workflow lint · unit suites · configuration policy</text>
+  <text x="38" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#24292f">artifact-lock validation · component inventory · requirement trace matrix is current · diagram checks</text>
+
+  <path d="M380 142 L380 164" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <!-- per-architecture band -->
+  <rect x="24" y="168" width="712" height="272" rx="8" fill="#ffffff" stroke="#57606a" stroke-width="2"/>
+  <text x="38" y="188" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#11181c">native runners · amd64 and arm64, independently</text>
+
+  <rect x="40" y="198" width="150" height="52" rx="5" fill="#fff8c5" stroke="#9a6700"/>
+  <text x="50" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#633c01">acquire</text>
+  <text x="50" y="232" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">from the lock, over the</text>
+  <text x="50" y="243" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#633c01">network — the only fetch</text>
+
+  <path d="M190 224 L214 224" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="218" y="198" width="150" height="52" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="228" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">verify</text>
+  <text x="228" y="232" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">digest · signature · signer</text>
+  <text x="228" y="243" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">NEVRA · component metadata</text>
+
+  <path d="M368 224 L392 224" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="396" y="198" width="150" height="52" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="406" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">reject invalid</text>
+  <text x="406" y="232" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">mutated copies of the real</text>
+  <text x="406" y="243" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">bundle must all be refused</text>
+
+  <path d="M546 224 L570 224" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="574" y="198" width="146" height="52" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="584" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">assemble</text>
+  <text x="584" y="232" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">--network none</text>
+  <text x="584" y="243" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">--pull=never</text>
+
+  <path d="M647 250 L647 268" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="574" y="272" width="146" height="44" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="584" y="290" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">prove hermetic</text>
+  <text x="584" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">wrong lock, absent base</text>
+
+  <path d="M574 294 L550 294" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="218" y="272" width="328" height="76" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="228" y="290" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">native Podman · the qualified runtime</text>
+  <text x="228" y="308" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">smoke.sh</text>
+  <text x="310" y="308" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">identity, privileges, filesystem, lifecycle</text>
+  <text x="228" y="323" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">profiles.sh</text>
+  <text x="310" y="323" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">serving, proxying, limits, health</text>
+  <text x="228" y="338" font-family="Consolas, Menlo, monospace" font-size="9" fill="#57606a">tls.sh</text>
+  <text x="310" y="338" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">ephemeral CA rehearsal, revocation, rotation</text>
+
+  <path d="M218 310 L194 310" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="40" y="272" width="150" height="76" rx="5" fill="#eaeef2" stroke="#8c959f" stroke-dasharray="4 3"/>
+  <text x="50" y="290" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">Docker</text>
+  <text x="50" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">same image, moved by</text>
+  <text x="50" y="317" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">local archive — no build,</text>
+  <text x="50" y="328" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">no registry pull</text>
+  <text x="50" y="343" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">compatibility, not support</text>
+
+  <path d="M380 348 L380 366" stroke="#57606a" stroke-width="2" marker-end="url(#a-grey)"/>
+
+  <rect x="40" y="370" width="680" height="58" rx="5" fill="#f6f8fa" stroke="#8c959f"/>
+  <text x="52" y="388" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#11181c">scan the built image</text>
+  <text x="52" y="406" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">Trivy configuration and image · Syft SPDX inventory · Grype gate on fixed High and Critical findings</text>
+  <text x="52" y="420" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#57606a">the gate is independent of the scanner that produced the inventory</text>
+
+  <path d="M380 440 L380 460" stroke="#1a7f37" stroke-width="2" marker-end="url(#a-green)"/>
+
+  <!-- evidence -->
+  <rect x="24" y="464" width="712" height="56" rx="6" fill="#ddf4e4" stroke="#1a7f37"/>
+  <text x="38" y="484" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0f5323">retained evidence</text>
+  <text x="38" y="504" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#0f5323">SPDX inventory · scanner findings with tool and database versions · per-architecture, bound to the commit</text>
+
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a7f37"/>
+    </marker>
+  </defs>
+</svg>

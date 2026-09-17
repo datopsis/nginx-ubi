@@ -6,6 +6,9 @@ responsible for issuance, authorization, revocation decisions, protected key
 storage, and incident response. The image consumes mounted material and does
 not enroll with a CA or generate production keys.
 
+[The TLS trust diagram](architecture/README.md#tls-trust) shows the three
+trust directions and what this image does not provide.
+
 ## Mounted material contract
 
 | Profile | Required files | Purpose |

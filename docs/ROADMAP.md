@@ -114,10 +114,6 @@ unfrozen NGINX package or module set.
   deployment-owned controls.
 - [ ] Keep findings report-only until the selected profile is reviewed and a
   blocking policy is approved; scanner execution errors always block.
-- [ ] Create architecture, assurance-pipeline, runtime data-flow, TLS trust,
-  controlled-network, and control-ownership diagrams, using the committed
-  source and generated-SVG convention defined in Package 8 so the security
-  diagrams and the profile diagrams stay one set.
 - [ ] Publish a threat model covering build inputs, CI, registry, image
   integrity, runtime identity, configuration, ingress/egress, TLS keys and
   trust, logs, denial of service, upstreams, DNS, writable storage, evidence
@@ -202,16 +198,6 @@ implementation does not yet meet. Those become defects to close or
 non-requirements to record, not text to soften, and either outcome is a
 release-blocking finding.
 
-- [ ] Complete the diagram set under `docs/architecture/`: the remaining
-  use-case diagrams, and the assurance-pipeline, TLS trust, controlled-network,
-  and control-ownership diagrams Package 5 requires. The runtime-contract and
-  profile-map diagrams are in place, and the convention is fixed by ADR-0008:
-  hand-authored SVG with no rendering toolchain, so the published file is the
-  reviewed file and no source-versus-render check is needed.
-- [ ] Publish one page per profile under `docs/architecture/` carrying its
-  diagram and complete description, and link those pages from
-  `docs/SUPPORT.md` so each support-matrix row points at the profile's own
-  documentation rather than restating it.
 - [ ] Reconcile with Package 5 before either is published: the control matrix
   and OSCAL component definition must cite requirement identifiers that exist
   in this tree, and must draw verification evidence from the trace matrix, so

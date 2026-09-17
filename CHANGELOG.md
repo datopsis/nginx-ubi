@@ -140,6 +140,15 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Published one page per configuration profile with its own request-path
+  diagram, the behaviour its tests qualify, and the behaviour they do not, and
+  pointed every support-matrix row at the profile's page rather than restating
+  it. The pages and diagrams are generated from one table, so a page cannot
+  describe a path its diagram contradicts.
+- Completed the diagram set with runtime data-flow, TLS trust, assurance
+  pipeline, controlled-network transfer, and control-ownership diagrams, each
+  stating on its face what the image does not provide, and cross-linked them
+  from the documents they explain.
 - Added the architecture section with hand-authored runtime-contract and
   profile-map diagrams, and recorded the decision to author diagrams as SVG
   with no rendering toolchain, so the published file is the reviewed file and
