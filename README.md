@@ -1,5 +1,19 @@
 # NGINX on Red Hat UBI 9
 
+[![CI](https://github.com/datopsis/nginx-ubi/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/datopsis/nginx-ubi/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/datopsis/nginx-ubi/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/datopsis/nginx-ubi/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/datopsis/nginx-ubi/badge)](https://scorecard.dev/viewer/?uri=github.com/datopsis/nginx-ubi)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Release status](https://img.shields.io/badge/release-none%20published-lightgrey)](docs/SUPPORT.md)
+[![Support status](https://img.shields.io/badge/support-preview%2Funqualified-orange)](docs/SUPPORT.md)
+
+The build, code-scanning, and Scorecard badges report the state of `main`. The
+release and support badges are deliberately static: they state that no
+supported image exists yet, and they are changed only when
+[the support matrix](docs/SUPPORT.md) changes. A badge that implied a
+qualification the project has not completed would be the same overclaim the
+rest of this repository is written to avoid.
+
 `nginx-ubi9` builds a security-oriented, rootless NGINX container for static
 web serving, TLS termination, reverse proxying, and HTTP load balancing. The
 project is designed for Podman, Docker-compatible runtimes, OpenShift-style

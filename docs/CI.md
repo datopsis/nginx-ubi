@@ -101,6 +101,10 @@ downloads the artifacts. See
 
 ## Image assurance
 
+The `main` branch is protected and requires these checks. The README carries
+status badges for the build and code-scanning workflows and for the OpenSSF
+Scorecard result, so a failing gate is visible without opening the Actions tab.
+
 The stable protected check names are `lint`, `configuration security`, and
 `image`. The aggregate `image` check requires both native architecture jobs.
 The implemented image pipeline performs:
