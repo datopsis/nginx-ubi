@@ -75,8 +75,8 @@ upstream work.
 
 ### Enforcement
 
-Nothing automated. The absence of a flag is not something the current suites
-assert. A check that no profile *enables* `non_idempotent` would be cheap and
-does not exist — it would have to distinguish the directive from the comments
-that explain its deliberate absence, which are currently the only thing arguing
-against adding it.
+`tests/test_profile_policy.py` rejects any shipped configuration that enables
+`non_idempotent`, and runs in the lint job. It strips comments first, so the
+load-balancer profile's comment explaining the deliberate absence does not trip
+it — a case the suite asserts directly, because a naive substring scan would
+fail there and get weakened rather than fixed.

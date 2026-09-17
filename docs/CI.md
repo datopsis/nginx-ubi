@@ -34,7 +34,8 @@ markers, unsafe or broken symlinks, oversized files, private keys, shell code,
 container build files, GitHub Actions, and prohibited co-author trailers.
 The lint job also runs
 `python -m unittest tests.test_artifacts tests.test_components
-tests.test_nginx_features tests.test_transfer -v` to validate the reviewed
+tests.test_nginx_features tests.test_profile_policy tests.test_transfer -v`
+to validate the reviewed
 lock inputs, both architecture locks, the lock-bound 79-package component
 accountability inventory, the NGINX compile-feature inventory,
 disconnected-transfer integrity, and fail-closed negative cases without

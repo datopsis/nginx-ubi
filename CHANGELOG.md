@@ -140,6 +140,11 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added configuration policy checks that reject a commercial NGINX directive or
+  an enabled non-idempotent retry in any shipped configuration, closing the two
+  accepted decisions that had no automated enforcement. The checks strip
+  comments first, so a comment explaining a deliberate absence is not mistaken
+  for the thing it describes.
 - Backfilled architecture decision records for the seven decisions previously
   recorded only in commit messages and configuration comments, each carrying
   the options weighed, the reason the rejected options lost, what the decision

@@ -45,7 +45,8 @@ jobs:
         run: >-
           python -m unittest
           tests.test_artifacts tests.test_components tests.test_nginx_features
-          tests.test_profile_logs tests.test_tls_material tests.test_transfer -v
+          tests.test_profile_logs tests.test_profile_policy tests.test_tls_material
+          tests.test_transfer -v
 
       - name: Audit GitHub Actions security
         uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
