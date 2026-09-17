@@ -113,6 +113,8 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   and the security boundary of each one.
 - [Logging](docs/LOGGING.md) documents current stream behavior, use-case fields,
   sensitive-data rules, and controlled-network responsibilities.
+- [Architecture decision records](docs/adr/README.md) record accepted decisions,
+  the options weighed, and what each one gave up in exchange.
 - [Configuration operations](docs/CONFIGURATION-OPERATIONS.md) covers mounting,
   validating a candidate, reloading, rollback, troubleshooting, and the
   redaction rules that go with a configuration change.

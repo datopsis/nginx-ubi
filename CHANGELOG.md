@@ -140,6 +140,13 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Backfilled architecture decision records for the seven decisions previously
+  recorded only in commit messages and configuration comments, each carrying
+  the options weighed, the reason the rejected options lost, what the decision
+  costs, and whether anything enforces it.
+- Recorded that two of those decisions have no automated enforcement: nothing
+  prevents a commercial NGINX directive or a non-idempotent retry flag being
+  added to an example configuration.
 - Qualified upstream resolution in both modes: the existing profiles resolve
   once at load and recover from a replaced endpoint on reload, and a new
   mountable dynamic-upstream profile re-resolves per request and recovers

@@ -226,12 +226,6 @@ release-blocking finding.
   sequentially and permanently, using a fixed template with status, date,
   decision makers, context and problem statement, decision drivers, considered
   options, outcome, and consequences.
-- [ ] Backfill ADRs for decisions already taken and currently recorded only in
-  commit messages and configuration comments: network-disabled assembly from a
-  verified local bundle, open source NGINX only, `429` rather than `503` for
-  limit rejection, liveness deliberately independent of upstream health,
-  refusing non-idempotent retries, logging `$uri` rather than the request line,
-  and Docker as a compatibility target rather than a support boundary.
 - [ ] Author profile and use-case diagrams under `docs/architecture/`, with the
   diagram source committed alongside its generated SVG, and add a CI check that
   the rendered SVG matches its source. Decide and record the rendering
