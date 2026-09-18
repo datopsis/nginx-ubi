@@ -140,6 +140,15 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a least-privilege release workflow that runs only for a pushed tag,
+  widens permissions per job, requires the tagged commit to be an ancestor of
+  `main`, publishes a native multi-architecture manifest, and binds provenance,
+  SBOM attestation, and signature to the manifest digest rather than to a tag.
+  The workflow has not been executed; rehearsing it remains an open item.
+- Added release tag validation covering the pattern, a real and non-future UTC
+  date, agreement with the artifact lock on NGINX version and UBI major,
+  immutability, and a daily sequence that continues from the highest used
+  instead of back-filling a withdrawn one.
 - Published one page per configuration profile with its own request-path
   diagram, the behaviour its tests qualify, and the behaviour they do not, and
   pointed every support-matrix row at the profile's page rather than restating

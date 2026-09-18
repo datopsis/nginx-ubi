@@ -48,6 +48,10 @@ The release workflow must accept only tags matching:
 ^v[0-9]+\.[0-9]+\.[0-9]+-ubi[1-9][0-9]*-r[0-9]{8}\.[1-9][0-9]*$
 ```
 
+`scripts/release_tag.py` implements these checks and is exercised by
+`tests/test_release_tag.py` on every change, so the contract is verified
+continuously rather than only when a tag is pushed.
+
 Pattern matching is only the first check. The workflow must also validate a
 real UTC calendar date, the selected NGINX version, the selected UBI major
 version, the daily sequence against existing immutable tags, and that the

@@ -21,8 +21,8 @@ and counting it as a gap would bury the real gaps.
 | L2 requirements | 43 |
 | L3 requirements | 47 |
 | Counted for coverage | 90 |
-| Covered | 86 |
-| Not test-verified | 4 |
+| Covered | 87 |
+| Not test-verified | 3 |
 | **Uncovered** | **0** |
 
 Composite L1 requirements are excluded from the count: they are verified through their children, which are counted, so counting both would double-count.
@@ -32,7 +32,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | Requirement | Methods | Parent | Children | Verifying artifacts | Status |
 | --- | --- | --- | --- | --- | --- |
 | `L1-EVD-001` | I | — | `L2-EVD-002` | — | covered |
-| `L1-EVD-002` | I | — | `L2-EVD-001` | — | **uncovered** |
+| `L1-EVD-002` | I | — | `L2-EVD-001` | — | covered |
 | `L1-HLT-001` | T | — | `L2-HLT-001`, `L2-HLT-002` | — | covered |
 | `L1-HLT-002` | T | — | `L2-HLT-003` | — | covered |
 | `L1-IMG-001` | TI | — | `L2-IMG-001` | — | covered |
@@ -66,7 +66,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 
 | Requirement | Methods | Parent | Children | Verifying artifacts | Status |
 | --- | --- | --- | --- | --- | --- |
-| `L2-EVD-001` | I | `L1-EVD-002` | — | — | not test-verified |
+| `L2-EVD-001` | I | `L1-EVD-002` | — | `tests.test_release_tag.test_a_conforming_tag_is_accepted`<br>`tests.test_release_tag.test_a_gap_is_never_back_filled`<br>`tests.test_release_tag.test_a_tag_naming_another_nginx_version_is_rejected` | covered |
 | `L2-EVD-002` | I | `L1-EVD-001` | — | `tests.test_diagrams.test_each_diagram_is_described_for_a_reader_who_cannot_see_it` | covered |
 | `L2-HLT-001` | T | `L1-HLT-001` | `L3-HLT-001` | — | covered |
 | `L2-HLT-002` | T | `L1-HLT-001` | `L3-HLT-002` | — | covered |

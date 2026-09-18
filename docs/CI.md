@@ -107,6 +107,35 @@ downloads the artifacts. See
 [The assurance-pipeline diagram](architecture/README.md#assurance-pipeline)
 shows the order these stages run in and what each produces.
 
+## Release workflow
+
+`.github/workflows/release.yml` runs only for a pushed tag. There is no branch
+trigger, no schedule, and no manual dispatch, so a release is caused by
+creating an immutable tag and by nothing else.
+
+Permissions are read-only at the workflow level and widened per job: the
+validation job stays read-only, the build jobs add `packages: write` and
+`id-token: write`, and only the final job holds `contents: write` and
+`attestations: write`.
+
+Before anything is built, the workflow requires that the tagged commit is an
+ancestor of `main` and that the tag satisfies
+[the version contract](VERSION.md). `scripts/release_tag.py` checks the
+pattern, that the date is a real calendar date and not in the future, that the
+NGINX version and UBI major match the artifact lock, that the tag is not
+already published, and that the daily sequence continues from the highest used
+rather than back-filling a gap. `tests/test_release_tag.py` covers those rules
+in the lint job, so they are exercised on every change rather than only during
+a release.
+
+The signature and both attestations are bound to the **manifest digest**, never
+to a tag, and the workflow verifies its own signature before publishing
+evidence.
+
+**This workflow has never been executed.** Rehearsing it end to end from an
+untagged candidate is an open roadmap item; until then its behaviour is
+asserted by reading rather than by evidence.
+
 ## Image assurance
 
 The `main` branch is protected and requires these checks. The README carries
