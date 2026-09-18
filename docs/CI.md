@@ -107,6 +107,25 @@ downloads the artifacts. See
 [The assurance-pipeline diagram](architecture/README.md#assurance-pipeline)
 shows the order these stages run in and what each produces.
 
+## Reviewed input drift
+
+Dependabot proposes updates for GitHub Actions, pre-commit hooks, and the
+pinned Python assurance tools. It cannot see the inputs this project pins
+itself, so a scheduled workflow compares the reviewed NGINX package, its
+signing key, the UBI base digests, and the locked closure against what the
+publishers currently offer, and keeps one issue current with the result.
+
+It **reports only**. It opens no pull request and cannot edit a lock, because a
+refresh is a reviewed operation and a bot able to perform one would be a route
+to changing build inputs without review.
+
+A source that cannot be read is reported as unreachable rather than as
+unchanged. Silence from a publisher is not evidence that nothing moved.
+
+A changed signing key is surfaced as a key rotation rather than an update,
+because confirming a new fingerprint needs independent publisher-controlled
+references before it is trusted.
+
 ## Release workflow
 
 `.github/workflows/release.yml` runs only for a pushed tag. There is no branch

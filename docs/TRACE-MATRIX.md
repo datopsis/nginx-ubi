@@ -21,8 +21,8 @@ and counting it as a gap would bury the real gaps.
 | L2 requirements | 43 |
 | L3 requirements | 47 |
 | Counted for coverage | 90 |
-| Covered | 87 |
-| Not test-verified | 3 |
+| Covered | 88 |
+| Not test-verified | 2 |
 | **Uncovered** | **0** |
 
 Composite L1 requirements are excluded from the count: they are verified through their children, which are counted, so counting both would double-count.
@@ -57,7 +57,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | `L1-SUP-001` | TA | — | `L2-SUP-001`, `L2-SUP-002`, `L2-SUP-006` | — | covered |
 | `L1-SUP-002` | T | — | `L2-SUP-003` | — | covered |
 | `L1-SUP-003` | T | — | `L2-SUP-004` | — | covered |
-| `L1-SUP-004` | AI | — | `L2-SUP-005` | — | **uncovered** |
+| `L1-SUP-004` | AI | — | `L2-SUP-005` | — | covered |
 | `L1-TLS-001` | T | — | `L2-TLS-001`, `L2-TLS-005` | — | covered |
 | `L1-TLS-002` | TI | — | `L2-TLS-002` | — | covered |
 | `L1-TLS-003` | T | — | `L2-TLS-003`, `L2-TLS-004` | — | covered |
@@ -102,7 +102,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | `L2-SUP-002` | T | `L1-SUP-001` | `L3-SUP-003`, `L3-SUP-004`, `L3-SUP-007` | — | covered |
 | `L2-SUP-003` | T | `L1-SUP-002` | `L3-SUP-008` | — | covered |
 | `L2-SUP-004` | T | `L1-SUP-003` | — | `tests/hermetic-build-negative.sh:2` | covered |
-| `L2-SUP-005` | AI | `L1-SUP-004` | — | — | not test-verified |
+| `L2-SUP-005` | AI | `L1-SUP-004` | — | `tests.test_input_drift.test_an_unreachable_source_is_not_reported_as_drift` | covered |
 | `L2-SUP-006` | T | `L1-SUP-001` | `L3-SUP-005` | — | covered |
 | `L2-TLS-001` | T | `L1-TLS-001` | — | `tests/tls.sh:174` | covered |
 | `L2-TLS-002` | T | `L1-TLS-002` | `L3-TLS-004` | — | covered |

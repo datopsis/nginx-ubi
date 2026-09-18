@@ -140,6 +140,11 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added scheduled drift reporting for the inputs Dependabot cannot see: the
+  NGINX package, its signing key, the UBI base digests, and the locked closure.
+  It reports into a single standing issue, opens no pull request, and cannot
+  edit a lock, because a refresh is a reviewed operation. An unreadable source
+  is reported as unreachable rather than as unchanged.
 - Added a least-privilege release workflow that runs only for a pushed tag,
   widens permissions per job, requires the tagged commit to be an ancestor of
   `main`, publishes a native multi-architecture manifest, and binds provenance,
