@@ -83,9 +83,6 @@ unfrozen NGINX package or module set.
 
 ## Package 4: CI and supply-chain controls
 
-- [ ] Add a least-privilege release workflow with strict tag validation,
-  native multi-architecture publishing, SBOM and provenance attestations,
-  digest-bound signing, and retained verification evidence.
 - [ ] Add monitored update proposals for NGINX packages and signing keys, UBI
   image digests, locked RPM dependencies, and assurance tools.
 - [ ] Prove that release assembly cannot pull images, reach package networks,

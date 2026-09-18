@@ -199,7 +199,8 @@ cases with:
 python -m unittest \
   tests.test_artifacts tests.test_components tests.test_diagrams \
   tests.test_nginx_features tests.test_profile_logs \
-  tests.test_profile_policy tests.test_tls_material tests.test_transfer -v
+  tests.test_profile_policy tests.test_release_tag tests.test_tls_material \
+  tests.test_transfer -v
 python scripts/components.py
 ```
 
