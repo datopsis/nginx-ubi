@@ -140,6 +140,23 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Upgraded the locked NGINX package to 1.30.5, which fixes CVE-2026-90439, a
+  major-severity buffer overflow when using `map` with a regular expression.
+  Every profile validates the inbound correlation identifier with exactly that
+  construct over a client-supplied header, so the affected path was reachable
+  on every request in every profile.
+- Refreshed both architecture locks and the builder base digest alongside it.
+  The closure did not otherwise move: 79 packages, none added or removed, and
+  `nginx` the only version change on either architecture.
+- Added a connect timeout and a transfer-speed floor to source-RPM downloads in
+  the lock resolver, after a stalled CDN connection hung a refresh indefinitely
+  with no way out; `--retry` covers a transient error, not a transfer that
+  connects and then stops.
+- Fixed a feature-inventory test that hardcoded the pinned NGINX version, so
+  its drift check silently stopped testing anything once the version moved.
+- Corrected the package-source record, which stated that the previously
+  selected version was not vulnerable to its current 1.30-series advisories.
+  That stopped being true when CVE-2026-90439 published.
 - Proved assembly isolation from its inputs as well as at run time: no
   resolving or fetching command may appear in the build definition, staging
   directories are excluded from both the build context and version control, and

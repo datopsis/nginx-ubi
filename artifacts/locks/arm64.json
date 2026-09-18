@@ -3,13 +3,13 @@
   "bundle_version": 1,
   "architecture": "arm64",
   "rpm_architecture": "aarch64",
-  "generated_at": "2026-09-16T02:56:21Z",
-  "nginx_version": "1.30.4",
-  "nginx_rpm_version": "1.30.4-1.el9.ngx",
+  "generated_at": "2026-09-18T05:20:09Z",
+  "nginx_version": "1.30.5",
+  "nginx_rpm_version": "1.30.5-1.el9.ngx",
   "base_images": {
     "builder": {
-      "reference": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041",
-      "digest": "sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041",
+      "reference": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7b8e25a1b56ca4d00219198f3b5b51a3e1693a5c4f5369c5e190d7d6cb3f980e",
+      "digest": "sha256:7b8e25a1b56ca4d00219198f3b5b51a3e1693a5c4f5369c5e190d7d6cb3f980e",
       "platform": "linux/arm64"
     },
     "runtime": {
@@ -840,17 +840,17 @@
     {
       "name": "nginx",
       "epoch": 2,
-      "version": "1.30.4",
+      "version": "1.30.5",
       "release": "1.el9.ngx",
       "architecture": "aarch64",
-      "nevra": "nginx-2:1.30.4-1.el9.ngx.aarch64",
-      "filename": "nginx-1.30.4-1.el9.ngx.aarch64.rpm",
-      "url": "https://nginx.org/packages/rhel/9/aarch64/RPMS/nginx-1.30.4-1.el9.ngx.aarch64.rpm",
+      "nevra": "nginx-2:1.30.5-1.el9.ngx.aarch64",
+      "filename": "nginx-1.30.5-1.el9.ngx.aarch64.rpm",
+      "url": "https://nginx.org/packages/rhel/9/aarch64/RPMS/nginx-1.30.5-1.el9.ngx.aarch64.rpm",
       "repository": "nginx-stable",
-      "size": 1090392,
-      "sha256": "7b26ea1724ab5276413fa702f95003e5517aed1b3e88c17012f79285df051ec3",
+      "size": 1090352,
+      "sha256": "dc92712df7ae2b2a23023386b19e313eba1ba7b95ca7b38e2baecd871bb4cc83",
       "signing_key_fingerprint": "8540A6F18833A80E9C1653A42FD21310B49F6B46",
-      "source_rpm": "nginx-1.30.4-1.el9.ngx.src.rpm"
+      "source_rpm": "nginx-1.30.5-1.el9.ngx.src.rpm"
     },
     {
       "name": "openssl",
@@ -1510,11 +1510,11 @@
       "sha256": "cdb59ed3771a3a4f00e2ffca853f2de4aa887e3d5c3655317f2e2c03f461103f"
     },
     {
-      "filename": "nginx-1.30.4-1.el9.ngx.src.rpm",
-      "url": "https://nginx.org/packages/rhel/9/SRPMS/nginx-1.30.4-1.el9.ngx.src.rpm",
+      "filename": "nginx-1.30.5-1.el9.ngx.src.rpm",
+      "url": "https://nginx.org/packages/rhel/9/SRPMS/nginx-1.30.5-1.el9.ngx.src.rpm",
       "repository": "nginx-stable-source",
-      "size": 1348940,
-      "sha256": "c04bda3049ba9f850a61a64fa311990e58fcc76fd8df9e25bce15b6b4a645dc8"
+      "size": 1349162,
+      "sha256": "7cfbdef55a1d4cdc5f736874fce59f0c6732c89c51a86e3a4cd0779ae7ec0fad"
     },
     {
       "filename": "openssl-3.5.8-1.el9_8.src.rpm",

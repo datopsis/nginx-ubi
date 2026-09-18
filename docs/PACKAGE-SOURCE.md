@@ -1,7 +1,7 @@
 # NGINX package-source decision
 
 Status: official NGINX stable implemented for first-release qualification;
-`nginx-2:1.30.4-1.el9.ngx` is the current qualification candidate. The
+`nginx-2:1.30.5-1.el9.ngx` is the current qualification candidate. The
 superseded Red Hat UBI AppStream development input remains documented in
 [RPM provenance](RPM-PROVENANCE.md).
 
@@ -24,7 +24,7 @@ own health endpoint, and the operator status surface uses `stub_status`.
 
 Use the official NGINX stable RPM repository for the first release while
 retaining digest-pinned Red Hat UBI 9 Minimal and Micro base images. The
-selected implementation candidate is `nginx-2:1.30.4-1.el9.ngx`. Pin this
+selected implementation candidate is `nginx-2:1.30.5-1.el9.ngx`. Pin this
 exact epoch, version, and release independently for each architecture. Do not
 track the newest package implicitly during an ordinary or release build.
 
@@ -34,14 +34,32 @@ unchanged, signed RPM. All downloading and verification occurs before the
 container build as defined in
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
-The selection was reviewed against authoritative NGINX sources on 2026-09-12.
-The stable repositories publish `nginx-1.30.4-1.el9.ngx` for both `x86_64`
-and `aarch64`, and publish the matching
-`nginx-1.30.4-1.el9.ngx.src.rpm`. The official security-advisory index lists
-1.30.4 as not vulnerable to its current 1.30-series advisories. This source
-review selects the package for implementation and qualification; it does not
-substitute for RPM signature verification, dependency locking, native runtime
-tests, SBOM and scanner review, or final release-candidate evidence.
+The selection was reviewed against authoritative NGINX sources on 2026-09-18.
+The stable repositories publish `nginx-1.30.5-1.el9.ngx` for both `x86_64`
+and `aarch64`, and publish the matching `nginx-1.30.5-1.el9.ngx.src.rpm`. The
+official security-advisory index lists 1.30.5 as not vulnerable to its current
+1.30-series advisories. This source review selects the package for
+implementation and qualification; it does not substitute for RPM signature
+verification, dependency locking, native runtime tests, SBOM and scanner
+review, or final release-candidate evidence.
+
+### Why the candidate moved from 1.30.4
+
+CVE-2026-90439, a **major**-severity buffer overflow when using `map` with a
+regular expression, affects 1.29.2 through 1.31.5 and is fixed in 1.30.5.
+
+This one is not a theoretical exposure for this project. Every configuration
+profile validates the inbound correlation identifier with a regular-expression
+`map` over `$http_x_request_id`, so the affected construct evaluates a
+client-supplied header on every request in every profile. The control that
+exists to bound an untrusted value sat on the vulnerable path.
+
+The two advisories fixed in 1.30.4 covered the slice and SSI modules, which no
+profile enables. The distinction matters: an advisory against an unused module
+is a reason to schedule an update, and this one was a reason to make it
+promptly.
+
+The scheduled input-drift check reported 1.30.5 the week it published.
 
 The release workflow must recheck the advisory index and repository state
 before freezing final inputs. A superseding stable package or new advisory
@@ -70,7 +88,7 @@ management.
 | Area | Red Hat UBI AppStream RPM | Official NGINX RPM |
 | --- | --- | --- |
 | Release cadence | RHEL module-stream lifecycle with Red Hat backports. | NGINX stable or mainline release cadence. |
-| Package position | Current image: `nginx-core-2:1.26.3-9.module+el9.8.0+24599+8fde0ff7.3`. | Selected candidate: `nginx-2:1.30.4-1.el9.ngx`. |
+| Package position | Superseded development input: `nginx-core-2:1.26.3-9.module+el9.8.0+24845+a897661e.4`, itself a replacement for a module build withdrawn upstream. | Selected candidate: `nginx-2:1.30.5-1.el9.ngx`. |
 | Package trust | Red Hat repository metadata and release key. | NGINX repository and NGINX signing key. |
 | Platform statement | Packaged as part of UBI/RHEL content. | NGINX documents RHEL 9 packages for x86_64 and aarch64; this project must qualify them on UBI 9. |
 | Security maintenance | Red Hat errata and backported fixes. | New upstream NGINX package releases. |
@@ -93,7 +111,7 @@ Implementation requires:
    key-expiration and rotation handling. The official key bundle observed on
    2026-09-12 has SHA-256
    `55385da31d198fa6a5012d40ae98ecb272a6c4e8fffffba94719ffd3e87de37a`
-   and contains three primary keys. The selected 1.30.4 RPMs are signed by
+   and contains three primary keys. The selected 1.30.5 RPMs are signed by
    fingerprint `8540 A6F1 8833 A80E 9C16 53A4 2FD2 1310 B49F 6B46`; the
    artifact locks accept that signer specifically. Do not infer approval of
    every certificate in the downloaded bundle. The official installation

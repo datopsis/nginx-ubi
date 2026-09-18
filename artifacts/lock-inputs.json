@@ -1,26 +1,26 @@
 {
   "schema_version": 1,
   "bundle_version": 1,
-  "nginx_version": "1.30.4",
-  "nginx_rpm_version": "1.30.4-1.el9.ngx",
+  "nginx_version": "1.30.5",
+  "nginx_rpm_version": "1.30.5-1.el9.ngx",
   "ubi_release": "9.8",
   "base_images": {
-    "builder": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:e5161a7d7d99cf22e4f34b72e111211a399d956d9b0e8714da18e9c4c8151041",
+    "builder": "registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7b8e25a1b56ca4d00219198f3b5b51a3e1693a5c4f5369c5e190d7d6cb3f980e",
     "runtime": "registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650"
   },
   "architectures": {
     "amd64": {
       "rpm_architecture": "x86_64",
       "nginx_rpm": {
-        "sha256": "d9e44a6f68e230b0f2c2fd5a265b2e82ce47a19a04cb68bba7cddce690706568",
-        "url": "https://nginx.org/packages/rhel/9/x86_64/RPMS/nginx-1.30.4-1.el9.ngx.x86_64.rpm"
+        "sha256": "4102edff98ea9b757c93ad390a966d30e698a74beef40cee311e142cde6e3e53",
+        "url": "https://nginx.org/packages/rhel/9/x86_64/RPMS/nginx-1.30.5-1.el9.ngx.x86_64.rpm"
       }
     },
     "arm64": {
       "rpm_architecture": "aarch64",
       "nginx_rpm": {
-        "sha256": "7b26ea1724ab5276413fa702f95003e5517aed1b3e88c17012f79285df051ec3",
-        "url": "https://nginx.org/packages/rhel/9/aarch64/RPMS/nginx-1.30.4-1.el9.ngx.aarch64.rpm"
+        "sha256": "dc92712df7ae2b2a23023386b19e313eba1ba7b95ca7b38e2baecd871bb4cc83",
+        "url": "https://nginx.org/packages/rhel/9/aarch64/RPMS/nginx-1.30.5-1.el9.ngx.aarch64.rpm"
       }
     }
   },
