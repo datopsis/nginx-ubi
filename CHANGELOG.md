@@ -140,6 +140,14 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Settled the control catalogue, baseline, consumer, scope, enhancement
+  sequencing, origination representation, source pinning, and authoring order
+  as one decision, since each changes the shape of every control entry and
+  deciding them late would mean re-doing the early ones.
+- Restructured the control package into foundation, authoring, publication, and
+  scanning stages, placing the structural checks before the bulk authoring
+  because an origination property that is merely conventional gets omitted
+  under deadline, which is when the overclaim it prevents is most likely.
 - Upgraded the locked NGINX package to 1.30.5, which fixes CVE-2026-90439, a
   major-severity buffer overflow when using `map` with a regular expression.
   Every profile validates the inbound correlation identifier with exactly that

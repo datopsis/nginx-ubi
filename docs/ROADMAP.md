@@ -86,19 +86,72 @@ unfrozen NGINX package or module set.
 
 ## Package 5: security engineering and cyber-review package
 
+The catalogue, baseline, consumer, scope, and representation decisions are
+settled and recorded in
+[ADR-0009](adr/0009-control-catalogue-and-baseline.md): NIST SP 800-53 Rev 5 at
+the **High** baseline as the spine, with DISA SRG, RHEL 9 STIG, and CIS as
+cross-references; written for an external assessor to ingest; covering image,
+deployment, and host expectations; base controls before enhancements; every
+control carrying an explicit origination property and responsible role.
+
+Two consequences of those decisions shape the sequence below.
+
+The **origination property is load-bearing, not decorative**. Host expectations
+are in scope and the consumer is an assessor, so a control without a
+machine-readable origination value can be read as a satisfied claim. Its check
+is listed before the bulk authoring rather than after it.
+
+**Package 8 precedes this package.** The control mapping cites requirement
+identifiers from the tree and draws verification evidence from the trace
+matrix, so authoring controls first would produce references that cannot be
+resolved.
+
+### Foundation
+
 - [ ] Establish the authoritative requirement-source register with publisher,
   title, release, date, retrieval date, URL, SHA-256, status, and license.
-- [ ] Compare applicable NIST SP 800-53/53A, DISA Container Platform and
-  web/application-server guidance, RHEL 9 STIG content, and product behavior;
-  require independent review of applicability and mappings.
-- [ ] Classify each requirement as image-owned, deployment-supported,
-  inherited, not applicable, unsupported, or research required, with rationale
-  and residual risk.
-- [ ] Publish a schema-validated NIST OSCAL Component Definition and generate
-  deterministic CSV and human-readable control views from the same source.
-- [ ] Give every supported control an examine/test/interview assessment method,
-  owner, defaults, configuration and restart behavior, dependencies, impact,
-  loss-of-function statement, limitations, and evidence pointer.
+  Every catalogue and guidance document is pinned by digest, because a control
+  mapping is only meaningful against a known revision.
+- [ ] Retrieve and pin the 800-53 Rev 5 OSCAL catalogue and the High baseline
+  profile, plus the DISA Container Platform SRG, the web and application-server
+  SRGs, the RHEL 9 STIG, and the applicable CIS benchmark.
+- [ ] Define the OSCAL component structure before authoring controls: the
+  origination values, the responsible roles, how a requirement identifier is
+  cited, and how an SRG, STIG, or CIS cross-reference is attached to an 800-53
+  control.
+- [ ] Add the checks that hold the structure: every control carries an
+  origination property and a responsible role, every cited requirement
+  identifier exists in the tree, and every catalogue source resolves to its
+  pinned digest. These land with the first controls, not after them.
+
+### Control authoring
+
+- [ ] Classify every High-baseline base control as image-owned,
+  deployment-configured, host-inherited, organization-inherited, not
+  applicable, or research required, with rationale and residual risk. A large
+  share will not be image-owned; that is the expected outcome, not a gap.
+- [ ] Author the 800-53 High base controls in the component definition, citing
+  requirement identifiers from [the requirement tree](L1-REQ.md) and drawing
+  verification evidence from [the trace matrix](TRACE-MATRIX.md).
+- [ ] Give every image-owned control an examine, test, or interview assessment
+  method, owner, defaults, configuration and restart behaviour, dependencies,
+  impact, loss-of-function statement, limitations, and evidence pointer.
+- [ ] Attach the DISA SRG, RHEL 9 STIG, and CIS cross-references to the
+  completed spine, and require independent review of applicability and every
+  mapping.
+- [ ] Extend the component definition to the High-baseline control
+  enhancements. Until this closes, record the deferral where an assessor will
+  see it rather than leaving the gap to be discovered.
+
+### Publication
+
+- [ ] Publish the schema-validated OSCAL Component Definition and generate the
+  deterministic CSV and human-readable control views from that single source,
+  so no view can disagree with another.
+- [ ] Publish a control matrix mapping requirements, implementation,
+  configuration, validation, evidence, owner, limitations, and residual risk.
+
+### Scanning, threat model, and operational policy
 
 - [ ] Perform discovery with pinned OpenSCAP and ComplianceAsCode content
   against a root-owner-preserving export of each architecture image.
@@ -111,8 +164,6 @@ unfrozen NGINX package or module set.
   integrity, runtime identity, configuration, ingress/egress, TLS keys and
   trust, logs, denial of service, upstreams, DNS, writable storage, evidence
   integrity, and updates.
-- [ ] Publish a control matrix mapping requirements, implementation,
-   configuration, validation, evidence, owner, limitations, and residual risk.
 - [ ] Define the cryptographic boundary and document why TLS configuration and
   a UBI base do not independently establish FIPS validation.
 - [ ] Document vulnerability triage, patch SLAs, exceptions with expiry,
