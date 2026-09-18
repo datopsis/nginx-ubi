@@ -146,7 +146,12 @@ while IFS= read -r source_rpm; do
         esac
         url="https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/${rpm_architecture}/${component}/source/SRPMS/${location}"
     fi
-    curl --fail --location --proto '=https' --retry 3 \
+    # `--retry` alone covers a transient error, not a transfer that connects
+    # and then stalls. Without a speed floor a hung CDN connection blocks the
+    # resolver indefinitely, which is how this was found. The floor turns a
+    # stall into an error that `--retry` can act on.
+    curl --fail --location --proto '=https' --retry 3 --retry-delay 2 \
+        --connect-timeout 20 --speed-limit 1024 --speed-time 30 \
         --output "${output_dir}/srpms/${source_rpm}" "${url}"
     rpm --checksig "${output_dir}/srpms/${source_rpm}"
     size=$(stat -c '%s' "${output_dir}/srpms/${source_rpm}")

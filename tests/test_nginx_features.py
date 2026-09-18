@@ -48,9 +48,15 @@ class NginxFeatureInventoryTests(unittest.TestCase):
             )
 
     def test_version_and_reviewed_input_drift_are_rejected(self) -> None:
+        # The version is read from the inventory rather than written here. A
+        # literal stops matching the moment the pinned version moves, and a
+        # replace that matches nothing turns this into a test of nothing —
+        # which is exactly what happened on the 1.30.5 refresh.
+        recorded = self.inventory["nginx_version"]
         with self.assertRaisesRegex(nginx_features.FeatureError, "version differs"):
             nginx_features.validate_nginx_v(
-                self.output().replace("nginx/1.30.4", "nginx/1.30.3"), self.inventory
+                self.output().replace(f"nginx/{recorded}", "nginx/0.0.1"),
+                self.inventory,
             )
         changed = copy.deepcopy(self.inventory)
         changed["compiled_features"].pop()

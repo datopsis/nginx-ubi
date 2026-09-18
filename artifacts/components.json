@@ -3,11 +3,11 @@
   "locks": {
     "amd64": {
       "path": "artifacts/locks/amd64.json",
-      "sha256": "ec35b2bcd7f1de1b6f1416a18eed5e3cc186624776f9ad793f22940c9f034456"
+      "sha256": "a29309afdc59d4ddcf6ac27119e9cab598be142773db4adb316699078bc81b28"
     },
     "arm64": {
       "path": "artifacts/locks/arm64.json",
-      "sha256": "9d53e9d6cccb8d291ece70e9e0605248e5e7033c8d7734ea1953d95edf226ad2"
+      "sha256": "d7d661f38a2fc7eee7b6fd10c2f33a96751f6170ec9ae524a645f09075d16bf5"
     }
   },
   "policies": [
@@ -86,7 +86,7 @@
     {"name": "lz4-libs", "source_rpm": "lz4-1.9.3-5.el9.src.rpm", "license": "GPLv2+ and BSD", "policy": "redhat-ubi9"},
     {"name": "ncurses-base", "source_rpm": "ncurses-6.2-12.20210508.el9.src.rpm", "license": "MIT", "policy": "redhat-ubi9"},
     {"name": "ncurses-libs", "source_rpm": "ncurses-6.2-12.20210508.el9.src.rpm", "license": "MIT", "policy": "redhat-ubi9"},
-    {"name": "nginx", "source_rpm": "nginx-1.30.4-1.el9.ngx.src.rpm", "license": "2-clause BSD-like license", "policy": "nginx-stable"},
+    {"name": "nginx", "source_rpm": "nginx-1.30.5-1.el9.ngx.src.rpm", "license": "2-clause BSD-like license", "policy": "nginx-stable"},
     {"name": "openssl", "source_rpm": "openssl-3.5.8-1.el9_8.src.rpm", "license": "Apache-2.0", "policy": "redhat-ubi9"},
     {"name": "openssl-fips-provider", "source_rpm": "openssl-fips-provider-3.0.7-11.el9_8.src.rpm", "license": "ASL 2.0", "policy": "redhat-ubi9"},
     {"name": "openssl-fips-provider-so", "source_rpm": "openssl-fips-provider-3.0.7-11.el9_8.src.rpm", "license": "ASL 2.0", "policy": "redhat-ubi9"},
