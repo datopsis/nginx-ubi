@@ -49,3 +49,4 @@ record says so, because an unenforced decision decays quietly.
 | [0006](0006-answer-429-when-limiting.md) | Answer `429` rather than `503` when a limit rejects a request | accepted |
 | [0007](0007-liveness-independent-of-upstreams.md) | Keep liveness independent of upstream health | accepted |
 | [0008](0008-hand-authored-svg-diagrams.md) | Author diagrams as hand-written SVG with no rendering toolchain | accepted |
+| [0009](0009-control-catalogue-and-baseline.md) | Map controls against 800-53 High as the spine, with SRG, STIG and CIS as cross-references | accepted |

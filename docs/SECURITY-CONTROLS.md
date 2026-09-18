@@ -31,6 +31,17 @@ the requirement-source register, the classification, the OSCAL Component
 Definition with its generated CSV and human-readable views, and the control
 matrix.
 
+The catalogue, baseline, and representation decisions behind that work are
+recorded in [ADR-0009](adr/0009-control-catalogue-and-baseline.md): NIST SP
+800-53 Rev 5 at the High baseline as the spine, with DISA SRG, RHEL 9 STIG, and
+CIS as cross-references, written for an external assessor, and covering image,
+deployment, and host expectations.
+
+Because host expectations are in scope and the reader is an assessor, every
+control in that deliverable will carry a machine-readable origination value and
+a responsible role. A host expectation is not a claim that the image satisfies
+anything, and it must not be readable as one.
+
 The control mapping will cite identifiers from the
 [requirement tree](L1-REQ.md) and draw its verification evidence from the
 [trace matrix](TRACE-MATRIX.md), so a control cannot be mapped to an obligation
