@@ -83,8 +83,6 @@ unfrozen NGINX package or module set.
 
 ## Package 4: CI and supply-chain controls
 
-- [ ] Prove that release assembly cannot pull images, reach package networks,
-  recalculate dependencies, or expose acquisition credentials.
 
 ## Package 5: security engineering and cyber-review package
 
