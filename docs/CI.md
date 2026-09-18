@@ -107,6 +107,19 @@ downloads the artifacts. See
 [The assurance-pipeline diagram](architecture/README.md#assurance-pipeline)
 shows the order these stages run in and what each produces.
 
+## Assembly isolation
+
+Four properties are claimed of assembly: it cannot pull an image, reach a
+package network, recalculate the dependency closure, or expose acquisition
+credentials.
+
+The first two are enforced at run time and proven by the native negative
+suites. The remaining evidence reads the build definition and context rules
+rather than running a build, because a context carrying a credential or a
+definition that *would* resolve given the chance is a latent failure that a
+passing hermetic build does not reveal. Those checks run in the lint job on
+every change.
+
 ## Reviewed input drift
 
 Dependabot proposes updates for GitHub Actions, pre-commit hooks, and the

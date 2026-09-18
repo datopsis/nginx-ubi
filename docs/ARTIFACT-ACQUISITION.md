@@ -284,8 +284,16 @@ signature removal, signer mismatch, wrong version, wrong architecture, missing
 RPMs, and additional RPMs are rejected. Test-only mutations and stripped RPMs
 remain in temporary directories and are deleted after the run.
 
-The broader hermetic and secret-isolation gate still requires automated
-evidence for:
+Hermetic and secret isolation is evidenced from two directions. At run time,
+`tests/hermetic-build-negative.sh` proves the build rejects a wrong lock
+identity and cannot fetch an absent base, and assembly itself runs with
+`--network none` and `--pull=never`.
 
-- any attempted network access during assembly; and
-- repository credentials or trust material found in the image or its history.
+Those runtime checks cannot show that the *inputs* make the property reachable.
+A build context carrying a credential, or a build definition that would resolve
+dependencies given the chance, is a latent failure a passing hermetic build
+does not reveal. `tests/test_assembly_isolation.py` reads the build definition
+and the context rules instead: no resolving or fetching command may appear in
+the `Containerfile`, the staging directories must be excluded from both the
+build context and version control, and no build argument may be
+credential-shaped, because a build argument is recorded in image history.

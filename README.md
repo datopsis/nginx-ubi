@@ -197,7 +197,8 @@ cases with:
 
 ```console
 python -m unittest \
-  tests.test_artifacts tests.test_components tests.test_diagrams \
+  tests.test_artifacts tests.test_assembly_isolation tests.test_components \
+  tests.test_diagrams \
   tests.test_nginx_features tests.test_profile_logs \
   tests.test_input_drift tests.test_profile_policy tests.test_release_tag \
   tests.test_tls_material tests.test_transfer -v

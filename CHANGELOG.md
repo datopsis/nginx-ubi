@@ -140,6 +140,11 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Proved assembly isolation from its inputs as well as at run time: no
+  resolving or fetching command may appear in the build definition, staging
+  directories are excluded from both the build context and version control, and
+  no build argument may be credential-shaped, since a build argument is
+  recorded in image history.
 - Added scheduled drift reporting for the inputs Dependabot cannot see: the
   NGINX package, its signing key, the UBI base digests, and the locked closure.
   It reports into a single standing issue, opens no pull request, and cannot
