@@ -108,13 +108,15 @@ resolved.
 
 ### Foundation
 
-- [ ] Resolve the three outstanding sources recorded as unresolved or
-  unavailable in `artifacts/requirement-sources.json`: the DISA Container
-  Platform SRG and Application Server SRG need their exact current packages
-  obtained from the published download index, and the CIS benchmark needs an
-  account holder to retrieve it and record its digest. Decide whether the
-  Application Server SRG applies at all, since this image serves and proxies
-  HTTP rather than hosting an application runtime.
+- [ ] Obtain the two sources in `artifacts/requirement-sources.json` that
+  cannot be retrieved without a person. The DISA Container Platform SRG V2R1 is
+  no longer served from the public download path and the download index is a
+  JavaScript-rendered portal with no links in its HTML, so it needs a browser
+  session or the SRG-STIG library compilation; the CIS benchmark needs an
+  account holder to retrieve it and record its digest. Neither blocks the
+  spine. The Application Server SRG applicability question is closed: it is
+  pinned and assessed not applicable, per
+  [ADR-0010](adr/0010-application-server-srg-not-applicable.md).
 - [ ] Verify the pinned sources against their recorded digests as a scheduled
   check, so a replaced DISA package is reported rather than silently mapped
   against. The structural checks over the component definition are in place.

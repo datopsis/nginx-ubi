@@ -140,6 +140,17 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Resolved the Application Server SRG, pinning V4R5 by digest and recording it
+  as not applicable to this component: 27 of its 137 rules presuppose a
+  management interface or hosted applications and 18 refer to accounts, none of
+  which exist here. Pinned rather than dropped so the determination stays tied
+  to the revision it was made against.
+- Recorded why the DISA Container Platform SRG cannot be retrieved: V2R1 is
+  officially released and its filename follows DISA's convention, but it is no
+  longer served from the public download path, and the download index is now a
+  JavaScript-rendered portal whose HTML contains no download links. It stays
+  unresolved with the release, filename, and finding recorded, so the search is
+  not repeated.
 - Established the requirement-source register, pinning the 800-53 Rev 5.2.0
   catalogue, its High baseline profile, the DISA Web Server SRG, and the RHEL 9
   STIG by digest, and recording the Container Platform SRG, Application Server
