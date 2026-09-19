@@ -1,0 +1,116 @@
+{
+  "component-definition": {
+    "uuid": "0f1e6d9a-4b27-4f8a-9c31-6d2a5b7e4c10",
+    "metadata": {
+      "title": "nginx-ubi9 component definition",
+      "last-modified": "2026-09-18T00:00:00.000000-00:00",
+      "version": "0.1.0",
+      "oscal-version": "1.2.2",
+      "remarks": "Foundation only. Four controls are authored to establish and exercise the structure described in docs/CONTROL-MODEL.md. The 188 High-baseline base controls are an open roadmap item, and this document does not yet assert coverage of the baseline.",
+      "roles": [
+        {
+          "id": "image-project",
+          "title": "Image project",
+          "description": "Datopsis maintainers of this repository. Can evidence only what this repository builds and tests."
+        },
+        {
+          "id": "deployment-profile",
+          "title": "Deployment profile",
+          "description": "Whoever configures and runs the image: mounts, runtime restrictions, limits, probes, and trust material."
+        },
+        {
+          "id": "host-orchestrator",
+          "title": "Host or orchestrator",
+          "description": "Kernel, container runtime, isolation mechanisms, network policy, secret service, and log collection."
+        },
+        {
+          "id": "organization",
+          "title": "Organization or system owner",
+          "description": "Control baseline and parameters, identities, monitoring, incident response, and authorization."
+        }
+      ],
+      "parties": [
+        {
+          "uuid": "b7d4c2e1-8a39-4e06-b5f2-1c8d7a9e3b45",
+          "type": "organization",
+          "name": "Datopsis"
+        }
+      ]
+    },
+    "components": [
+      {
+        "uuid": "3c9a8f52-6d14-4b7e-9a08-2f5c1e6b8d37",
+        "type": "software",
+        "title": "nginx-ubi9 container image",
+        "description": "A rootless NGINX container image built on digest-pinned Red Hat UBI 9, assembled from a verified artifact lock with no network access.",
+        "purpose": "Serve static content, terminate TLS, and proxy HTTP as configured by a mounted profile.",
+        "props": [
+          {
+            "name": "status",
+            "ns": "https://datopsis.example/ns/oscal",
+            "value": "preview-unqualified",
+            "remarks": "No supported release has been published. See docs/SUPPORT.md."
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "9e2b4d78-1c65-4a3f-8b90-7d4e2a6c5f18",
+            "source": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json",
+            "description": "NIST SP 800-53 Revision 5.2.0, pinned as nist-sp800-53r5-catalog in artifacts/requirement-sources.json. Selection follows the HIGH baseline profile.",
+            "implemented-requirements": [
+              {
+                "uuid": "a1f3c7d9-2e84-4b56-9d07-3a8f1c5e7b29",
+                "control-id": "cm-6",
+                "description": "The image ships a reviewed configuration baseline and contains no package manager, so its installed contents cannot be changed in place. The exact package set is recorded in the image and compared against the artifact lock at build time; a difference fails the build rather than producing an image.",
+                "props": [
+                  {"name": "origination", "ns": "https://datopsis.example/ns/oscal", "value": "image-owned"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-IMG-002"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-IMG-003"},
+                  {"name": "assessment-method", "ns": "https://datopsis.example/ns/oscal", "value": "test"},
+                  {"name": "cross-reference", "ns": "https://datopsis.example/ns/oscal", "value": "disa-rhel9-stig:pending-mapping", "class": "disa-rhel9-stig"}
+                ],
+                "responsible-roles": [{"role-id": "image-project"}],
+                "remarks": "Applies to the image's own contents only. Mounted configuration is supplied by the deployment and is not constrained by the image; a deployment can mount a configuration that weakens the profile, and the image cannot prevent that."
+              },
+              {
+                "uuid": "c4d8e1b6-7f30-4a92-8c15-9b2d6e4a3f70",
+                "control-id": "ac-6",
+                "description": "The image runs as a non-root user with no privilege transition at startup, listens on unprivileged ports, and requires no Linux capability. It operates correctly under an arbitrary assigned UID in group zero.",
+                "props": [
+                  {"name": "origination", "ns": "https://datopsis.example/ns/oscal", "value": "image-owned"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-RUN-001"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-RUN-002"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-RUN-004"},
+                  {"name": "assessment-method", "ns": "https://datopsis.example/ns/oscal", "value": "test"}
+                ],
+                "responsible-roles": [{"role-id": "image-project"}],
+                "remarks": "The image cannot enforce that capabilities are dropped or that no-new-privileges is set. It is built to need neither, and the deployment decides whether they are granted anyway."
+              },
+              {
+                "uuid": "e7a2f4c8-3b91-4d06-a852-1f7c9d3e6b04",
+                "control-id": "sc-8",
+                "description": "TLS termination, mutual TLS, and verified HTTPS upstream profiles are provided and tested. Certificates, keys, and trust stores are supplied by the deployment and mounted read-only; the image generates and stores none.",
+                "props": [
+                  {"name": "origination", "ns": "https://datopsis.example/ns/oscal", "value": "deployment-configured"},
+                  {"name": "requirement", "ns": "https://datopsis.example/ns/oscal", "value": "L1-TLS-001"}
+                ],
+                "responsible-roles": [{"role-id": "deployment-profile"}],
+                "remarks": "The image makes verified TLS possible and cannot make it happen. A deployment selects the profile, operates the certificate authority, and owns renewal and revocation. No FIPS claim is made; no cryptographic boundary has been defined or evidenced."
+              },
+              {
+                "uuid": "f1b6d3a9-5c72-4e18-9048-6a3e8c2b7d51",
+                "control-id": "au-9",
+                "description": "The image writes access and operational events to standard output and standard error and retains nothing itself. Protection of audit information depends entirely on the collector and its storage.",
+                "props": [
+                  {"name": "origination", "ns": "https://datopsis.example/ns/oscal", "value": "host-inherited"}
+                ],
+                "responsible-roles": [{"role-id": "host-orchestrator"}],
+                "remarks": "The host or orchestrator must collect, protect, and retain these streams. The image cannot restrict access to them, detect their modification, or guarantee their delivery, and claims none of those things."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -100,9 +100,12 @@ to narrow the scope instead.
   before depth is added
 * Good: pinned sources mean a mapping is always against a known revision, the
   same discipline the build inputs use
-* Bad: this is large. 800-53 High is roughly 370 base controls, well over a
-  thousand with enhancements, and the cross-reference pass revisits every one of
-  them. Measured in weeks
+* Bad: this is large, though smaller than estimated when the decision was
+  taken. The pinned Rev 5.2.0 catalogue holds 1196 controls and enhancements
+  across 20 families; the High baseline selects **370** of them, being **188
+  base controls and 182 enhancements**. The first pass is therefore 188, not
+  the "roughly 370 base controls" estimated before the catalogue was retrieved.
+  The cross-reference pass still revisits every one
 * Bad: a High baseline means a large share of controls will record
   organization-inherited or not applicable. That is accurate, and it will look
   sparse to anyone expecting satisfied claims

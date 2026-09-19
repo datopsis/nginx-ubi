@@ -38,9 +38,15 @@ CIS as cross-references, written for an external assessor, and covering image,
 deployment, and host expectations.
 
 Because host expectations are in scope and the reader is an assessor, every
-control in that deliverable will carry a machine-readable origination value and
-a responsible role. A host expectation is not a claim that the image satisfies
+control in that deliverable carries a machine-readable origination value and a
+responsible role. A host expectation is not a claim that the image satisfies
 anything, and it must not be readable as one.
+
+[The control model](CONTROL-MODEL.md) fixes that representation, and
+`tests/test_control_model.py` enforces it. The component definition at
+`artifacts/oscal/component-definition.json` currently authors four controls to
+establish the structure; it does not yet assert coverage of the baseline, and
+says so in its own metadata.
 
 The control mapping will cite identifiers from the
 [requirement tree](L1-REQ.md) and draw its verification evidence from the

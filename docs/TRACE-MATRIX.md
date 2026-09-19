@@ -66,8 +66,8 @@ Composite L1 requirements are excluded from the count: they are verified through
 
 | Requirement | Methods | Parent | Children | Verifying artifacts | Status |
 | --- | --- | --- | --- | --- | --- |
-| `L2-EVD-001` | I | `L1-EVD-002` | — | `tests.test_release_tag.test_a_conforming_tag_is_accepted`<br>`tests.test_release_tag.test_a_gap_is_never_back_filled`<br>`tests.test_release_tag.test_a_tag_naming_another_nginx_version_is_rejected` | covered |
-| `L2-EVD-002` | I | `L1-EVD-001` | — | `tests.test_diagrams.test_each_diagram_is_described_for_a_reader_who_cannot_see_it` | covered |
+| `L2-EVD-001` | I | `L1-EVD-002` | — | `tests.test_control_model.test_an_image_owned_control_cites_a_requirement`<br>`tests.test_control_model.test_every_control_declares_exactly_one_origination`<br>`tests.test_control_model.test_the_responsible_role_matches_the_origination`<br>`tests.test_release_tag.test_a_conforming_tag_is_accepted`<br>`tests.test_release_tag.test_a_gap_is_never_back_filled`<br>`tests.test_release_tag.test_a_tag_naming_another_nginx_version_is_rejected` | covered |
+| `L2-EVD-002` | I | `L1-EVD-001` | — | `tests.test_control_model.test_a_hand_off_control_says_what_the_other_party_must_do`<br>`tests.test_diagrams.test_each_diagram_is_described_for_a_reader_who_cannot_see_it` | covered |
 | `L2-HLT-001` | T | `L1-HLT-001` | `L3-HLT-001` | — | covered |
 | `L2-HLT-002` | T | `L1-HLT-001` | `L3-HLT-002` | — | covered |
 | `L2-HLT-003` | T | `L1-HLT-002` | `L3-HLT-003` | — | covered |
@@ -102,7 +102,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | `L2-SUP-002` | T | `L1-SUP-001` | `L3-SUP-003`, `L3-SUP-004`, `L3-SUP-007` | — | covered |
 | `L2-SUP-003` | T | `L1-SUP-002` | `L3-SUP-008` | `tests.test_assembly_isolation.test_assembly_disables_the_network_and_forbids_pulling`<br>`tests.test_assembly_isolation.test_staging_directories_are_excluded_from_the_build_context` | covered |
 | `L2-SUP-004` | T | `L1-SUP-003` | — | `tests/hermetic-build-negative.sh:2` | covered |
-| `L2-SUP-005` | AI | `L1-SUP-004` | — | `tests.test_assembly_isolation.test_the_build_definition_cannot_resolve_dependencies`<br>`tests.test_input_drift.test_an_unreachable_source_is_not_reported_as_drift` | covered |
+| `L2-SUP-005` | AI | `L1-SUP-004` | — | `tests.test_assembly_isolation.test_the_build_definition_cannot_resolve_dependencies`<br>`tests.test_control_model.test_every_source_records_the_fields_a_mapping_needs`<br>`tests.test_input_drift.test_an_unreachable_source_is_not_reported_as_drift` | covered |
 | `L2-SUP-006` | T | `L1-SUP-001` | `L3-SUP-005` | — | covered |
 | `L2-TLS-001` | T | `L1-TLS-001` | — | `tests/tls.sh:174` | covered |
 | `L2-TLS-002` | T | `L1-TLS-002` | `L3-TLS-004` | — | covered |
