@@ -140,6 +140,22 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Established the requirement-source register, pinning the 800-53 Rev 5.2.0
+  catalogue, its High baseline profile, the DISA Web Server SRG, and the RHEL 9
+  STIG by digest, and recording the Container Platform SRG, Application Server
+  SRG, and CIS benchmark as unresolved or unavailable with the reason rather
+  than omitting them.
+- Fixed the control representation before authoring controls: six origination
+  values, a responsible role that must match, a verification pointer into the
+  requirement tree required of every image-owned control, and assessment
+  methods permitted only where the image owns the control.
+- Added the structural checks over the component definition, including that a
+  control cannot claim to be image-owned while citing a requirement the product
+  never stated, and that a hand-off control must say what the responsible party
+  has to do.
+- Corrected the recorded scale of the control work: the High baseline selects
+  370 controls, being 188 base and 182 enhancements, not the roughly 370 base
+  controls estimated before the catalogue was retrieved.
 - Settled the control catalogue, baseline, consumer, scope, enhancement
   sequencing, origination representation, source pinning, and authoring order
   as one decision, since each changes the shape of every control entry and

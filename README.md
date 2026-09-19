@@ -136,6 +136,9 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
   abuse cases, treatments, owners, and residual risks.
 - [Security controls](docs/SECURITY-CONTROLS.md) defines shared control
   ownership and the component evidence supplied for cybersecurity review.
+- [Control model](docs/CONTROL-MODEL.md) fixes how a control is represented in
+  the OSCAL component definition, including the origination values that
+  distinguish what the image satisfies from what it hands off.
 - [NGINX RPM provenance](docs/RPM-PROVENANCE.md) records the exact Red Hat UBI
   package source, build path, trust checks, and local verification commands.
 - [NGINX package-source decision](docs/PACKAGE-SOURCE.md) compares the current
@@ -198,7 +201,7 @@ cases with:
 ```console
 python -m unittest \
   tests.test_artifacts tests.test_assembly_isolation tests.test_components \
-  tests.test_diagrams \
+  tests.test_control_model tests.test_diagrams \
   tests.test_nginx_features tests.test_profile_logs \
   tests.test_input_drift tests.test_profile_policy tests.test_release_tag \
   tests.test_tls_material tests.test_transfer -v

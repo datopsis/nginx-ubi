@@ -108,21 +108,16 @@ resolved.
 
 ### Foundation
 
-- [ ] Establish the authoritative requirement-source register with publisher,
-  title, release, date, retrieval date, URL, SHA-256, status, and license.
-  Every catalogue and guidance document is pinned by digest, because a control
-  mapping is only meaningful against a known revision.
-- [ ] Retrieve and pin the 800-53 Rev 5 OSCAL catalogue and the High baseline
-  profile, plus the DISA Container Platform SRG, the web and application-server
-  SRGs, the RHEL 9 STIG, and the applicable CIS benchmark.
-- [ ] Define the OSCAL component structure before authoring controls: the
-  origination values, the responsible roles, how a requirement identifier is
-  cited, and how an SRG, STIG, or CIS cross-reference is attached to an 800-53
-  control.
-- [ ] Add the checks that hold the structure: every control carries an
-  origination property and a responsible role, every cited requirement
-  identifier exists in the tree, and every catalogue source resolves to its
-  pinned digest. These land with the first controls, not after them.
+- [ ] Resolve the three outstanding sources recorded as unresolved or
+  unavailable in `artifacts/requirement-sources.json`: the DISA Container
+  Platform SRG and Application Server SRG need their exact current packages
+  obtained from the published download index, and the CIS benchmark needs an
+  account holder to retrieve it and record its digest. Decide whether the
+  Application Server SRG applies at all, since this image serves and proxies
+  HTTP rather than hosting an application runtime.
+- [ ] Verify the pinned sources against their recorded digests as a scheduled
+  check, so a replaced DISA package is reported rather than silently mapped
+  against. The structural checks over the component definition are in place.
 
 ### Control authoring
 
@@ -130,9 +125,11 @@ resolved.
   deployment-configured, host-inherited, organization-inherited, not
   applicable, or research required, with rationale and residual risk. A large
   share will not be image-owned; that is the expected outcome, not a gap.
-- [ ] Author the 800-53 High base controls in the component definition, citing
-  requirement identifiers from [the requirement tree](L1-REQ.md) and drawing
-  verification evidence from [the trace matrix](TRACE-MATRIX.md).
+- [ ] Author the remaining 800-53 High base controls in the component
+  definition, citing requirement identifiers from
+  [the requirement tree](L1-REQ.md) and drawing verification evidence from
+  [the trace matrix](TRACE-MATRIX.md). The baseline selects 188 base controls;
+  four are authored to establish the structure.
 - [ ] Give every image-owned control an examine, test, or interview assessment
   method, owner, defaults, configuration and restart behaviour, dependencies,
   impact, loss-of-function statement, limitations, and evidence pointer.
