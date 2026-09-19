@@ -90,20 +90,33 @@ this component's function, as the register already recorded.
 
 ### The Container Platform SRG is a different problem
 
-It is not a scope question. The document exists and is officially released —
-**V2R1**, 24 July 2024 — and the filename follows DISA's published convention,
-`U_Container_Platform_V2R1_SRG.zip`. It is simply no longer served from the
-public download path: that URL returns 404 while `U_Web_Server_V3R3_SRG.zip`
-returns 200 from the same directory, so the path and method are sound and the
-file is genuinely not there.
+It is not a scope question, and it is not a retrieval problem either — though
+this record originally said it was.
 
-The download index cannot be used to find its current location either. It is
-now a JavaScript-rendered portal whose HTML contains no download links at all,
-so it cannot be resolved programmatically.
+**Correction, 2026-09-19.** This section previously stated that the Container
+Platform SRG was released as V2R1 and was no longer served from the public
+download path. That was wrong. The current release is **V2R4**, benchmark date
+28 October 2025, and it retrieves normally at
+`U_Container_Platform_V2R4_SRG.zip`.
 
-It therefore stays `unresolved` — with the release, filename, and this finding
-recorded, so whoever retrieves it is not repeating the search. It is a missing
-cross-reference, not a missing part of the spine, and it blocks nothing.
+The error came from the release sweep behind it, which probed V1R1, V2R1, V2R2,
+V2R3 and V3R1 and stopped one short of V2R4. Every probe returned 404, and the
+conclusion drawn was that the package had been withdrawn rather than that the
+sweep had missed it. A 404 sweep is evidence about the names probed and nothing
+more, and a control mounted on top of it — the same directory serving
+`U_Web_Server_V3R3_SRG.zip` with a 200 — confirmed only that the path was
+sound, which is exactly what made the wrong conclusion look verified.
+
+The SRG is now pinned at V2R4 in `artifacts/requirement-sources.json`.
+Retrieval and rendering are owned by
+[`datopsis/container-hardening`](https://github.com/datopsis/container-hardening),
+which holds the catalogue rendered one file per rule. Consume it from there.
+The DISA download index remains unscrapeable — a JavaScript-rendered portal
+with no links in its HTML — which is one of the reasons rendering is
+centralised in that repository rather than repeated per image.
+
+It governs the platform rather than an image, so most of its 188 rules will
+originate as host-inherited here regardless.
 
 ### Enforcement
 
