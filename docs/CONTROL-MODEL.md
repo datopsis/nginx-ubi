@@ -93,6 +93,13 @@ replaces it, and the difference is then visible rather than silent.
 CIS is cited by identifier only. Its terms restrict redistribution, so no
 benchmark text is reproduced here.
 
+The Application Server SRG is pinned but carries the role `not-applicable`: it
+presupposes a management interface, accounts, and hosted applications, none of
+which exist here. The reasoning and the counts behind that are in
+[ADR-0010](adr/0010-application-server-srg-not-applicable.md). It is pinned
+rather than dropped so the determination stays tied to the revision it was made
+against.
+
 ## Assessment methods
 
 Every `image-owned` control carries an examine, test, or interview method with

@@ -111,6 +111,18 @@ class SourceRegisterTests(unittest.TestCase):
         for role in ("spine", "baseline"):
             self.assertEqual(by_role[role]["status"], "pinned")
 
+    def test_a_source_ruled_not_applicable_records_the_basis(self) -> None:
+        # Deciding an SRG does not apply is a claim in its own right. Without a
+        # stated basis it is indistinguishable from having forgotten it.
+        for source in register()["sources"]:
+            if source["role"] != "not-applicable":
+                continue
+            with self.subTest(source=source["id"]):
+                self.assertTrue(
+                    (source.get("notes") or "").strip(),
+                    "a source ruled not applicable must record why",
+                )
+
     def test_a_non_redistributable_source_is_marked_as_such(self) -> None:
         for source in register()["sources"]:
             with self.subTest(source=source["id"]):
