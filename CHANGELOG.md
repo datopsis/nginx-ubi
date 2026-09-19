@@ -140,6 +140,9 @@ but container releases use the upstream-derived format documented in
 - Fixed a race in the reload test that read `/proc/PID/status` for a worker
   that had already exited, which aborted the listing instead of skipping the
   vanished process.
+- Added a dated status snapshot recording where the work stands, what is
+  blocked and on what, and which parts of the control model transfer to the
+  cross-repository container hardening standard.
 - Resolved the Application Server SRG, pinning V4R5 by digest and recording it
   as not applicable to this component: 27 of its 137 rules presuppose a
   management interface or hosted applications and 18 refer to accounts, none of
