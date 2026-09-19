@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-09-18",
-  "note": "A control mapping is meaningful only against a known revision. Every source here is pinned by digest or recorded as unresolved with the reason. An unresolved source is never silently substituted with a newer release.",
+  "reviewed_on": "2026-09-19",
+  "note": "A control mapping is meaningful only against a known revision. Every source here is pinned by digest or recorded as unavailable with the reason. An unresolved source is never silently substituted with a newer release. Retrieval and rendering of the DISA sources are owned by datopsis/container-hardening; this register records the identity this repository maps against.",
   "sources": [
     {
       "id": "nist-sp800-53r5-catalog",
@@ -71,17 +71,18 @@
       "id": "disa-container-platform-srg",
       "publisher": "Defense Information Systems Agency",
       "title": "Container Platform Security Requirements Guide",
-      "release": "V2R1",
-      "released_on": "2024-07-24",
-      "retrieved_on": null,
-      "url": null,
-      "sha256": null,
-      "size": null,
-      "status": "unresolved",
+      "release": "V2R4",
+      "released_on": "2025-10-28",
+      "retrieved_on": "2026-09-18",
+      "url": "https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_Container_Platform_V2R4_SRG.zip",
+      "sha256": "975a9e421e62e0ea52b1824e4a719aee87eed9070d5a3145fa9817f6498d99fe",
+      "size": 2915150,
+      "status": "pinned",
       "role": "cross-reference",
       "license": "US Government work; redistribution terms stated in the package",
       "redistributable": false,
-      "notes": "Officially released as V2R1 on 2024-07-24, and the filename follows DISA's published convention as U_Container_Platform_V2R1_SRG.zip, but it is no longer served from the public download path: that URL returns 404 while U_Web_Server_V3R3_SRG.zip returns 200 from the same directory, so the path and method are sound and the file is not there. The download index cannot be used to locate it either; it is now a JavaScript-rendered portal whose HTML contains no download links, so it cannot be resolved programmatically. Retrieval needs a browser session or the SRG-STIG library compilation. Blocking for the container-platform cross-reference only; the spine does not depend on it."
+      "notes": "Governs the platform that runs containers rather than an image, so most of it originates as host-inherited here. 188 rules: 8 CAT I, 177 CAT II, 3 CAT III. Retrieval and rendering are owned by datopsis/container-hardening, which holds the rendered catalogue one file per rule; consume it from there rather than from the DISA download index, which is a JavaScript-rendered portal that cannot be scraped. The URL and digest above record the upstream identity the rendering derives from.",
+      "rendered_at": "datopsis/container-hardening: docs/srg/container-platform-srg/README.md"
     },
     {
       "id": "disa-application-server-srg",
@@ -97,7 +98,7 @@
       "role": "not-applicable",
       "license": "US Government work; redistribution terms stated in the package",
       "redistributable": false,
-      "notes": "Retrieved and pinned, then assessed as not applicable to this component; see docs/adr/0010-application-server-srg-not-applicable.md. Of its 137 rules, 27 presuppose a management interface or hosted applications and 18 refer to accounts. This image has no management interface, no accounts, and hosts no application, so those rules govern objects that do not exist here; the remainder are stated for a component of this kind by the Web Server SRG, which is the applicable DISA cross-reference. Pinned rather than dropped so the determination is tied to the revision it was made against."
+      "notes": "Retrieved and pinned, then assessed as not applicable to this component; see docs/adr/0010-application-server-srg-not-applicable.md. Of its 137 rules, 27 presuppose a management interface or hosted applications and 18 refer to accounts. This image has no management interface, no accounts, and hosts no application, so those rules govern objects that do not exist here; the remainder are stated for a component of this kind by the Web Server SRG, which is the applicable DISA cross-reference. Pinned rather than dropped so the determination is tied to the revision it was made against. The applicability determination is the worked example carried into datopsis/container-hardening, which owns retrieval and rendering of this source."
     },
     {
       "id": "cis-benchmark",

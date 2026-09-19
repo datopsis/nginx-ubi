@@ -148,17 +148,17 @@ but container releases use the upstream-derived format documented in
   management interface or hosted applications and 18 refer to accounts, none of
   which exist here. Pinned rather than dropped so the determination stays tied
   to the revision it was made against.
-- Recorded why the DISA Container Platform SRG cannot be retrieved: V2R1 is
-  officially released and its filename follows DISA's convention, but it is no
-  longer served from the public download path, and the download index is now a
-  JavaScript-rendered portal whose HTML contains no download links. It stays
-  unresolved with the release, filename, and finding recorded, so the search is
-  not repeated.
+- Pinned the DISA Container Platform SRG at V2R4 and pointed retrieval at
+  `datopsis/container-hardening`, which owns rendering of the DISA sources.
+  This corrects an earlier entry in this section claiming the SRG was released
+  at V2R1 and no longer served publicly. It was neither: the release sweep
+  behind that claim probed V2R1 through V2R3 and stopped one short of V2R4,
+  and a 404 across the names probed was read as evidence of withdrawal.
 - Established the requirement-source register, pinning the 800-53 Rev 5.2.0
   catalogue, its High baseline profile, the DISA Web Server SRG, and the RHEL 9
-  STIG by digest, and recording the Container Platform SRG, Application Server
-  SRG, and CIS benchmark as unresolved or unavailable with the reason rather
-  than omitting them.
+  STIG by digest, and recording the remaining sources with the reason they were
+  not yet pinned rather than omitting them. Only the CIS benchmark is still
+  unpinned; its terms require an account holder and forbid reproduction.
 - Fixed the control representation before authoring controls: six origination
   values, a responsible role that must match, a verification pointer into the
   requirement tree required of every image-owned control, and assessment

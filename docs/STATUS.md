@@ -57,8 +57,7 @@ fails if that document ever claims baseline coverage it does not have.
 
 ## Requirement sources
 
-`artifacts/requirement-sources.json`. Five pinned, one unresolved, one
-unavailable.
+`artifacts/requirement-sources.json`. Six pinned, one unavailable.
 
 | Source | Release | State |
 | --- | --- | --- |
@@ -67,12 +66,17 @@ unavailable.
 | DISA Web Server SRG | V3R3 | Pinned — confirmed current |
 | DISA RHEL 9 STIG | V2R4 | Pinned |
 | DISA Application Server SRG | V4R5 | Pinned, assessed **not applicable** ([ADR-0010](adr/0010-application-server-srg-not-applicable.md)) |
-| DISA Container Platform SRG | V2R1 | **Unresolved** — released, but no longer served from the public download path |
+| DISA Container Platform SRG | V2R4 | Pinned — rendered in [`datopsis/container-hardening`](https://github.com/datopsis/container-hardening) |
 | CIS Benchmark | — | **Unavailable** — needs an authenticated account holder |
 
-The two open ones need a person; neither blocks the spine. The DISA download
-index cannot be scraped: it is a JavaScript-rendered portal whose HTML contains
-no download links.
+Only CIS remains unpinned; it needs an account holder, can be cited by
+identifier but never reproduced, and does not block the spine.
+
+Retrieval, digest verification, and rendering of the DISA sources are owned by
+[`datopsis/container-hardening`](https://github.com/datopsis/container-hardening).
+Consume them from there rather than from the DISA download index, which is a
+JavaScript-rendered portal whose HTML contains no download links and cannot be
+scraped.
 
 ## Handing off to `datopsis/container-hardening`
 
@@ -100,38 +104,46 @@ These are reusable as they stand, and were built to be:
   product-independent apart from the requirement-tree lookup.
 - **ADR-0009 and ADR-0010** — the catalogue and applicability reasoning.
 
-### Sources the new repository named, and their retrievability
+### The standard now exists
 
-Checked on 2026-09-18 so the work is not repeated:
+[`datopsis/container-hardening`](https://github.com/datopsis/container-hardening)
+was created on 2026-09-19 and owns retrieval, digest verification, and
+rendering of the DISA sources. Consume them from there rather than
+re-retrieving them here.
 
-| Source | Release | Retrievable | Identity |
-| --- | --- | --- | --- |
-| DISA GPOS SRG | **V3R3**, benchmark 28 Oct 2025, 203 rules | Yes | `U_GPOS_V3R3_SRG.zip`, 1206754 bytes, `97026655bce18d91…` |
-| DoD DevSecOps Enterprise Container Hardening Guide | **1.2** | Yes | `Final_DevSecOps_Enterprise_Container_Hardening_Guide_1.2.pdf`, 991037 bytes, `9a5d5babdf567d8e…` |
-| DISA RHEL 9 STIG | V2R4 | Yes — already pinned here | |
-| DISA Application Server SRG | V4R5 | Yes — already pinned here | |
-| DISA Container Platform SRG | V2R1 | **No** — needs a browser session or the SRG-STIG library compilation | |
+It already holds:
 
-Two notes carried from the work here. The GPOS SRG filename uses the token
-`U_GPOS_`, not the expanded name — the expanded form 404s at every release.
-And DISA serves superseded releases alongside current ones (`U_GPOS_V2R7_SRG.zip`
-still returns 200), so a 200 is not evidence that a release is current; the
-adjacent-release probe is what establishes that.
+| | |
+| --- | --- |
+| Rendered catalogues | Container Platform SRG **V2R4** (188 rules) and GPOS SRG **V3R3** (203 rules), one Markdown file per rule |
+| Pinned sources | Nine, all eight retrievable ones verified against their recorded digests |
+| Process guidance | DoD DevSecOps Enterprise Container Hardening Guide **1.2** |
+| Verification | A weekly workflow that re-checks every digest and never edits the register |
 
-These are recorded rather than added to this repository's register. Whether the
-GPOS SRG becomes a cross-reference for this image — DoD guidance uses it for
-image-level controls where no container-specific STIG exists — is a decision
-that should follow the new repository's model rather than precede it.
+It separates **image controls** (GPOS SRG), **platform controls** (Container
+Platform SRG), and **host controls** (RHEL 9 STIG), because those have
+different owners. Per DoD guidance the GPOS SRG assesses image-level controls
+where no container-specific STIG exists, which is the situation for this image
+— so adopting the standard adds a source this register does not yet carry.
 
-### What the new repository still has to decide
+### Two findings worth not rediscovering
 
-- How an SRG or STIG converts to reviewable Markdown, and whether that
-  conversion is generated and checked for drift the way the trace matrix is
-- How a per-application profile selects and tailors from the standard, since
-  the applicability determination in ADR-0010 is exactly the kind of judgement
-  that will differ per image
-- Whether the control spine lives in the standard, in each image repository, or
-  is generated into each from the standard
+**A STIG ID is not a unique key.** GPOS V3R3 issues
+`SRG-OS-000132-GPOS-00067` as two distinct rules, `V-203655` and `V-278973`.
+Rule pages there are filed by Group ID for that reason.
+
+**A `200` does not establish currency.** DISA serves superseded releases
+alongside current ones — `U_GPOS_V2R7_SRG.zip` still resolves while V3R3 is
+current. Only probing adjacent releases establishes which release is live, and
+probing a partial range is how this repository briefly recorded the Container
+Platform SRG as unavailable when V2R4 was published all along.
+
+### What adoption will require here
+
+- Carrying the GPOS SRG in as the image-level control source
+- Reconciling this register with the standard's
+- Deciding whether the control spine stays here, lives in the standard, or is
+  generated into this repository from it
 
 ## Conventions that outlive this snapshot
 

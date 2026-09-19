@@ -108,18 +108,19 @@ resolved.
 
 ### Foundation
 
-- [ ] Obtain the two sources in `artifacts/requirement-sources.json` that
-  cannot be retrieved without a person. The DISA Container Platform SRG V2R1 is
-  no longer served from the public download path and the download index is a
-  JavaScript-rendered portal with no links in its HTML, so it needs a browser
-  session or the SRG-STIG library compilation; the CIS benchmark needs an
-  account holder to retrieve it and record its digest. Neither blocks the
-  spine. The Application Server SRG applicability question is closed: it is
-  pinned and assessed not applicable, per
-  [ADR-0010](adr/0010-application-server-srg-not-applicable.md).
-- [ ] Verify the pinned sources against their recorded digests as a scheduled
-  check, so a replaced DISA package is reported rather than silently mapped
-  against. The structural checks over the component definition are in place.
+- [ ] Obtain a CIS benchmark via an account holder and record its digest. It
+  is the only source still unpinned, it can be cited by identifier but never
+  reproduced, and it does not block the spine.
+- [ ] Consume the DISA cross-references from
+  [`datopsis/container-hardening`](https://github.com/datopsis/container-hardening)
+  rather than re-retrieving them here. That repository owns retrieval, digest
+  verification, and rendering, and already holds the Container Platform SRG
+  V2R4 and GPOS SRG V3R3 rendered one file per rule.
+- [ ] Reconcile this register with the standard's, which additionally carries
+  the GPOS SRG as the image-level control source and the DoD DevSecOps
+  Enterprise Container Hardening Guide 1.2 as process guidance. Per DoD
+  guidance the GPOS SRG assesses image-level controls where no
+  container-specific STIG exists, which is the situation for this image.
 
 ### Control authoring
 
