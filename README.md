@@ -92,6 +92,9 @@ root filesystem, explicit `tmpfs` mounts, dropped capabilities, and
 - [First-release roadmap](docs/ROADMAP.md) defines outstanding work and release
   gates. It is forward-looking; completed work belongs in the changelog and
   Git history.
+- [Status](docs/STATUS.md) is a dated snapshot of where the work stands, written
+  at handoff points rather than maintained continuously. The roadmap is
+  authoritative where the two disagree.
 - [Versioning and releases](docs/VERSION.md) separates container artifact
   versions from repository-only revisions.
 - [Changelog](CHANGELOG.md) records notable completed changes.
