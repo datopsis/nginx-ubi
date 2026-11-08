@@ -1,7 +1,7 @@
 # NGINX package-source decision
 
 Status: official NGINX stable implemented for first-release qualification;
-`nginx-2:1.30.5-1.el9.ngx` is the current qualification candidate. The
+`nginx-2:1.30.6-1.el9.ngx` is the current qualification candidate. The
 superseded Red Hat UBI AppStream development input remains documented in
 [RPM provenance](RPM-PROVENANCE.md).
 
@@ -24,7 +24,7 @@ own health endpoint, and the operator status surface uses `stub_status`.
 
 Use the official NGINX stable RPM repository for the first release while
 retaining digest-pinned Red Hat UBI 9 Minimal and Micro base images. The
-selected implementation candidate is `nginx-2:1.30.5-1.el9.ngx`. Pin this
+selected implementation candidate is `nginx-2:1.30.6-1.el9.ngx`. Pin this
 exact epoch, version, and release independently for each architecture. Do not
 track the newest package implicitly during an ordinary or release build.
 
@@ -34,14 +34,23 @@ unchanged, signed RPM. All downloading and verification occurs before the
 container build as defined in
 [External artifact acquisition](ARTIFACT-ACQUISITION.md).
 
-The selection was reviewed against authoritative NGINX sources on 2026-09-18.
-The stable repositories publish `nginx-1.30.5-1.el9.ngx` for both `x86_64`
-and `aarch64`, and publish the matching `nginx-1.30.5-1.el9.ngx.src.rpm`. The
-official security-advisory index lists 1.30.5 as not vulnerable to its current
-1.30-series advisories. This source review selects the package for
-implementation and qualification; it does not substitute for RPM signature
-verification, dependency locking, native runtime tests, SBOM and scanner
-review, or final release-candidate evidence.
+The current candidate is 1.30.6, published for both `x86_64` and `aarch64`
+with a matching source RPM. Independent owner review of this changed selection
+is **pending**; the previous candidate's review does not approve this refresh.
+Publisher signatures, dependency locks, native runtime tests, SBOMs, and
+scanner results must be checked before accepting release-candidate evidence.
+
+### Why the candidate moved from 1.30.5
+
+The [upstream advisory index](https://nginx.org/en/security_advisories.html)
+now identifies 1.30.6 as fixing CVE-2026-15176, CVE-2026-93479,
+CVE-2026-95101, CVE-2026-97629, and CVE-2026-97205. The previously reported
+unfixed alias/rewrite and AIO findings therefore have a stable update available.
+CVE-2026-15176 requires alias plus rewrite using `$request_filename`;
+CVE-2026-97205 concerns asynchronous file I/O, including SSI with AIO.
+Configuration-specific exposure does not justify retaining the vulnerable
+package or suppressing scanner findings. Both signed 1.30.6 RPM seeds retain
+the existing approved signing fingerprint.
 
 ### Why the candidate moved from 1.30.4
 
@@ -88,7 +97,7 @@ management.
 | Area | Red Hat UBI AppStream RPM | Official NGINX RPM |
 | --- | --- | --- |
 | Release cadence | RHEL module-stream lifecycle with Red Hat backports. | NGINX stable or mainline release cadence. |
-| Package position | Superseded development input: `nginx-core-2:1.26.3-9.module+el9.8.0+24845+a897661e.4`, itself a replacement for a module build withdrawn upstream. | Selected candidate: `nginx-2:1.30.5-1.el9.ngx`. |
+| Package position | Superseded development input: `nginx-core-2:1.26.3-9.module+el9.8.0+24845+a897661e.4`, itself a replacement for a module build withdrawn upstream. | Selected candidate: `nginx-2:1.30.6-1.el9.ngx`. |
 | Package trust | Red Hat repository metadata and release key. | NGINX repository and NGINX signing key. |
 | Platform statement | Packaged as part of UBI/RHEL content. | NGINX documents RHEL 9 packages for x86_64 and aarch64; this project must qualify them on UBI 9. |
 | Security maintenance | Red Hat errata and backported fixes. | New upstream NGINX package releases. |
@@ -111,7 +120,7 @@ Implementation requires:
    key-expiration and rotation handling. The official key bundle observed on
    2026-09-12 has SHA-256
    `55385da31d198fa6a5012d40ae98ecb272a6c4e8fffffba94719ffd3e87de37a`
-   and contains three primary keys. The selected 1.30.5 RPMs are signed by
+   and contains three primary keys. The selected 1.30.6 RPMs are signed by
    fingerprint `8540 A6F1 8833 A80E 9C16 53A4 2FD2 1310 B49F 6B46`; the
    artifact locks accept that signer specifically. Do not infer approval of
    every certificate in the downloaded bundle. The official installation
