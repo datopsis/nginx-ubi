@@ -8,6 +8,16 @@ but container releases use the upstream-derived format documented in
 
 ## [Unreleased]
 
+### Fixed
+
+- Refreshed both UBI 9.8 base manifest pins and regenerated AMD64/ARM64 RPM
+  locks to remediate fixable PCRE2, OpenSSL, expat, and CA trust findings.
+- Selected signed NGINX 1.30.6 RPMs for the alias/rewrite, script evaluation,
+  HTTP/3, session-ticket, and AIO security fixes. Owner review of the changed
+  package selection remains pending.
+- Added a native lock-update workflow that retains candidate locks and
+  resolution evidence for independent review without modifying scanner gates.
+
 ### Added
 
 - Added the Apache License 2.0 for Datopsis-authored work, third-party notices,

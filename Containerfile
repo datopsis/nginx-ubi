@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-ARG UBI_MINIMAL_IMAGE="registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:7b8e25a1b56ca4d00219198f3b5b51a3e1693a5c4f5369c5e190d7d6cb3f980e"
-ARG UBI_MICRO_IMAGE="registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650"
+ARG UBI_MINIMAL_IMAGE="registry.access.redhat.com/ubi9/ubi-minimal:9.8@sha256:4b79c93106c14ad1c234907f83441ff0e4f8d24e78426a36e159098e9f7e6fa5"
+ARG UBI_MICRO_IMAGE="registry.access.redhat.com/ubi9/ubi-micro:9.8@sha256:6d9eff186ce3ccf399c1835265e7fd3f83bd112cc3422da2d39fd44e234aab59"
 
 # The caller overrides this empty stage with a verified local named context.
 # Keeping the fallback empty makes a missing bundle fail instead of pulling an
@@ -40,8 +40,8 @@ LABEL org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
       org.opencontainers.image.documentation="https://github.com/datopsis/nginx-ubi#readme" \
       org.opencontainers.image.licenses="BSD-2-Clause AND Apache-2.0" \
       org.opencontainers.image.vendor="Datopsis" \
-      org.opencontainers.image.version="1.30.5" \
-      io.datopsis.nginx.rpm-version="2:1.30.5-1.el9.ngx"
+      org.opencontainers.image.version="1.30.6" \
+      io.datopsis.nginx.rpm-version="2:1.30.6-1.el9.ngx"
 
 COPY --from=builder /runtime/ /
 RUN rm -rf /etc/yum.repos.d

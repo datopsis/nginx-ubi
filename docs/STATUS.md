@@ -30,7 +30,7 @@ evidence; see [SUPPORT.md](SUPPORT.md).
 
 | | |
 | --- | --- |
-| Image | NGINX 1.30.5 on digest-pinned UBI 9, rootless, no package manager |
+| Image | NGINX 1.30.6 on digest-pinned UBI 9, rootless, no package manager |
 | Build | Hermetic — `--network none --pull=never` against per-architecture locks of 79 RPMs each, with fail-closed inventory comparison |
 | Profiles | 11 under `examples/profiles/`, each with tests, documentation, and a request-path diagram |
 | Requirements | 30 L1, 43 L2, 47 L3, plus 9 recorded non-requirements |

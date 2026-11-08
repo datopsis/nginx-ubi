@@ -58,6 +58,15 @@ change and invalidates affected release-candidate evidence.
      --output .artifact-resolver/amd64.json
    ```
 
+   When local container execution is unavailable, the `Update artifact locks`
+   workflow runs this same fetch/resolve/render procedure on native AMD64 and
+   ARM64 runners. Input or resolver changes in a pull request trigger it; it
+   can also be dispatched explicitly. Download both `lock-candidate-*`
+   artifacts from the same run and inspect their candidate JSON, RPM component
+   headers, inventories, platform information, and resolver logs. The workflow
+   does not commit candidates or grant approval. Replace the checked-in locks
+   only after comparing both candidates as described below.
+
 6. Review both lock diffs. Explain package additions and removals, version and
    repository changes, signer changes, source changes, and base digest changes.
    Confirm both architectures still have an intentional component set.
