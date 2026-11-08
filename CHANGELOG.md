@@ -10,6 +10,8 @@ but container releases use the upstream-derived format documented in
 
 ### Fixed
 
+- Regenerated hash-pinned CI tool requirements with compatible dependency
+  updates and the missing transitive packaging dependency, retaining filelock 3.x.
 - Refreshed both UBI 9.8 base manifest pins and regenerated AMD64/ARM64 RPM
   locks to remediate fixable PCRE2, OpenSSL, expat, and CA trust findings.
 - Selected signed NGINX 1.30.6 RPMs for the alias/rewrite, script evaluation,
