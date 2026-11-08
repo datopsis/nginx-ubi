@@ -51,7 +51,7 @@ jobs:
           sha256sum artifacts/lock-inputs.json >> .artifact-resolver/resolver-platform.txt
           podman run --rm --volume "${PWD}:/work:Z" --workdir /work \
             --entrypoint bash "${resolver_image}" \
-            -c 'rpm -q microdnf rpm; bash scripts/resolve-lock.sh "$1" ".artifact-inputs/$1" ".artifact-resolver/$1"; dnf --version; dnf repolist -v' \
+            -c 'set -e; rpm -q microdnf rpm; bash scripts/resolve-lock.sh "$1" ".artifact-inputs/$1" ".artifact-resolver/$1"; dnf --version; dnf repolist -v' \
             -- "${ARCHITECTURE}" 2>&1 | tee .artifact-resolver/resolver.log
 
       - name: Render candidate and record component headers

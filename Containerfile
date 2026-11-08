@@ -40,8 +40,8 @@ LABEL org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
       org.opencontainers.image.documentation="https://github.com/datopsis/nginx-ubi#readme" \
       org.opencontainers.image.licenses="BSD-2-Clause AND Apache-2.0" \
       org.opencontainers.image.vendor="Datopsis" \
-      org.opencontainers.image.version="1.30.5" \
-      io.datopsis.nginx.rpm-version="2:1.30.5-1.el9.ngx"
+      org.opencontainers.image.version="1.30.6" \
+      io.datopsis.nginx.rpm-version="2:1.30.6-1.el9.ngx"
 
 COPY --from=builder /runtime/ /
 RUN rm -rf /etc/yum.repos.d
