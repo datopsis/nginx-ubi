@@ -10,6 +10,12 @@ but container releases use the upstream-derived format documented in
 
 ### Fixed
 
+- Made reviewed-input drift notify `joey-huckabee` through assignment and
+  change-only issue comments, preserving one current-state dashboard. A hidden
+  checkpoint suppresses unchanged weekly reports and duplicate retry comments;
+  resolution comments close the issue and recurring drift reopens it. Added
+  tested transition logic, full-digest/single-snapshot reporting, incomplete
+  report protection, and reuse/post-merge verification guidance.
 - Updated the hash-pinned CI filelock dependency to 4.2.9 for security fixes;
   the existing virtualenv 21.14.13 pin already supports filelock 4.x.
 - Regenerated hash-pinned CI tool requirements with compatible dependency

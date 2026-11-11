@@ -126,18 +126,99 @@ Dependabot proposes updates for GitHub Actions, pre-commit hooks, and the
 pinned Python assurance tools. It cannot see the inputs this project pins
 itself, so a scheduled workflow compares the reviewed NGINX package, its
 signing key, the UBI base digests, and the locked closure against what the
-publishers currently offer, and keeps one issue current with the result.
+publishers currently offer, and keeps one `input-drift` issue current with the
+result. RPM closure resolution remains a reviewed operation: this check reports
+its size and explains that base/package changes imply a closure refresh; it does
+not resolve packages.
 
-It **reports only**. It opens no pull request and cannot edit a lock, because a
-refresh is a reviewed operation and a bot able to perform one would be a route
-to changing build inputs without review.
+The issue body is the current-state dashboard. Body edits do not notify the
+owner, so the workflow assigns the issue to `joey-huckabee` while drift is
+present and posts a short comment only when the drift state changes. Comments
+list newly moved inputs, changed pinned/available values, and resolved inputs.
+There are no mentions or weekly comments for unchanged drift. Assignment lets
+the owner receive issue comments without watching the whole repository; delivery
+still follows the owner's GitHub notification preferences.
+
+A complete zero-drift report produces one resolution comment and closes the
+issue. When drift returns, the workflow reopens that issue, assigns it, and
+comments. With no previous issue and no drift it does nothing. Open issues
+without a checkpoint (including #42) get a one-time baseline notification on the
+first complete run. It prefers an open labeled issue, otherwise the most recent
+closed one, rather than creating a weekly issue.
+
+It **reports only**. It edits no lock, makes no commit, and opens no pull request.
+A refresh is a reviewed operation. Top-level permissions remain `contents: read`; only the reporting job adds
+`issues: write`. Actions remain pinned by
+full SHA. Scheduled and manual reporting runs share a concurrency group and do
+not cancel an in-progress report.
 
 A source that cannot be read is reported as unreachable rather than as
-unchanged. Silence from a publisher is not evidence that nothing moved.
+unchanged. Silence from a publisher is not evidence that nothing moved. An
+incomplete snapshot (including an absent digest or empty package index) fails
+the reporting step before changing the issue, so it cannot falsely close it.
+The workflow retains the report artifacts and step summary for diagnosis;
+the next complete run compares with the last complete checkpoint.
 
 A changed signing key is surfaced as a key rotation rather than an update,
 because confirming a new fingerprint needs independent publisher-controlled
 references before it is trusted.
+
+### State and reuse in sibling repositories
+
+`scripts/check_input_drift.py --json-output drift.json > drift.md` produces both
+formats from one collection. JSON retains full key and base digests. The pure
+`decide(report, issue)` function in `scripts/report_input_drift.py` hashes a
+canonical, sorted mapping of moved input names to their pinned/available values.
+Notes, row order, and unchanged inputs do not affect the fingerprint. The hidden
+`input-drift:v1` body marker contains the fingerprint, previous values, and a
+transition sequence, encoded as base64 JSON. Keep this marker when editing the
+issue; malformed checkpoints fail reporting rather than silently resetting it.
+
+The adapter verifies assignment and reopens before commenting, and writes the
+body checkpoint only after the comment succeeds. It skips assignment requests
+when the owner is already assigned and fails reporting if assignment is refused. A hidden sequence/fingerprint marker on each
+comment lets a retry detect an already-posted notification if the subsequent
+body write failed. The sequence permits the same transition to notify again
+after resolution and recurrence. A failed comment leaves the checkpoint and
+open issue intact for retry.
+
+To reuse this pattern, copy the reporter and its tests, keep a stable unique
+`area` per input, and provide the detector's JSON fields: `drift` plus `findings`
+with `area`, `pinned`, `available`, and `drifted`. Supply a Markdown dashboard from
+the same snapshot. Set `--repository` and `--assignee` for the sibling repo, use
+one dedicated issue label, retain the workflow concurrency and permission
+boundaries, and include the tests in that repo's lint job. No additional Python
+dependencies or secrets are needed. Here the tests are already included through
+`python -m unittest tests.test_input_drift -v`.
+
+### Verify notifications after merge
+
+The live reporting workflow is verified on `main` after this PR merges. Do not
+edit locks or fabricate drift in the production issue to test notifications.
+
+1. In Actions, select **Reviewed input drift**, then **Run workflow**, selecting
+   `main`. CLI equivalent:
+   `gh workflow run input-drift.yml --repo datopsis/nginx-ubi --ref main`.
+2. Inspect the run's `report drift` job, step summary, and `input-drift-report`
+   artifact. On a complete report with drift, #42 should remain the single open
+   issue, be assigned to `joey-huckabee`, contain the current table and hidden
+   checkpoint (visible when editing the body), and have one baseline/change
+   comment. Check the owner's GitHub notification inbox for that issue. If no
+   drift remains, expect one resolution comment and a closed issue instead.
+3. Dispatch again while upstream values are unchanged. Confirm the body is
+   refreshed and the comment count does not increase. The reporting log should
+   say `comment: False`.
+4. After a genuine upstream change, dispatch again and check that exactly one
+   comment describes the delta. After a reviewed input refresh resolves all
+   drift, dispatch to confirm one resolution comment and closure; dispatch once
+   more to confirm silence. On subsequent upstream drift, confirm the same
+   issue reopens with assignment and one new comment.
+
+The offline tests cover all those transitions, legacy migration, incomplete
+reports, full digest comparison, and failures between comment and checkpoint
+writes without sending GitHub notifications. If a source is unavailable during
+verification, inspect the retained report and rerun when it recovers; the old
+issue state is deliberately preserved.
 
 ## Release workflow
 
