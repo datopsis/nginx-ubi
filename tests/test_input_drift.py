@@ -263,14 +263,15 @@ class PublisherTests(unittest.TestCase):
             return [{"name": "input-drift"}]
         if path == "issues" and method == "POST":
             self.issue = {"number": 42, "state": "open", **payload}
+            self.issue["assignees"] = [{"login": name} for name in payload["assignees"]]
             return copy.deepcopy(self.issue)
         if path == "issues/42/assignees":
-            self.issue["assignees"] = payload["assignees"]
+            self.issue["assignees"] = [{"login": name} for name in payload["assignees"]]
             return copy.deepcopy(self.issue)
         if path.startswith("issues/42/comments?"):
             return copy.deepcopy(self.comments)
         if path == "issues/42/comments" and method == "POST":
-            self.assertIn("joey-huckabee", self.issue["assignees"])
+            self.assertIn({"login": "joey-huckabee"}, self.issue["assignees"])
             self.comments.append(payload)
             return payload
         if path == "issues/42" and method == "PATCH":
@@ -304,6 +305,28 @@ class PublisherTests(unittest.TestCase):
         self.publish(report(moved()))
         self.assertEqual(len(self.comments), 1)
         self.assertTrue(reporter.MARKER.search(self.issue["body"]))
+
+    def test_legacy_issue_is_assigned_once_before_commenting(self):
+        self.issue = {"number": 42, "state": "open", "body": "Old report", "assignees": []}
+        self.publish(report(moved()))
+        self.publish(report(moved()))
+        self.assertEqual(len(self.comments), 1)
+        self.assertEqual(sum(path.endswith("/assignees") for _, path, _ in self.calls), 1)
+
+    def test_ignored_assignment_cannot_send_an_unsubscribed_notification(self):
+        self.issue = {"number": 42, "state": "open", "body": "Old report", "assignees": []}
+        original_api = self.api
+
+        def ignoring_api(repository, path, method="GET", payload=None, paginate=False):
+            if path.endswith("/assignees"):
+                return copy.deepcopy(self.issue)
+            return original_api(repository, path, method, payload, paginate)
+
+        with patch.object(reporter, "api", side_effect=ignoring_api):
+            with self.assertRaisesRegex(RuntimeError, "did not assign"):
+                self.publish(report(moved()))
+        self.assertEqual(self.comments, [])
+        self.assertEqual(self.issue["body"], "Old report")
 
     def test_comment_failure_does_not_advance_checkpoint(self):
         self.publish(report(moved()))

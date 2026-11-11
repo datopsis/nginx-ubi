@@ -174,8 +174,9 @@ Notes, row order, and unchanged inputs do not affect the fingerprint. The hidden
 transition sequence, encoded as base64 JSON. Keep this marker when editing the
 issue; malformed checkpoints fail reporting rather than silently resetting it.
 
-The adapter assigns/reopens before commenting and writes the body checkpoint
-only after the comment succeeds. A hidden sequence/fingerprint marker on each
+The adapter verifies assignment and reopens before commenting, and writes the
+body checkpoint only after the comment succeeds. It skips assignment requests
+when the owner is already assigned and fails reporting if assignment is refused. A hidden sequence/fingerprint marker on each
 comment lets a retry detect an already-posted notification if the subsequent
 body write failed. The sequence permits the same transition to notify again
 after resolution and recurrence. A failed comment leaves the checkpoint and

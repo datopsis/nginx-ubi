@@ -136,7 +136,10 @@ def publish(repository: str, assignee: str, report: dict, markdown: str) -> None
         })
     endpoint = f"issues/{issue['number']}"
     if decision.action != "close" and report["drift"]:
-        api(repository, f"{endpoint}/assignees", "POST", {"assignees": [assignee]})
+        if not any(person["login"] == assignee for person in issue.get("assignees", [])):
+            issue = api(repository, f"{endpoint}/assignees", "POST", {"assignees": [assignee]})
+        if not any(person["login"] == assignee for person in issue.get("assignees", [])):
+            raise RuntimeError(f"GitHub did not assign the drift issue to {assignee}")
     if decision.action == "reopen":
         api(repository, endpoint, "PATCH", {"state": "open"})
     if decision.comment:
