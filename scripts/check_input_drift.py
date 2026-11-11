@@ -115,7 +115,7 @@ def check_signing_keys(inputs: dict) -> list[Finding]:
             findings.append(
                 Finding(
                     f"signing key ({key['id']})",
-                    key["sha256"][:16],
+                    key["sha256"],
                     f"(unreachable: {type(error).__name__})",
                     "the key could not be read; this is not evidence of no drift",
                 )
@@ -125,8 +125,8 @@ def check_signing_keys(inputs: dict) -> list[Finding]:
         findings.append(
             Finding(
                 f"signing key ({key['id']})",
-                key["sha256"][:16],
-                digest[:16],
+                key["sha256"],
+                digest,
                 "the published key bundle changed — treat as a key rotation, "
                 "never as a routine update"
                 if digest != key["sha256"]
@@ -155,7 +155,7 @@ def check_base_images(inputs: dict) -> list[Finding]:
             findings.append(
                 Finding(
                     f"base image ({role})",
-                    match.group("digest")[:23],
+                    match.group("digest"),
                     f"(unreachable: {type(error).__name__})",
                     "the registry could not be read; this is not evidence of no drift",
                 )
@@ -165,8 +165,8 @@ def check_base_images(inputs: dict) -> list[Finding]:
         findings.append(
             Finding(
                 f"base image ({role})",
-                match.group("digest")[:23],
-                current[:23],
+                match.group("digest"),
+                current,
                 "the tag now resolves to different content; a refresh also moves "
                 "the locked RPM closure"
                 if current != match.group("digest")
@@ -260,6 +260,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=("markdown", "json"), default="markdown")
     parser.add_argument(
+        "--json-output", type=Path,
+        help="also save JSON from the same publisher observations",
+    )
+    parser.add_argument(
         "--fail-on-drift",
         action="store_true",
         help="exit non-zero when an input has moved",
@@ -274,6 +278,8 @@ def main() -> int:
     findings += check_locked_rpms()
 
     print(render(findings, arguments.format))
+    if arguments.json_output:
+        arguments.json_output.write_text(render(findings, "json") + "\n", encoding="utf-8")
 
     if arguments.fail_on_drift and any(f.drifted for f in findings):
         return 1
