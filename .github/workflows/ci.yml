@@ -6,7 +6,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "23 7 * * 1"
+    - cron: "23 7 * * *"
   workflow_dispatch:
 
 permissions:
@@ -49,6 +49,12 @@ jobs:
           tests.test_nginx_features tests.test_profile_logs
           tests.test_input_drift tests.test_profile_policy tests.test_release_tag
           tests.test_tls_material tests.test_transfer -v
+
+      - name: Test the UBI vulnerability gate with native RPM comparison
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y python3-rpm
+          /usr/bin/python3 -m unittest tests.test_ubi_vulnerability_gate -v
 
       - name: Check the requirement trace matrix is current
         run: python scripts/build-trace-matrix.py --check
@@ -101,6 +107,7 @@ jobs:
       SBOM_FILE: nginx-ubi9-${{ matrix.architecture }}.spdx.json
       GRYPE_SARIF: grype-${{ matrix.architecture }}.sarif
       GRYPE_ALL: grype-all-${{ matrix.architecture }}.json
+      TRIVY_ALL: trivy-all-${{ matrix.architecture }}.json
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -173,6 +180,7 @@ jobs:
         run: bash tests/tls.sh
 
       - name: Transfer image to Docker compatibility environment
+        id: load-image
         run: |
           podman save --format docker-archive --output /tmp/nginx-ubi-image.tar "${TEST_IMAGE}"
           docker load --input /tmp/nginx-ubi-image.tar
@@ -204,15 +212,18 @@ jobs:
         run: bash tests/tls.sh
 
       - name: Scan image with Trivy
+        if: ${{ always() && steps.load-image.outcome == 'success' }}
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ env.TEST_IMAGE }}
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          severity: CRITICAL,HIGH
+          format: json
+          output: ${{ env.TRIVY_ALL }}
+          exit-code: "0"
+          ignore-unfixed: false
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
 
       - name: Generate SPDX SBOM with Syft
+        if: ${{ always() && steps.load-image.outcome == 'success' }}
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           image: ${{ env.TEST_IMAGE }}
@@ -223,14 +234,15 @@ jobs:
           upload-release-assets: false
 
       - name: Scan Syft SBOM with Grype
+        if: ${{ always() && hashFiles(env.SBOM_FILE) != '' }}
         uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           sbom: ${{ env.SBOM_FILE }}
           output-format: sarif
           output-file: ${{ env.GRYPE_SARIF }}
           severity-cutoff: high
-          only-fixed: true
-          fail-build: true
+          only-fixed: false
+          fail-build: false
           cache-db: true
           grype-version: v0.118.0
 
@@ -247,6 +259,12 @@ jobs:
           cache-db: true
           grype-version: v0.118.0
 
+      - name: Gate both scanners on fixes available from the build UBI repositories
+        if: ${{ always() }}
+        env:
+          ARCHITECTURE: ${{ matrix.architecture }}
+        run: bash scripts/run-vulnerability-gate.sh "${ARCHITECTURE}"
+
       - name: Retain image security artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -256,6 +274,8 @@ jobs:
             ${{ env.SBOM_FILE }}
             ${{ env.GRYPE_SARIF }}
             ${{ env.GRYPE_ALL }}
+            ${{ env.TRIVY_ALL }}
+            security-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -277,3 +297,46 @@ jobs:
         env:
           MATRIX_RESULT: ${{ needs.image.result }}
         run: test "${MATRIX_RESULT}" = success
+
+  ubi-fix-notification:
+    name: notify UBI fix availability
+    needs: image
+    if: >-
+      always() && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    concurrency:
+      group: ubi-fix-notification
+      cancel-in-progress: false
+    steps:
+      - name: Check out trusted default branch code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download this run's native security evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p /tmp/ubi-gate-reports
+          gh run download "${RUN_ID}" --repo "${REPOSITORY}" \
+            --pattern 'image-security-*' --dir /tmp/ubi-gate-reports
+
+      - name: Update one tracking issue and notify on state changes
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: >-
+          python scripts/report_ubi_gate.py
+          --directory /tmp/ubi-gate-reports
+          --repository "${REPOSITORY}" --assignee joey-huckabee
+          --run-url "${RUN_URL}"

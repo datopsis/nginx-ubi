@@ -10,6 +10,13 @@ but container releases use the upstream-derived format documented in
 
 ### Fixed
 
+- Gate High/Critical RPM fixes on availability in the pinned builder's UBI
+  repositories for each architecture, using fresh DNF metadata and native RPM
+  ordering. Unavailable fixes stay visible as deferred; available fixes,
+  non-RPM fixes, and verification errors block. Retain full Trivy/Grype reports,
+  summarize decisions, and recheck daily with one assigned tracking issue and
+  change-only notifications. Image locks, hardening and provenance are unchanged.
+
 - Made reviewed-input drift notify `joey-huckabee` through assignment and
   change-only issue comments, preserving one current-state dashboard. A hidden
   checkpoint suppresses unchanged weekly reports and duplicate retry comments;
