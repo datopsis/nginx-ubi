@@ -297,3 +297,15 @@ and the context rules instead: no resolving or fetching command may appear in
 the `Containerfile`, the staging directories must be excluded from both the
 build context and version control, and no build argument may be
 credential-shaped, because a build argument is recorded in image history.
+
+## Built image provenance labels
+
+`scripts/build-image.sh` passes the full local `git rev-parse HEAD` revision
+and SHA-256 of `artifacts/locks/<arch>.json` into the final image as
+`org.opencontainers.image.revision` and `io.datopsis.artifact-lock.sha256`.
+Use a clean checkout at the intended source revision for provenance-bearing
+builds; a revision label does not describe uncommitted edits. CI inspects the
+built image and compares both labels to its checkout and selected lock.
+These inputs are local: disconnected builds with `PULL_BASES=0` retain the
+same labels, verified bundle, disabled network and no-pull assembly contract.
+Labels do not replace digest-bound signatures or attestations.

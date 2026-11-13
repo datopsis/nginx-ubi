@@ -34,7 +34,12 @@ RUN test -n "${ARTIFACT_LOCK_SHA256}" \
 
 FROM ${UBI_MICRO_IMAGE}
 
-LABEL org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
+ARG SOURCE_REVISION
+ARG ARTIFACT_LOCK_SHA256
+
+LABEL org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      io.datopsis.artifact-lock.sha256="${ARTIFACT_LOCK_SHA256}" \
+      org.opencontainers.image.title="NGINX on Red Hat UBI 9" \
       org.opencontainers.image.description="A security-oriented, rootless NGINX image built on Red Hat UBI 9 Micro" \
       org.opencontainers.image.source="https://github.com/datopsis/nginx-ubi" \
       org.opencontainers.image.documentation="https://github.com/datopsis/nginx-ubi#readme" \

@@ -34,6 +34,7 @@ The first release is being designed for:
 - reverse proxying HTTP and HTTPS applications;
 - terminating ingress TLS with operator-managed keys and certificates;
 - verifying TLS connections to upstream services;
+- providing TLS fronts for Lakekeeper REST and Sail Spark Connect over isolated loopback;
 - balancing traffic across HTTP upstreams;
 - proxying WebSocket connections;
 - exposing health and readiness endpoints;
@@ -246,6 +247,9 @@ CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/profiles.sh
 CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
   bash tests/tls.sh
+# Native rootless Podman, with Go 1.24+ for the stand-in fixture:
+CONTAINER_RUNTIME=podman IMAGE=localhost/nginx-ubi9:development \
+  bash tests/tls-proxies.sh
 ```
 
 Or start the hardened default service with Compose:

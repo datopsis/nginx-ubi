@@ -127,6 +127,11 @@ jobs:
           ${{ matrix.architecture }}
           "${TEST_IMAGE}"
 
+      - name: Verify source revision and artifact lock labels
+        env:
+          IMAGE: localhost/nginx-ubi9:release-${{ matrix.architecture }}
+        run: python3 tests/image-labels.py ${{ matrix.architecture }} "${IMAGE}"
+
       - name: Prove hermetic build boundaries fail closed
         run: bash tests/hermetic-build-negative.sh ${{ matrix.architecture }}
 
@@ -138,6 +143,12 @@ jobs:
           bash tests/smoke.sh
           bash tests/profiles.sh
           bash tests/tls.sh
+
+      - name: Rehearse Lakekeeper and Sail TLS proxies
+        env:
+          CONTAINER_RUNTIME: podman
+          IMAGE: localhost/nginx-ubi9:release-${{ matrix.architecture }}
+        run: bash tests/tls-proxies.sh
 
       - name: Log in to the registry
         env:

@@ -1,7 +1,8 @@
 # TLS certificate, trust, and revocation lifecycle
 
 This runbook covers the repository's preview TLS termination, mutual-TLS, and
-verified HTTPS-upstream profiles. The deployment's PKI owner remains
+verified HTTPS-upstream profiles, plus the Phase A Lakekeeper and Sail TLS
+fronts. The deployment's PKI owner remains
 responsible for issuance, authorization, revocation decisions, protected key
 storage, and incident response. The image consumes mounted material and does
 not enroll with a CA or generate production keys.
@@ -13,6 +14,7 @@ trust directions and what this image does not provide.
 
 | Profile | Required files | Purpose |
 | --- | --- | --- |
+| Lakekeeper / Sail fronts | `server.crt`, `server.key` | Server-only TLS; clients verify CA and hostname. No proxy client authentication. |
 | TLS termination | `server.crt`, `server.key` | Ordered server chain and matching private key. |
 | Mutual TLS | Termination files plus `client-ca.crt`, `client.crl` | Narrow client trust bundle and current issuer CRLs. |
 | Verified upstream | `upstream-ca.crt`, `upstream.crl` | Narrow backend trust bundle and current issuer CRLs. |
@@ -117,3 +119,16 @@ separate roadmap item.
 Authoritative directive behavior is documented by NGINX for
 [`ssl_crl`](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_crl)
 and [`proxy_ssl_crl`](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_ssl_crl).
+
+## Phase A loopback exception
+
+For the [Lakekeeper and Sail fronts](CONFIGURATION-PROFILES.md#lakekeeper-and-sail-tls-fronts-phase-a),
+plaintext proxy-to-backend traffic is permitted ONLY over `127.0.0.1` inside
+one shared network namespace; the backend container shares the proxy's
+namespace. A plaintext hop across any network, including a private bridge,
+is not allowed. TLS keys belong only to the proxy. Sharing networking must
+not share private mounts. Recreate the backend with its proxy namespace.
+Renew the proxy's leaf using the procedure above and verify from a fresh
+client connection. A same-root, matching-SAN expired leaf must be rejected;
+`tests/tls-proxies.sh` rehearses this without changing the clock. No proxy
+client authentication is introduced; OpenID remains Phase B.
