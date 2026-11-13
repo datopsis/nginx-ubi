@@ -11,7 +11,9 @@ proxy="${prefix}-proxy"
 backend="${prefix}-backend"
 client="${prefix}-client"
 cleanup() {
-    "${runtime}" rm --force "${client}" "${backend}" "${proxy}" >/dev/null 2>&1 || true
+    "${runtime}" rm --force "${client}" >/dev/null 2>&1 || true
+    "${runtime}" rm --force "${backend}" >/dev/null 2>&1 || true
+    "${runtime}" rm --force "${proxy}" >/dev/null 2>&1 || true
     "${runtime}" network rm "${network}" >/dev/null 2>&1 || true
     rm -rf -- "${evidence}"
 }
@@ -69,7 +71,8 @@ stop_pair() {
     if grep -E 'query-private|body-private|BEGIN .*PRIVATE KEY' "${evidence}/proxy.log"; then
         return 1
     fi
-    "${runtime}" rm --force "${backend}" "${proxy}" >/dev/null
+    "${runtime}" rm --force "${backend}" >/dev/null
+    "${runtime}" rm --force "${proxy}" >/dev/null
 }
 
 for profile in lakekeeper sail; do
