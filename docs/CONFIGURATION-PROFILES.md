@@ -645,11 +645,12 @@ and roots are deleted on exit and never uploaded.
 The same CI assertions run on AMD64 and ARM64: trusted TLS 1.2/1.3 requests;
 REST forwarding; 128 ordered gRPC messages (over 4 MiB), including a 65-second
 idle gap and an early first message; success and error trailers; cleartext
-rejection on both address families; wrong client CA, wrong server issuer,
+rejection on both address families and cleartext HTTP/2 rejection for Sail; wrong client CA, wrong server issuer,
 wrong hostname, correct-CN/wrong-SAN, and same-root expired-leaf rejection;
 valid operations before and after mutations; connection refusal at backend
 and unused default/metrics ports from another container; namespace/key-mount
-isolation; non-root, read-only, capability-free execution; and log redaction.
+isolation and an exact IPv4/IPv6 listening-socket inventory; non-root, read-only,
+capability-free execution; and log redaction.
 Clients use fresh connections and require specific certificate-verification
 errors, never treating timeouts or gateway failures as TLS rejection.
 

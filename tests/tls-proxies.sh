@@ -86,11 +86,12 @@ for profile in lakekeeper sail; do
     test "$("${runtime}" exec "${proxy}" readlink /proc/self/ns/net)" = \
         "$("${runtime}" exec "${backend}" readlink /proc/self/ns/net)"
     echo "PASS ${profile} shared network namespace and separate key mounts"
+    "${runtime}" exec "${backend}" /fixture/fixture listeners "${port}" "${backend_port}"
     check ok tls12
     check ok tls13
-    run_client plaintext "${host}:${port}"
+    run_client plaintext "${host}:${port}" http1
     # IPv6 listener is TLS-only too, even though the test bridge is IPv4.
-    "${runtime}" exec "${backend}" /fixture/fixture plaintext "[::1]:${port}"
+    "${runtime}" exec "${backend}" /fixture/fixture plaintext "[::1]:${port}" http1
     check ok short
     run_client check "${profile}" "https://${host}:${port}" /trust/wrong-ca.crt ca short
     check ok short
@@ -105,6 +106,8 @@ for profile in lakekeeper sail; do
     "${runtime}" exec "${backend}" /fixture/fixture probe "[::1]:${backend_port}" closed
     check ok short
     if test "${profile}" = sail; then
+        run_client plaintext "${host}:${port}" h2c
+        check ok short
         check ok long
         check ok status
     fi

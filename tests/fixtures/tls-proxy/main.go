@@ -286,16 +286,62 @@ func probe(address, expected string) {
 	}
 	fmt.Println("PASS TCP", address, expected)
 }
-func plaintext(address string) {
+func plaintext(address, protocol string) {
 	client := &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	if protocol == "h2c" {
+		protocols := new(http.Protocols)
+		protocols.SetUnencryptedHTTP2(true)
+		transport := &http.Transport{Protocols: protocols}
+		defer transport.CloseIdleConnections()
+		client.Transport = transport
+	}
 	resp, e := client.Post("http://"+address+"/rehearsal.Stream/Short", "application/grpc", bytes.NewReader(framed(nil)))
+	if protocol == "h2c" && e != nil {
+		// TLS listeners may close the cleartext HTTP/2 connection or answer
+		// with an HTTP/1 protocol error that the HTTP/2 parser rejects.
+		require(errors.Is(e, io.EOF) || errors.Is(e, io.ErrUnexpectedEOF) ||
+			errors.Is(e, syscall.ECONNRESET) || strings.Contains(e.Error(), "frame header looked like an HTTP/1.1 header"),
+			"expected cleartext HTTP/2 protocol rejection: "+e.Error())
+		fmt.Println("PASS plaintext h2c refused", address, e)
+		return
+	}
 	must(e)
 	defer resp.Body.Close()
 	body, e := io.ReadAll(resp.Body)
 	must(e)
 	require(resp.StatusCode == 400 && resp.Header.Get("Location") == "" && bytes.Contains(body, []byte("plain HTTP request was sent to HTTPS port")), "plaintext reached application or redirected")
-	fmt.Println("PASS plaintext refused", address)
+	fmt.Println("PASS plaintext", protocol, "refused", address)
 }
+func listeners(port, backend string) {
+	publicPort, e := strconv.Atoi(port)
+	must(e)
+	backendPort, e := strconv.Atoi(backend)
+	must(e)
+	expected := map[string]bool{
+		fmt.Sprintf("tcp/00000000:%04X", publicPort):                          false,
+		fmt.Sprintf("tcp6/00000000000000000000000000000000:%04X", publicPort): false,
+		fmt.Sprintf("tcp/0100007F:%04X", backendPort):                         false,
+	}
+	for _, family := range []string{"tcp", "tcp6"} {
+		raw, e := os.ReadFile("/proc/net/" + family)
+		must(e)
+		for _, line := range strings.Split(string(raw), "\n")[1:] {
+			fields := strings.Fields(line)
+			if len(fields) < 4 || fields[3] != "0A" {
+				continue
+			}
+			socket := family + "/" + fields[1]
+			_, ok := expected[socket]
+			require(ok, "unexpected listening socket: "+socket)
+			expected[socket] = true
+		}
+	}
+	for socket, found := range expected {
+		require(found, "missing listening socket: "+socket)
+	}
+	fmt.Println("PASS socket inventory: TLS on IPv4/IPv6, backend on 127.0.0.1 only")
+}
+
 func security() {
 	status, e := os.ReadFile("/proc/1/status")
 	must(e)
@@ -331,7 +377,9 @@ func main() {
 	case "probe":
 		probe(os.Args[2], os.Args[3])
 	case "plaintext":
-		plaintext(os.Args[2])
+		plaintext(os.Args[2], os.Args[3])
+	case "listeners":
+		listeners(os.Args[2], os.Args[3])
 	case "security":
 		security()
 	default:
