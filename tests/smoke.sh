@@ -284,6 +284,11 @@ nginx_build=$("${runtime}" exec "${primary}" nginx -V 2>&1)
 printf '%s\n' "${nginx_build}" | "${python}" \
     "${repository}/scripts/nginx_features.py"
 architecture=$("${runtime}" image inspect --format '{{.Architecture}}' "${image}")
+expected_revision=$(git -C "${repository}" rev-parse --verify HEAD)
+expected_lock_sha256=$(sha256sum "${repository}/artifacts/locks/${architecture}.json" | cut -d' ' -f1)
+test "$("${runtime}" image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "${image}")" = "${expected_revision}"
+test "$("${runtime}" image inspect --format '{{index .Config.Labels "io.datopsis.artifact-lock.sha256"}}' "${image}")" = "${expected_lock_sha256}"
+printf 'Verified image provenance: revision=%s artifact-lock.sha256=%s\n' "${expected_revision}" "${expected_lock_sha256}"
 expected_rpm_manifest_sha256=$(
     "${python}" "${repository}/scripts/artifacts.py" rpm-manifest \
         "${repository}/artifacts/locks/${architecture}.json" \

@@ -8,12 +8,13 @@ inspectable result; planned controls are not represented as passing jobs.
 
 | Workflow | Triggers | Current purpose |
 | --- | --- | --- |
-| `CI` | Pull requests, `main`, weekly, manual | Run pinned repository checks, audit Actions, scan configuration, and build, test, inventory, and scan native AMD64 and ARM64 images. |
+| `CI` | Pull requests, `main`, daily, manual | Run pinned repository checks, audit Actions, scan configuration, and build, test, inventory, and scan native AMD64 and ARM64 images. |
 | `CodeQL` | Workflow changes, `main`, weekly, manual | Analyze GitHub Actions with the security-extended query suite. |
 | `OpenSSF Scorecard` | `main`, branch-protection changes, weekly, manual | Publish repository supply-chain findings and SARIF. |
 
 Workflow permissions default to read-only. A job receives a write scope only
-when it must publish code-scanning results. The Scorecard job also receives an
+when it must publish code-scanning results or update the default-branch
+UBI availability tracking issue. The Scorecard job also receives an
 OIDC token for authenticated result publication. Third-party Actions are pinned
 to full commit SHAs and are tracked by Dependabot.
 
@@ -276,10 +277,13 @@ The implemented image pipeline performs:
    verification, client and upstream CRL enforcement, overlapping-CA trust
    rotation, lifecycle deadline monitoring, negative trust cases, and secret-
    safe diagnostics.
-3. Trivy image vulnerability scanning.
+3. Full Trivy image vulnerability and secret reporting.
 4. SPDX inventory generation with Syft.
-5. Independent fixed High/Critical vulnerability gating with Grype and a
-   retained full finding inventory.
+5. Independent full Grype reporting and a fail-closed gate for both scanners.
+   Fixable High/Critical RPM findings block when a fixed-or-newer RPM is
+   advertised in the pinned builder's UBI repositories for that architecture;
+   absent fixes are deferred and summarized. Non-RPM fixes and query errors
+   still block. See [the security policy](../SECURITY.md#vulnerability-gate-fixes-available-from-ubi).
 6. Architecture-specific artifacts and non-pull-request SARIF publication.
 
 Tailored OpenSCAP evaluation against an ownership-preserving filesystem export
@@ -305,3 +309,35 @@ See the [profile guide](CONFIGURATION-PROFILES.md#lakekeeper-and-sail-tls-fronts
 for each positive and negative assertion. Each assertion prints a PASS record;
 failures stop the job. Existing Podman and Docker smoke/profile/TLS tests,
 mutation tests, scanners and aggregate gates remain required and unchanged.
+
+## UBI availability gate evidence and notifications
+
+`security-results/ARCHITECTURE/gate.json` and `gate.md` accompany the raw Trivy,
+Grype and SBOM artifacts. The native image job invokes
+`scripts/run-vulnerability-gate.sh`; its isolated query container uses the
+lock-selected builder and copies its repo files before installing DNF. This
+networked observation never changes the hermetic assembly or the locks.
+Repository metadata is fresh on each run, with unavailable repos treated as
+errors and a ten-minute outer deadline covering query-container setup.
+
+Run the gate's download-free tests with the system Python and RPM bindings:
+
+```console
+/usr/bin/python3 -m unittest tests.test_ubi_vulnerability_gate -v
+```
+
+The lint job installs the distribution's `python3-rpm` tooling for these tests.
+They cover available/unavailable fixes, native epoch/release ordering,
+non-RPM blockers, malformed reports, missing repos, query errors/timeouts,
+architecture identity, and notification transitions/retries.
+
+The `notify UBI fix availability` job runs after both native image jobs on the
+default branch, including failures. It downloads only artifacts from its own
+run and calls `scripts/report_ubi_gate.py` with the existing input-drift
+maintainer assignment. Its job-scoped `issues: write` permission supports the
+requested issue/comments; no repository settings or secrets are changed.
+Pull requests test the notification transition logic without writing issues.
+On the first default-branch run after merge, verify the issue assignment,
+report links, and initial comment. Repeating an unchanged manual run should
+update the body without adding a comment. Scheduled execution and actual issue
+delivery cannot be qualified by a pull-request-only run.

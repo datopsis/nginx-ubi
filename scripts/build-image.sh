@@ -29,7 +29,7 @@ fi
 "${runtime}" image exists "${builder}"
 "${runtime}" image exists "${runtime_base}"
 
-source_revision=$(git rev-parse --verify HEAD)
+revision=$(git rev-parse --verify HEAD)
 lock_sha256=$(sha256sum "${lock}" | cut -d' ' -f1)
 "${runtime}" build \
     --file Containerfile \
@@ -37,8 +37,8 @@ lock_sha256=$(sha256sum "${lock}" | cut -d' ' -f1)
     --network none \
     --pull=never \
     --build-context "artifact_bundle=${bundle}" \
-    --build-arg "SOURCE_REVISION=${source_revision}" \
     --build-arg "ARTIFACT_LOCK_SHA256=${lock_sha256}" \
+    --build-arg "REVISION=${revision}" \
     --build-arg "UBI_MINIMAL_IMAGE=${builder}" \
     --build-arg "UBI_MICRO_IMAGE=${runtime_base}" \
     --tag "${image}" \

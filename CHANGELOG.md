@@ -10,6 +10,19 @@ but container releases use the upstream-derived format documented in
 
 ### Fixed
 
+- Regenerated both native RPM locks from the public UBI repositories, updating
+  the util-linux family to 2.37.4-28.el9_9.1 and expat to 2.5.0-9.el9_9.4.
+  Rebound the unchanged 79-component inventory to the new locks; base digests,
+  signing keys, vendors and license tags are unchanged. Set and smoke-test
+  image labels for the source revision and architecture lock SHA-256.
+
+- Gate High/Critical RPM fixes on availability in the pinned builder's UBI
+  repositories for each architecture, using fresh DNF metadata and native RPM
+  ordering. Unavailable fixes stay visible as deferred; available fixes,
+  non-RPM fixes, and verification errors block. Retain full Trivy/Grype reports,
+  summarize decisions, and recheck daily with one assigned tracking issue and
+  change-only notifications. The policy retains the runtime hardening controls.
+
 - Made reviewed-input drift notify `joey-huckabee` through assignment and
   change-only issue comments, preserving one current-state dashboard. A hidden
   checkpoint suppresses unchanged weekly reports and duplicate retry comments;
