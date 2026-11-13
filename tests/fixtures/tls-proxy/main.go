@@ -5,6 +5,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
@@ -287,29 +288,34 @@ func probe(address, expected string) {
 	fmt.Println("PASS TCP", address, expected)
 }
 func plaintext(address, protocol string) {
-	client := &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	var resp *http.Response
+	var e error
 	if protocol == "h2c" {
-		protocols := new(http.Protocols)
-		protocols.SetUnencryptedHTTP2(true)
-		transport := &http.Transport{Protocols: protocols}
-		defer transport.CloseIdleConnections()
-		client.Transport = transport
-	}
-	resp, e := client.Post("http://"+address+"/rehearsal.Stream/Short", "application/grpc", bytes.NewReader(framed(nil)))
-	if protocol == "h2c" && e != nil {
-		// TLS listeners may close the cleartext HTTP/2 connection or answer
-		// with an HTTP/1 protocol error that the HTTP/2 parser rejects.
-		require(errors.Is(e, io.EOF) || errors.Is(e, io.ErrUnexpectedEOF) ||
-			errors.Is(e, syscall.ECONNRESET) || strings.Contains(e.Error(), "frame header looked like an HTTP/1.1 header"),
-			"expected cleartext HTTP/2 protocol rejection: "+e.Error())
-		fmt.Println("PASS plaintext h2c refused", address, e)
-		return
+		// Send the HTTP/2 connection preface and an empty SETTINGS frame.
+		// A TLS-only NGINX listener answers with an HTTP/1 protocol error.
+		// Read that response directly: Go HTTP/2 versions report its first
+		// bytes differently (e.g. "frame too large"), which is not an oracle.
+		conn, err := net.DialTimeout("tcp", address, 5*time.Second)
+		must(err)
+		defer conn.Close()
+		must(conn.SetDeadline(time.Now().Add(5 * time.Second)))
+		_, e = conn.Write(append([]byte("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"), 0, 0, 0, 4, 0, 0, 0, 0, 0))
+		must(e)
+		resp, e = http.ReadResponse(bufio.NewReader(conn), nil)
+	} else {
+		client := &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+		resp, e = client.Post("http://"+address+"/rehearsal.Stream/Short", "application/grpc", bytes.NewReader(framed(nil)))
 	}
 	must(e)
 	defer resp.Body.Close()
 	body, e := io.ReadAll(resp.Body)
 	must(e)
-	require(resp.StatusCode == 400 && resp.Header.Get("Location") == "" && bytes.Contains(body, []byte("plain HTTP request was sent to HTTPS port")), "plaintext reached application or redirected")
+	require(resp.StatusCode == 400 && resp.Header.Get("Location") == "" &&
+		resp.Header.Get("Content-Type") == "text/html" && bytes.Contains(body, []byte("<center>nginx</center>")),
+		"plaintext did not receive an NGINX protocol-error response")
+	if protocol == "http1" {
+		require(bytes.Contains(body, []byte("plain HTTP request was sent to HTTPS port")), "plaintext reached application")
+	}
 	fmt.Println("PASS plaintext", protocol, "refused", address)
 }
 func listeners(port, backend string) {
