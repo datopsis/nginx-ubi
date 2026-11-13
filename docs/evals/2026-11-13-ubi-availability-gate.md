@@ -69,7 +69,7 @@ acquisition, signature/component verification, negative RPM and hermetic-build
 tests, and all Podman/Docker restricted-runtime, HTTP and TLS tests. Both
 failed only at the new vulnerability gate, and the required aggregate failed
 accordingly. This is the expected result for the unchanged, vulnerable locks;
-this policy PR does not remediate those packages.
+that initial revision had not yet remediated those packages.
 
 The unit suite demonstrates unavailable-to-deferred and available-to-block
 behavior with generic fixtures, including the epoch and release boundary. It
@@ -81,5 +81,69 @@ Within a day of deployment, verify the issue assignment, artifact links,
 initial notification, and suppression of a repeated unchanged observation.
 
 No stalled util-linux refresh PR existed: the earlier investigation stopped
-without pushing or opening one. No locks, image bases, runtime properties or
-provenance labels were changed by this work.
+without pushing or opening one. The initial gate evaluation used the original locks and image bases. The
+subsequent refresh below updates the locks in the same PR.
+
+
+## Native lock refresh in the same PR
+
+[Resolver run 43367684307](https://github.com/datopsis/nginx-ubi/actions/runs/43367684307)
+passed on native AMD64 and ARM64 using the existing `fetch-lock-inputs.py`,
+`resolve-lock.sh` and `render-lock.py` tooling. Both candidates were independently
+re-rendered from retained binary/source inventories and compared before adoption.
+The only rendering difference was the independent rendering time; the committed
+locks are the original candidate bytes from CI.
+
+Both architectures retain 79 packages with no additions/removals, unchanged
+NGINX seeds, signing keys, package signers, repositories, vendors, and license
+tags. Their RPM component headers agree exactly. Thirty-six binary RPM versions
+changed on each architecture as part of resolving the full dependency closure;
+source RPM identities and hashes changed accordingly. No unchanged NEVRA was
+republished with different bytes. The component inventory is rebound to both
+new locks and retains the publisher-supplied license tags verbatim.
+
+| Packages (both architectures) | Old epoch:version-release | New epoch:version-release |
+| --- | --- | --- |
+| acl, libacl | `0:2.4.0-1.el9_8` | `0:2.4.0-2.el9` |
+| audit-libs | `0:3.1.5-8.el9` | `0:3.1.5-9.el9` |
+| coreutils, coreutils-common | `0:8.32-41.el9_8.1` | `0:8.32-43.el9` |
+| crypto-policies | `0:20260224-1.gitea0f072.el9_8` | `0:20260714-1.git65b74f7.el9` |
+| dbus, dbus-common | `1:1.12.20-8.el9` | `1:1.12.20-10.el9` |
+| dbus-broker | `0:28-9.el9_8` | `0:28-10.el9_9` |
+| expat | `0:2.5.0-6.el9_8.7` | `0:2.5.0-9.el9_9.4` |
+| glibc, glibc-common, glibc-minimal-langpack | `0:2.34-284.el9_8.4` | `0:2.34-290.el9_9` |
+| libattr | `0:2.6.0-1.el9_8` | `0:2.6.0-2.el9` |
+| libblkid, libfdisk, libmount, libsmartcols, libuuid, util-linux, util-linux-core | `0:2.37.4-25.el9` | `0:2.37.4-28.el9_9.1` |
+| libgcc | `0:11.5.0-14.el9` | `0:11.5.0-17.el9_9` |
+| libseccomp | `0:2.5.2-2.el9` | `0:2.5.6-1.el9` |
+| libselinux | `0:3.6-3.el9` | `0:3.6-4.el9` |
+| openssl, openssl-libs | `1:3.5.8-2.el9_8` | `1:3.5.9-1.el9_9` |
+| pam | `0:1.5.1-28.el9_8.1` | `0:1.5.1-29.el9` |
+| procps-ng | `0:3.3.17-14.el9` | `0:3.3.17-15.el9` |
+| redhat-release | `0:9.8-1.0.el9` | `0:9.9-1.0.el9` |
+| shadow-utils | `2:4.9-16.el9` | `2:4.9-17.el9` |
+| systemd, systemd-libs, systemd-pam, systemd-rpm-macros | `0:252-67.el9_8.6` | `0:252-79.el9_9` |
+| tzdata | `0:2026f-1.el9_8` | `0:2026f-1.el9_9` |
+| xz-libs | `0:5.2.5-8.el9_8.1` | `0:5.2.5-8.el9_9.1` |
+
+The UBI 9.8 minimal/micro manifest-list pins stay unchanged because their
+public `/ubi9/9/` repository configuration already exposes the fixes. The
+resolved `redhat-release` RPM is now 9.9; base tag and resolved RPM release
+are recorded separately rather than pretending the original base was rebuilt.
+
+| Input | Previous SHA-256 | New SHA-256 |
+| --- | --- | --- |
+| amd64 lock | `24e544b4085ecaef7d9bb486a42936f9dd57457ccd4d3c6fd1107f8620454214` | `5eda00936d279befa19bce2dff5592dbcff3bf6d5067899025dbd431d8a54216` |
+| arm64 lock | `37131798777f2e17d26a96f7bdea3fc8c6c7e3e295ddaad5fe75f0a1b44faa92` | `733d912e914cd94eeefa48da08671f768ee49ea26bcd2762370bc8b5a107552a` |
+| builder base manifest list | `4b79c93106c14ad1c234907f83441ff0e4f8d24e78426a36e159098e9f7e6fa5` | unchanged |
+| runtime base manifest list | `6d9eff186ce3ccf399c1835265e7fd3f83bd112cc3422da2d39fd44e234aab59` | unchanged |
+
+The existing build did not set this repository's revision or artifact-lock
+labels. Assembly now sets `org.opencontainers.image.revision` from the actual
+Git checkout and `io.datopsis.artifact-lock.sha256` from the architecture lock.
+Native smoke tests compare both labels with those exact inputs under Podman
+and Docker. These labels do not replace release attestations or signatures.
+
+Post-refresh native runtime, RPM verification, and scanner results are retained
+in the PR's CI artifacts and summarized in its description. The earlier table
+above remains the measured pre-refresh baseline, not the final image result.
