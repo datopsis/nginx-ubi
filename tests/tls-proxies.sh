@@ -45,7 +45,7 @@ check() {
 start_pair() {
     local kind=$1
     "${runtime}" run --detach --name "${proxy}" "${restricted[@]}" \
-        --user 100123:0 --network "${network}" \
+        --user 10001:0 --network "${network}" \
         --network-alias "${host}" --network-alias wrong.test \
         --volume "${repository}/examples/profiles/${profile}:/etc/nginx/profile:ro" \
         --volume "${evidence}/pki/${host}/${kind}:/etc/nginx/tls:ro" \
