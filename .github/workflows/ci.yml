@@ -158,6 +158,11 @@ jobs:
           ${{ matrix.architecture }}
           "${TEST_IMAGE}"
 
+      - name: Verify source revision and artifact lock labels
+        env:
+          IMAGE: ${{ env.TEST_IMAGE }}
+        run: python3 tests/image-labels.py ${{ matrix.architecture }} "${IMAGE}"
+
       - name: Prove hermetic build boundaries fail closed
         run: bash tests/hermetic-build-negative.sh ${{ matrix.architecture }}
 
@@ -178,6 +183,12 @@ jobs:
           CONTAINER_RUNTIME: podman
           IMAGE: ${{ env.TEST_IMAGE }}
         run: bash tests/tls.sh
+
+      - name: Rehearse Lakekeeper and Sail TLS proxies
+        env:
+          CONTAINER_RUNTIME: podman
+          IMAGE: ${{ env.TEST_IMAGE }}
+        run: bash tests/tls-proxies.sh
 
       - name: Transfer image to Docker compatibility environment
         id: load-image

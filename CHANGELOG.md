@@ -43,6 +43,12 @@ but container releases use the upstream-derived format documented in
 
 ### Added
 
+- Added Phase A Lakekeeper REST and Sail gRPC TLS fronts with a strictly
+  loopback-only backend exception, plus native streaming, certificate-negative,
+  isolation and restricted-runtime rehearsals using stand-ins.
+- Bound built images to their source revision and architecture artifact-lock
+  SHA-256 through labels checked in native CI and the release workflow.
+
 - Added the Apache License 2.0 for Datopsis-authored work, third-party notices,
   contribution guidance, and a private vulnerability-reporting policy.
 - Defined support classifications, published the current development support

@@ -292,6 +292,23 @@ are reviewed. Branch protection must not require `image` until its aggregate
 check exists on the default branch. Once present and proven, `image` becomes a
 strict, required, up-to-date check alongside the current repository checks.
 
+## Phase A proxy rehearsal and label binding
+
+Both native image jobs run `tests/image-labels.py` immediately after assembly.
+It compares `org.opencontainers.image.revision` to `git rev-parse HEAD` and
+`io.datopsis.artifact-lock.sha256` to SHA-256 of the exact architecture's
+`artifacts/locks/<arch>.json`, and checks image architecture. For pull requests,
+HEAD is the checkout's synthetic merge commit; release builds use the tagged
+source commit. The release workflow runs the same check.
+
+`tests/tls-proxies.sh` then exercises the Lakekeeper and Sail stand-ins under
+rootless Podman on both architectures, before image vulnerability scanning.
+It uses the runner's Go 1.24+ standard library, disables module acquisition,
+and mounts the native static fixture without altering image contents.
+See the [profile guide](CONFIGURATION-PROFILES.md#lakekeeper-and-sail-tls-fronts-phase-a)
+for each positive and negative assertion. Each assertion prints a PASS record;
+failures stop the job. Existing Podman and Docker smoke/profile/TLS tests,
+mutation tests, scanners and aggregate gates remain required and unchanged.
 
 ## UBI availability gate evidence and notifications
 

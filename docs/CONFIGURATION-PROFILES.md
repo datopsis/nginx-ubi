@@ -17,7 +17,7 @@ request path and qualification boundary.
 
 ## Common contract
 
-Both profiles:
+The original static and HTTP reverse-proxy profiles:
 
 - listen on unprivileged port `8080` and expose a fixed, unlogged `/healthz`;
 - run under the image default identity or an arbitrary non-root UID in group
@@ -566,6 +566,97 @@ The extended lifecycle rehearsal also rejects revoked client and backend
 certificates and proves old-only, old-plus-new overlap, and new-only upstream
 trust states. See [TLS lifecycle](TLS-LIFECYCLE.md) for monitoring, renewal,
 rotation, rollback, and the residual cryptographic-policy boundary.
+
+## Lakekeeper and Sail TLS fronts (Phase A)
+
+[`lakekeeper`](../examples/profiles/lakekeeper/nginx.conf) exposes HTTPS on
+`8181` and forwards HTTP/1.1 to `http://127.0.0.1:8182`.
+[`sail`](../examples/profiles/sail/nginx.conf) exposes TLS with HTTP/2 on
+`50051` and forwards gRPC to `grpc://127.0.0.1:50052`. These are NGINX profiles,
+not OpenResty profiles. Both remain **preview/unqualified**.
+
+**The proxy-to-backend hop may be plaintext ONLY over `127.0.0.1` inside one
+shared network namespace. The backend container shares the proxy's namespace.
+A plaintext hop across any network, including a private bridge, is not allowed.**
+This is a narrow exception for these two services, which cannot serve TLS
+natively. It does not make plaintext networking generally acceptable.
+
+Create the proxy as the network-bearing container. Start its backend with
+`--network container:<proxy-container>` (Compose: `network_mode:
+service:<proxy-service>`). Configure Lakekeeper with
+`LAKEKEEPER__BIND_IP=127.0.0.1`, `LAKEKEEPER__LISTEN_PORT=8182`, and external
+`LAKEKEEPER__BASE_URI=https://catalog:8181`. Configure Sail's server bind as
+`127.0.0.1` and port as `50052`; keep its unauthenticated-remote opt-out disabled.
+Do not attach the backend to another network or publish backend ports. Keep
+Lakekeeper metrics bound to loopback too; these profiles do not expose metrics.
+Recreate the backend whenever replacing its proxy, so it joins the new namespace.
+Networking is shared; PID namespaces, filesystems, and secret mounts are separate.
+
+Mount only that proxy's ordered certificate chain and private key read-only at
+`/etc/nginx/tls/server.crt` and `/etc/nginx/tls/server.key`. The leaf SAN must
+match the name clients use (`catalog` or `sail` in the rehearsal). Mount the
+profile directory read-only at `/etc/nginx/profile` and start NGINX with
+`-c /etc/nginx/profile/nginx.conf -g 'daemon off;'`; first validate the same
+mounts and restrictions with `-c /etc/nginx/profile/nginx.conf -t -q`.
+Provision key readability for the non-root UID/GID without world-readable keys.
+Apply `--read-only`, `--cap-drop ALL`, `--security-opt no-new-privileges`, and
+`--tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777` to both containers.
+The backend gets its own application secrets and public CA, never the proxy key.
+The proxy gets no database or AWS credentials. Pin both images by immutable digest.
+
+Both profiles listen only with TLS 1.2/1.3, on IPv4 and IPv6. There is no
+plaintext listener, plaintext health endpoint, or HTTP-to-HTTPS redirect.
+NGINX can return a protocol-error `400` for cleartext sent to a TLS port; that
+response contains no application data and is not forwarded. Readiness must use
+verified TLS and an actual backend operation; the image's configuration health
+check is not application readiness.
+
+This phase provides transport encryption and server identity verification only.
+There is **no client authentication at the proxy**: no mTLS or OpenID. OpenID
+belongs to Phase B. Deployment network policy and application authorization
+remain necessary. Clients must trust the intended CA and verify the hostname;
+do not disable verification to recover connectivity.
+
+Lakekeeper preserves the host (including port), method, path, query and body;
+replaces forwarding headers with proxy-derived values; disables retries and
+request/response buffering; and retains the 1 MiB body bound and 30-second
+send/read timeouts. Configure the application's external base URI so returned
+catalog/signing URLs remain HTTPS. Actual Lakekeeper-generated URLs must be
+qualified in integration; the stand-in only proves forwarding.
+
+Sail uses native `grpc_pass`, which streams responses and forwards gRPC trailers.
+It does not synthesize success trailers or intercept gRPC errors. Automatic
+upstream retries are off. Request bodies are bounded at 64 MiB; responses may
+stream beyond that size. Client-body, client-send, gRPC-read and gRPC-send idle
+timeouts are 3600 seconds; the connect timeout is 5 seconds. Idle timeouts are
+not total RPC deadlines. Set client deadlines and deployment capacity limits
+for the workload; this rehearsal does not establish hour-long capacity or
+Spark-specific message limits. Access events use the TLS termination schema
+above and exclude query strings, headers and bodies.
+
+Run `CONTAINER_RUNTIME=podman IMAGE=<built-image> bash tests/tls-proxies.sh`
+on native Linux with rootless Podman and Go 1.24 or newer. It compiles one
+static standard-library fixture with module downloads disabled, mounts it into
+the existing image, and uses separate HTTP/1.1 and HTTP/2 gRPC stand-ins bound
+only to `127.0.0.1` in their proxy's namespace. No fixture package enters the
+image. CA keys exist only in the generator's memory; fresh short-lived leaves
+and roots are deleted on exit and never uploaded.
+
+The same CI assertions run on AMD64 and ARM64: trusted TLS 1.2/1.3 requests;
+REST forwarding; 128 ordered gRPC messages (over 4 MiB), including a 65-second
+idle gap and an early first message; success and error trailers; cleartext
+rejection on both address families and cleartext HTTP/2 rejection for Sail; wrong client CA, wrong server issuer,
+wrong hostname, correct-CN/wrong-SAN, and same-root expired-leaf rejection;
+valid operations before and after mutations; connection refusal at backend
+and unused default/metrics ports from another container; namespace/key-mount
+isolation and an exact IPv4/IPv6 listening-socket inventory; non-root, read-only,
+capability-free execution; and log redaction.
+Clients use fresh connections and require specific certificate-verification
+errors, never treating timeouts or gateway failures as TLS rejection.
+
+These are component transport rehearsals, not proof that real Lakekeeper,
+Spark Connect clients, Sail workloads, restart/crash recovery, or the complete
+lakehouse Phase A matrix passes. Those remain integration responsibilities.
 
 ## Mount, validate, and operate
 
