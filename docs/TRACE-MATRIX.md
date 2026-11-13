@@ -131,7 +131,7 @@ Composite L1 requirements are excluded from the count: they are verified through
 | `L3-LOG-003` | T | `L2-LOG-003` | — | `tests/profiles.sh:219` | covered |
 | `L3-LOG-004` | T | `L2-LOG-001` | — | `tests/profiles.sh:725` | covered |
 | `L3-LOG-005` | T | `L2-LOG-004` | — | `tests/validate_profile_logs.py:2` | covered |
-| `L3-OPS-001` | T | `L2-OPS-001` | — | `tests/smoke.sh:363` | covered |
+| `L3-OPS-001` | T | `L2-OPS-001` | — | `tests/smoke.sh:368` | covered |
 | `L3-PRX-001` | T | `L2-PRX-001` | — | `tests/profiles.sh:219` | covered |
 | `L3-PRX-002` | T | `L2-PRX-002` | — | `tests.test_profile_policy.test_no_commercial_directive_is_used`<br>`tests.test_profile_policy.test_no_profile_enables_non_idempotent_retries` | covered |
 | `L3-PRX-003` | T | `L2-PRX-004` | — | `tests/profiles.sh:298` | covered |
@@ -145,8 +145,8 @@ Composite L1 requirements are excluded from the count: they are verified through
 | `L3-RUN-004` | T | `L2-RUN-004` | — | `tests/smoke.sh:282` | covered |
 | `L3-RUN-005` | T | `L2-RUN-005` | — | `tests/smoke.sh:135` | covered |
 | `L3-RUN-006` | T | `L2-RUN-006` | — | `tests/smoke.sh:168` | covered |
-| `L3-RUN-007` | T | `L2-RUN-007` | — | `tests/smoke.sh:349` | covered |
-| `L3-RUN-008` | T | `L2-RUN-007` | — | `tests/smoke.sh:363` | covered |
+| `L3-RUN-007` | T | `L2-RUN-007` | — | `tests/smoke.sh:354` | covered |
+| `L3-RUN-008` | T | `L2-RUN-007` | — | `tests/smoke.sh:368` | covered |
 | `L3-SUP-001` | T | `L2-SUP-001` | — | `tests.test_artifacts.test_malformed_and_unexpected_fields_fail_closed`<br>`tests.test_artifacts.test_repository_inputs_and_generated_locks_are_valid` | covered |
 | `L3-SUP-002` | T | `L2-SUP-001` | — | `tests.test_artifacts.test_base_digest_drift_from_reviewed_inputs_is_rejected`<br>`tests.test_artifacts.test_duplicate_and_unapproved_signer_or_url_are_rejected`<br>`tests.test_artifacts.test_wrong_arch_version_nevra_source_and_base_are_rejected` | covered |
 | `L3-SUP-003` | T | `L2-SUP-002` | — | `tests.test_artifacts.test_acquisition_publishes_only_a_complete_verified_bundle` | covered |
