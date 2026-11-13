@@ -29,7 +29,7 @@ def state_of(reports: list[dict]) -> dict:
             if f["decision"] == "unfixed":
                 continue
             key = "/".join([arch, f["scanner"], f["vulnerability"], f["package"], f["installed"]])
-            state[key] = [f["decision"], sorted(f["fixes"]), f["reason"]]
+            state[key] = [f["decision"], f["severity"], sorted(f["fixes"]), f["reason"]]
     return state
 
 
